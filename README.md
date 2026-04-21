@@ -2,6 +2,8 @@
 **Neuro-Symbolic AI Engine Bypassing the Von Neumann Bottleneck via Hyperdimensional Compute**
 
 [SODALS Architecture]
+<img width="988" height="792" alt="Ekran görüntüsü 2026-03-29 172033" src="https://github.com/user-attachments/assets/3bed8ed9-9baa-4fb8-9dfa-6b370bef96aa" />
+
 
 ## The Paradigm Shift
 Modern Large Language Models (LLMs) rely on autoregressive token prediction in dense continuous spaces. They lack deterministic reasoning and suffer from hallucinations because they cannot evaluate logical constraints prior to generation.
