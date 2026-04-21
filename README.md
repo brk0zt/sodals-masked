@@ -42,4 +42,4 @@ Tokens are not just predicted; they are integrated. SODALS models the hidden sta
 * **VRAM Fragmentation:** Mathematically eliminated via custom Arena Allocators.
 
 ---
-> **Developer Note:** Portions of the BCI/Telepathy IP and the `.qmem` compiler backend are kept in a private vault. The exposed architecture demonstrates the low-level FFI, memory safety, and semantic routing capabilities.
+> **Developer Note:** Portions of the BCI/Telepathy IP and the whole system backend are kept in a private vault. The exposed architecture demonstrates the low-level FFI, memory safety, and semantic routing capabilities.
