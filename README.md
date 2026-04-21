@@ -1,14 +1,14 @@
 # SODALS: Symplectic ODE-Driven Asymmetric Latent System
 **Neuro-Symbolic AI Engine Bypassing the Von Neumann Bottleneck via Hyperdimensional Compute**
 
-![SODALS Architecture](link-to-your-diagram-image)
+[SODALS Architecture]
 
-## 🌌 The Paradigm Shift
+## The Paradigm Shift
 Modern Large Language Models (LLMs) rely on autoregressive token prediction in dense continuous spaces. They lack deterministic reasoning and suffer from hallucinations because they cannot evaluate logical constraints prior to generation.
 
 **SODALS** is a bare-metal, hybrid AI engine that fuses the statistical intuition of neural networks (GPU) with the absolute deterministic logic of Hyperdimensional Computing (CPU/RAM). By utilizing a 1,000,000-dimensional Sparse Distributed Representation (SDR), SODALS treats RAM not as a passive storage medium, but as an **Active Semantic FPU (Floating Point Unit)**.
 
-## 🚀 Core Architecture & Features
+## Core Architecture & Features
 
 ### 1. Asymmetric Sparse Collision Engine (The RAM Kernel)
 Standard AI limits context to 4096-D dense matrices. SODALS projects this into a 1-Million-D sparse topological space.
@@ -30,7 +30,7 @@ Tokens are not just predicted; they are integrated. SODALS models the hidden sta
 
 ---
 
-## 🛠️ Tech Stack & Subsystems
+## Tech Stack & Subsystems
 * **Core Engine:** Rust (Bare-metal memory management, FFI, SIMD).
 * **Neural Subsystem:** Custom Quantized Qwen 2.5 (Candle framework).
 * **Custom Kernels:** CUDA C++ & OpenAI Triton (Sparse Matrix Multiplications).
