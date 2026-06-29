@@ -1,0 +1,24 @@
+# Task: Neuro-Engine Synchronization & Hallucination Neutralization
+
+[x] Forensic Audit of 5 Risk Surfaces
+    [x] MoE Logit Fusion Bypass Analysis
+    [x] Clifford Sampling Path Vulnerability
+    [x] Ghost Token & BCI Injection Monitoring
+[x] Implement Phase 1 & 2 Surgical Directives
+    [x] MoE Logit Fusion Restore
+    [x] Hardware Interlock for Clifford Path
+    [x] Domain-Aware Logit Suppression (Soft)
+    [x] Healthcare Shield Logic Inversion Fix
+[x] Implement Phase 3 Surgical Directives
+    [x] Hard Math Squelch in [logits_fusion.rs](file:///c:/Users/Burak/Desktop/sodals_core/src/crates/sodals_neuro/src/engine/logits_fusion.rs)
+    [x] Amplitude-Gated Resonance in [pondering_core.rs](file:///c:/Users/Burak/Desktop/sodals_core/src/crates/sodals_neuro/src/engine/pondering_core.rs)
+    [x] Causal-Drift-Buffer in [generation_loop.rs](file:///c:/Users/Burak/Desktop/sodals_core/src/crates/sodals_neuro/src/engine/generation_loop.rs)
+[x] Run final EODB benchmark verification
+[x] Generate walkthrough.md
+
+- [ ] Phase 4: Restoration (Restore memory and impedance)
+    [x] Forensic Identification of KV-Cache Zero-Padding
+    [x] Forensic Identification of Impedance Penalty (-inf at 0.8)
+    - [ ] Revert KV-Cache zero-padding in [qwen_custom.rs](file:///c:/Users/Burak/Desktop/sodals_core/src/crates/sodals_neuro/src/models/qwen_custom.rs)
+    - [ ] Neutralize global impedance (set to 0.0) in [adapter.rs](file:///c:/Users/Burak/Desktop/sodals_core/src/crates/sodals_neuro/src/gpu_ops/adapter.rs)
+    - [ ] Final Verification: Context Preservation in HEALTH-VISION-L5-001

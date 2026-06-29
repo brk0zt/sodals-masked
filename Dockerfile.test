@@ -1,0 +1,49 @@
+# Dockerfile - SODALS Candle 0.8.2 Dependency Hell Fix Verification
+# Docker/Linux ortamında derleme testi
+
+FROM nvidia/cuda:12.6.3-devel-ubuntu22.04
+
+# System dependencies  
+RUN apt-get update && apt-get install -y \
+    curl \
+    build-essential \
+    pkgconf \
+    libssl-dev \
+    python3 python3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Rust installation
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+# Set CUDA paths for Rust build
+ENV CUDA_HOME=/usr/local/cuda
+ENV LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
+ENV PATH=$CUDA_HOME/bin:$PATH
+
+# Set CUDA compute capability explicitly (avoids nvidia-smi requirement)
+# 80 = Ampere (common); 89 = Ada (RTX 40xx); 75 = Turing (RTX 20xx)
+ENV CUDA_COMPUTE_CAP=80
+ENV CUDA_ARCH_BIN=80
+
+WORKDIR /workspace
+
+# Copy project
+COPY . .
+
+# Create .cargo/config.toml with environment overrides
+RUN mkdir -p $HOME/.cargo && cat > $HOME/.cargo/config.toml << 'EOF'
+[build]
+rustflags = ["-C", "target-cpu=native"]
+
+[env.CUDA_COMPUTE_CAP]
+value = "80"
+
+[env.CUDA_ARCH_BIN]
+value = "80"
+EOF
+
+# Source Rust and run cargo check with explicit env vars
+RUN bash -c 'source $HOME/.cargo/env && CUDA_COMPUTE_CAP=80 CUDA_ARCH_BIN=80 cargo check -p sodals_neuro --lib --features cuda 2>&1' | tail -150
+
+CMD ["/bin/bash"]

@@ -1,0 +1,5 @@
+{
+  "alertname": "Deployment",
+  "service": "bookinfo-gateway",
+  "status": "firing"
+}

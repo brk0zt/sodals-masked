@@ -1,0 +1,69 @@
+[package]
+name = "sodals_kernel"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "sodals_crucible"
+path = "src/bin/sodals_crucible.rs"
+
+[[bin]]
+name = "eodb_runner"
+path = "src/bin/eodb_runner.rs"
+
+[[bin]]
+name = "run_oedb"
+path = "src/bin/run_oedb.rs"
+
+[[bin]]
+name = "eodb_generator"
+path = "src/bin/eodb_generator.rs"
+
+[dependencies]
+# Kardeş Paketler (Bütün güç burada toplanıyor)
+sodals_crypto = { path = "../sodals_crypto" }
+sodals_neuro = { path = "../sodals_neuro" }
+sodals_net = { path = "../sodals_net" }
+# common utilities (config, logging)
+sodals_common = { path = "../sodals_common" }
+
+# Genel Araçlar
+tokio = { version = "1.0", features = ["full"] }
+anyhow = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+toml = "0.8"
+ratatui = "0.26"
+crossterm = "0.27"
+rayon = "1.8"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+colored = "2.1"
+ndarray = "0.15"
+rand         = { version = "0.8.5", features = ["std"] }
+num-complex = "0.4"
+sprs = "0.11"
+sha2 = "0.10"
+hex = "0.4"
+regex = "1.10"
+bumpalo = { version = "3.16", features = ["collections"] }
+wasmer = "4.3.0"
+wasmer-wasix = "0.28" # Wasmer 4.x ile uyumlu modern WASI/WASIX motoru
+parking_lot = "0.12"
+bincode = "1.3"
+dotenvy = "0.15"
+candle-core = { version = "0.8.2" }
+candle-nn = { version = "0.8.2" }
+candle-transformers = { version = "0.8.2" }
+tokenizers = "0.21.0"
+faer = { version = "0.19.0" }
+png          = "0.17"
+rand_chacha  = "0.3"
+base64       = { version = "0.22", features = ["std"] }
+chrono       = { version = "0.4", features = ["serde"] }
+ed25519-dalek = { version = "2.1", features = ["rand_core"] }
+rand_core    = "0.6"
+
+[features]
+cuda = ["sodals_neuro/cuda"]
+brainflow = ["sodals_neuro/brainflow"]

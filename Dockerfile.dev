@@ -1,0 +1,20 @@
+# Dockerfile.dev
+FROM nvidia/cuda:12.1.0-devel-ubuntu22.04
+
+# Gerekli araçlar
+RUN apt-get update && apt-get install -y \
+    curl build-essential pkg-config libssl-dev git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Rust Kurulumu
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+# GPU Mimarisi (Hata almamak için)
+ENV CUDA_COMPUTE_CAP=86
+
+WORKDIR /app
+
+# Dikkat: Burada COPY veya RUN cargo build YOK.
+# Konteyner sadece "hazır kıta" bekleyecek.
+CMD ["bash"]

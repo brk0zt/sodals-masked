@@ -1,0 +1,85 @@
+/target/
+**/target/
+
+# Build artifacts
+*.pyd
+*.lib
+*.exe
+
+# Data files (too large for git)
+*.safetensors
+*.pdf
+*.vault
+*.salt
+*.qmem
+
+# Debug & test dumps
+*.log
+/archive/
+/benchmark_output.txt
+/__pycache__/
+/.pytest_cache/
+
+# IDE
+/.vscode/
+
+# Temporary files
+/check.json
+/diagnostics.json
+/errors.json
+/error_log.json
+
+# Environment & config files
+.env
+.env.*
+config.toml
+.dockerignore
+
+# Large datasets and models
+/data/
+/models/
+*.gguf
+*.bin
+*.jsonl
+
+# Benchmark results and logs
+/benchmark_results/
+/run_logs/
+/run_logs_contaminated/
+*.txt
+*.log
+
+# External dependencies and submodules
+/vcpkg/
+/SWE-bench/
+/AssetOpsBench-main/
+/ITBench-main/
+/MagicBench-main/
+/FailureSensorIQ/
+/arc-agi-3-benchmarking-main/
+/eng-practices-master/
+
+# Personal and temporary directories
+/kişisel/
+/scratch/
+/sodals_forge/
+/sodals_workspace/
+/unzipped_skill/
+
+# Build and test outputs
+*.pyd
+*.lib
+*.exe
+/cargo_*.txt
+compile_*.txt
+debug_*.txt
+check_*.txt
+out.txt
+err.txt
+
+# Test datasets and results
+*_test_dataset.json
+*_leaderboard.csv
+results_*.json
+expert_approvals.json
+trusted_experts.json

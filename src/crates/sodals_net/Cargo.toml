@@ -1,0 +1,72 @@
+[package]
+name = "sodals_net"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# Web & API
+axum = { version = "0.7", features = ["ws"] }
+tower-http = { version = "0.5", features = ["cors"] }
+reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
+scraper = "0.18"
+
+# Veri & Serileştirme
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+anyhow = "1.0"
+
+# Yardımcı Araçlar
+futures = "0.3"
+rand = "0.8"
+sha2 = "0.10"
+uuid = { version = "1.0", features = ["v4", "serde"] }
+zeroize = { version = "1.6", features = ["zeroize_derive"] }
+toml = "0.8"
+chrono = "0.4"
+crossterm = "0.27" 
+dotenvy = "0.15"
+
+# Loglama
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter"] }
+
+# Kripto Modülü
+sodals_crypto = { path = "../sodals_crypto" }
+
+# Neural engine from sibling crate
+sodals_neuro = { path = "../sodals_neuro" }
+
+# shared utilities (config/logging) have been extracted to their own crate
+sodals_common = { path = "../sodals_common" }
+
+# --- EKLENEN FİZİK VE MATEMATİK MOTORLARI ---
+rustfft = "6.2"
+rayon = "1.10"
+num-complex = "0.4"
+candle-core = { version = "0.8.2", features = ["cuda"] } 
+# (Not: Eğer CUDA yoksa features = ["cuda"] kısmını silebilirsin)
+# --- PLATFORMA ÖZEL AYARLAR ---
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+tokio = { version = "1.36", features = ["full"] }
+getrandom = { version = "0.2", features = ["js"] }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+tokio = { version = "1.36", features = ["rt", "macros", "sync", "time"] }
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+js-sys = "0.3"
+getrandom = { version = "0.3", features = ["wasm_js"] }
+
+[dependencies.web-sys]
+version = "0.3"
+features = [
+    "Crypto",
+    "CryptoKey",
+    "SubtleCrypto",
+    "Window",
+    "AesGcmParams"
+]
+
+[dependencies.pyo3]
+version = "0.23.3"
+features = ["extension-module", "abi3-py38"]

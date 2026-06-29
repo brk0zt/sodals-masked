@@ -1,0 +1,5 @@
+{
+  "alertname": "Deployment",
+  "service": "ad-service",
+  "status": "firing"
+}

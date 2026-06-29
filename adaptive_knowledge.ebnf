@@ -1,0 +1,5 @@
+// Source: Mock Demonstration
+"induction principle" CAUSES "magnetic flux" [0.95, 3.14];
+"magnetic flux" CAUSES "transistor phase change" [0.85, 1.57];
+"transistor phase change" RESONATES_WITH "induction principle" [1.0, 1.57];
+"vibration sensor" MEASURES "magnetic flux" [0.5, 0.0];

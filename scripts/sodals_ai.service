@@ -1,0 +1,39 @@
+[Unit]
+Description=SODALS Non-RT AI Katmanı (Qwen 8B + Sentinel)
+After=sodals_rt.service
+Wants=sodals_rt.service
+
+[Service]
+Type=simple
+# --- Non-RT Çekirdek Kısıtlaması ---
+# GPU ve AI işlemler izole edilmiş RT çekirdeklerine asla taşınmasın
+CPUAffinity=2-15
+# SCHED_BATCH: Throughput öncelikli, latency düşük öncelikli
+CPUSchedulingPolicy=batch
+
+# --- Bellek ---
+# Qwen 8B ~6-8GB VRAM + sistem RAM gerektirir
+MemoryMax=32G
+MemorySwapMax=16G
+OOMScoreAdjust=-500
+
+# --- GPU Kısıtlaması (NVIDIA cgroups desteği varsa) ---
+# DeviceAllow=/dev/nvidia0 rw
+# DeviceAllow=/dev/nvidiactl rw
+
+# --- Çevre ---
+Environment="RUST_LOG=info"
+Environment="SENTINEL_QMEM_PATH=/opt/sodals/qmem/reference.qmem"
+Environment="ZMQ_SENSOR_SUB=ipc:///tmp/sodals_sensor.pub"
+Environment="ZMQ_CMD_REQ=ipc:///tmp/sodals_cmd.rep"
+
+# --- Python/PyO3 entegrasyonu ---
+ExecStart=/opt/sodals/bin/sodals_ai_orchestrator --model /opt/sodals/models/qwen3.5-8b.q4_k_m.gguf
+
+# --- Yeniden Başlatma ---
+# AI katmanı kapanırsa RT süreç bağımsız çalışmaya devam eder (degraded)
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

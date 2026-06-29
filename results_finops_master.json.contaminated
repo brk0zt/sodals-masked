@@ -1,0 +1,19 @@
+{
+  "accuracy": 0.6666666666666666,
+  "correct_identifications": 10,
+  "total_identifications": 15,
+  "num_tasks": 15,
+  "num_completed": 15,
+  "completion_rate": 1.0,
+  "model_type": "rust_candle",
+  "config": {
+    "model_path": "C:\\Users\\Burak\\Desktop\\sodals_core\\models\\model.gguf",
+    "max_new_tokens": 2048,
+    "reproducibility_config": {
+      "seed": 42,
+      "temperature": 0.0,
+      "top_p": 1.0,
+      "do_sample": false
+    }
+  }
+}

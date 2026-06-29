@@ -1,0 +1,5 @@
+{
+  "alertname": "Deployment",
+  "service": "kubernetes-api-server",
+  "status": "firing"
+}

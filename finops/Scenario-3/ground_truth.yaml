@@ -1,0 +1,8 @@
+---
+metadata:
+  version: "v1"
+resource:
+  - resource:
+      name: d7I
+      type: Application
+      root_cause: true

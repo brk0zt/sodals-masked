@@ -1,0 +1,8 @@
+---
+metadata:
+  version: "v1"
+resource:
+  - resource:
+      name: 4vxPOsIv4A
+      type: Instance Family
+      root_cause: true

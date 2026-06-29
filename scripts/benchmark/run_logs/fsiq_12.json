@@ -1,0 +1,38 @@
+[
+  {
+    "task_id": "fsiq_12",
+    "timestamp": "2026-06-22T23:15:44.098387",
+    "input_prompt": "### Instructions:\nYou are an expert industrial systems diagnostic engine. Answer the following technical multiple-choice question regarding failure modes and sensors.\nSelect EXACTLY one option from the list below. Provide your final choice as 'Answer: [LETTER]'.\n\n### Question:\nWhich sensor out of the choices can indicate the presence of stator windings fault in asset electric motor?\n\n### Options:\nA. resistance\nB. partial discharge\nC. power\nD. cooling gas\nE. torque\n\n### Final Answer:\nAnswer:",
+    "model_info": {
+      "model_path": "C:\\Users\\Burak\\Desktop\\sodals_core\\models\\model.gguf",
+      "seed": 42,
+      "model_version": "candle_v1.0",
+      "max_new_tokens": 2048,
+      "reproducibility_config": {
+        "seed": 42,
+        "temperature": 0.0,
+        "top_p": 1.0,
+        "do_sample": false
+      }
+    },
+    "seed": 42,
+    "model_version": "candle_v1.0",
+    "decoding_config": {
+      "temperature": 0.0,
+      "top_p": 1.0,
+      "do_sample": false,
+      "max_new_tokens": 2048
+    }
+  },
+  {
+    "raw_output": " c\n\n\n\n\n\n",
+    "parsed_answer": "C",
+    "token_count": 1,
+    "inference_time": 9.125344276428223
+  },
+  {
+    "completed_at": "2026-06-22T23:15:53.225674",
+    "total_time": 9.127286911010742,
+    "final_score": null
+  }
+]

@@ -1,0 +1,5 @@
+{
+  "alertname": "HighLatency",
+  "service": "frontend-service",
+  "status": "firing"
+}

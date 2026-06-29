@@ -1,0 +1,38 @@
+[
+  {
+    "task_id": "fsiq_7",
+    "timestamp": "2026-06-22T23:14:49.863823",
+    "input_prompt": "### Instructions:\nYou are an expert industrial systems diagnostic engine. Answer the following technical multiple-choice question regarding failure modes and sensors.\nSelect EXACTLY one option from the list below. Provide your final choice as 'Answer: [LETTER]'.\n\n### Question:\nIn electric motor, when rotor windings fault occurs, which sensor from the choices is most critical in detecting the occurrence of the failure event?\n\n### Options:\nA. cooling gas\nB. voltage\nC. coast down time\nD. oil debris\nE. partial discharge\n\n### Final Answer:\nAnswer:",
+    "model_info": {
+      "model_path": "C:\\Users\\Burak\\Desktop\\sodals_core\\models\\model.gguf",
+      "seed": 42,
+      "model_version": "candle_v1.0",
+      "max_new_tokens": 2048,
+      "reproducibility_config": {
+        "seed": 42,
+        "temperature": 0.0,
+        "top_p": 1.0,
+        "do_sample": false
+      }
+    },
+    "seed": 42,
+    "model_version": "candle_v1.0",
+    "decoding_config": {
+      "temperature": 0.0,
+      "top_p": 1.0,
+      "do_sample": false,
+      "max_new_tokens": 2048
+    }
+  },
+  {
+    "raw_output": " c\n\n\n\n\n    \n   \n\n\n    \n   \n\n\n    \n   \n\n\n    \n   \n\n\n    \n   \n\n\n    \n   \n\n\n    \n   \n\n\n    \n   \n\n\n    \n   ",
+    "parsed_answer": "C",
+    "token_count": 1,
+    "inference_time": 13.108395099639893
+  },
+  {
+    "completed_at": "2026-06-22T23:15:02.973220",
+    "total_time": 13.109397172927856,
+    "final_score": null
+  }
+]

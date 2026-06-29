@@ -1,0 +1,46 @@
+[Unit]
+Description=SODALS RT OPC UA İstemcisi (Gerçek Zamanlı)
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+# --- RT İzolasyon ---
+# CPU: Sadece izole edilmiş çekirdekler 0 ve 1
+CPUAffinity=0 1
+# Bellek: Swapping yasak (RT determinizmi bozar)
+MemorySwapMax=0
+# SCHED_FIFO + öncelik 80 (PLC sürücülerinden düşük, sensör polling'den yüksek)
+CPUSchedulingPolicy=fifo
+CPUSchedulingPriority=80
+CPUSchedulingResetOnFork=false
+
+# --- Bellek Kilitleme ---
+# RT süreçlerin sayfa değişimi (page fault) yapmaması için
+# tüm heap stack memory'yi RAM'e kilitle
+LimitMEMLOCK=infinity
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+
+# --- İzleme ve Yeniden Başlatma ---
+# RT süreç asla kendiliğinden ölmemeli; ölürse 500ms içinde yeniden başlar
+Restart=always
+RestartSec=0.5
+StartLimitInterval=0
+WatchdogSec=2
+
+# --- Ortam Değişkenleri ---
+Environment="RUST_LOG=warn"
+Environment="RUST_BACKTRACE=0"
+# Jemalloc'u devre dışı bırak (RT'de allocator geri dönüşümü determinizmi bozar)
+Environment="MALLOC_CONF=dirty_decay_ms:0,muzzy_decay_ms:0"
+
+# --- Çalıştırılabilir ---
+ExecStart=/opt/sodals/bin/sodals_rt_opcua --endpoint opc.tcp://192.168.1.10:4840 --cores 0,1
+ExecStopPost=/opt/sodals/bin/sodals_failsafe_trigger --mode=stop
+
+[Install]
+WantedBy=multi-user.target

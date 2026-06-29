@@ -1,0 +1,65 @@
+# 1. Build Stage
+FROM nvidia/cuda:12.1.0-devel-ubuntu22.04 as builder
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    build-essential \
+    pkg-config \
+    libssl-dev \
+    git \
+    python3 \
+    python3-pip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Rust
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+WORKDIR /app
+
+# Copy files (Note: models/ is excluded in .dockerignore and mounted at runtime)
+COPY Cargo.toml Cargo.lock ./
+COPY src ./src
+COPY patched-crates ./patched-crates
+COPY sre ./sre
+COPY finops ./finops
+COPY FailureSensorIQ ./FailureSensorIQ
+COPY scripts ./scripts
+COPY qmem_crystals ./qmem_crystals
+COPY industrial_topology.qmem ./industrial_topology.qmem
+
+# Build release executable with CUDA support
+ENV CUDA_COMPUTE_CAP=86
+RUN cargo build --release --bin candle_inference_full --features cuda
+
+# 2. Runtime Stage
+FROM nvidia/cuda:12.1.0-runtime-ubuntu22.04
+
+# Enforce strict offline compliance and pure inference (neutralizing cartridge/adapters)
+ENV HF_HUB_OFFLINE=1
+ENV TRANSFORMERS_OFFLINE=1
+ENV SODALS_PURE_INFERENCE=1
+
+# Install python for benchmark running
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy compiled binary and scripts/data
+COPY --from=builder /app/target/release/candle_inference_full ./target/release/candle_inference_full
+COPY --from=builder /app/sre ./sre
+COPY --from=builder /app/finops ./finops
+COPY --from=builder /app/FailureSensorIQ ./FailureSensorIQ
+COPY --from=builder /app/scripts ./scripts
+COPY --from=builder /app/qmem_crystals ./qmem_crystals
+COPY --from=builder /app/industrial_topology.qmem ./industrial_topology.qmem
+
+# Install python requirements
+RUN pip3 install pandas numpy
+
+# Run the benchmark validation
+CMD ["python3", "scripts/benchmark/run_all_evaluations.py"]

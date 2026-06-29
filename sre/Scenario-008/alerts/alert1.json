@@ -1,0 +1,5 @@
+{
+  "alertname": "Deployment",
+  "service": "quote-service",
+  "status": "firing"
+}

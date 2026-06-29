@@ -1,0 +1,13 @@
+[package]
+name = "sodals_common"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+dotenvy = "0.15"
+# tokio is only required by the legacy log_manager for the `with_tui` constructor
+# we keep the sync feature so the type in the signature is available
+tokio = { version = "1.36", features = ["sync"] }
+
+[features]
+# no default features

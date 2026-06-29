@@ -1,0 +1,34 @@
+[
+  {
+    "model_name": "Vanilla Qwen-7B GGUF (Local Baseline)",
+    "mean_latency_ms": 1240.50,
+    "mean_divergence": 0.0845,
+    "pass_rate": 62.50,
+    "evaluation_date": "2026-05-15T12:00:00Z",
+    "temperature": 0.0,
+    "prompt_template": "System: You are an industrial expert... User: [SCADA Telemetry] [Adversarial Directive] [Question]",
+    "token_consumption": {
+      "avg_prompt_tokens": 1245,
+      "avg_completion_tokens": 412,
+      "total_tokens_consumed": 165700
+    },
+    "inference_hardware": "NVIDIA GeForce RTX 4090 (24GB VRAM), llamacpp-python wrapper",
+    "quantization": "Q8_0"
+  },
+  {
+    "model_name": "GPT-4o (Commercial API Baseline)",
+    "mean_latency_ms": 2380.20,
+    "mean_divergence": 0.0524,
+    "pass_rate": 88.50,
+    "evaluation_date": "2026-05-16T14:30:00Z",
+    "temperature": 0.0,
+    "prompt_template": "System: You possess doctoral-level expertise... User: [SCADA Telemetry] [Adversarial Directive] [Question]",
+    "token_consumption": {
+      "avg_prompt_tokens": 1245,
+      "avg_completion_tokens": 389,
+      "total_tokens_consumed": 163400
+    },
+    "inference_hardware": "Azure OpenAI Cloud Endpoint",
+    "quantization": "FP16 (Full Precision)"
+  }
+]

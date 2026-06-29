@@ -1,0 +1,58 @@
+# 1. Aşama: NVIDIA CUDA Geliştirme Ortamı (Base Image)
+# Ubuntu 22.04 + CUDA 12.1 + CuDNN
+FROM nvidia/cuda:12.1.0-devel-ubuntu22.04 as builder
+
+# Gerekli sistem araçlarını yükle (Python, Rust için)
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    curl \
+    build-essential \
+    pkg-config \
+    libssl-dev \
+    git \
+    python3 \
+    python3-pip \
+    python3-venv \
+    && rm -rf /var/lib/apt/lists/*
+
+# Rust'ı yükle
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+# Çalışma dizini oluştur
+WORKDIR /app
+
+# Dependency Cache Katmanı (Rust için)
+COPY Cargo.toml Cargo.lock ./
+COPY src ./src
+COPY patched-crates ./patched-crates
+
+# nvidia-smi hatasını atlatmak için mimariyi elle giriyoruz (Ampere mimarisine uygun)
+ENV CUDA_COMPUTE_CAP=86
+
+# Rust binary'sini derle
+RUN cargo build --release --bin candle_inference_full --features cuda
+
+# 2. Aşama: Python Bağımlılıkları ve Runtime
+FROM nvidia/cuda:12.1.0-runtime-ubuntu22.04
+
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    python3 \
+    python3-pip \
+    python3-venv \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Rust binary'sini builder'dan al
+COPY --from=builder /app/target/release/candle_inference_full ./target/release/candle_inference_full
+
+# Python requirements dosyasını kopyala ve kur
+COPY requirements_assetops.txt .
+RUN pip3 install --no-cache-dir -r requirements_assetops.txt
+
+# Projenin geri kalan dosyalarını kopyala
+# NOT: .dockerignore kullanarak .git, __pycache__, run_logs gibi gereksiz dizinleri hariç tutun
+COPY . .
+
+# Benchmark çalıştırma komutu
+CMD ["python3", "scripts/benchmark/run_all_evaluations.py"]

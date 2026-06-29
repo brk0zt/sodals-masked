@@ -1,0 +1,3 @@
+fault:
+  - entity:
+      name: checkout-service

@@ -1,0 +1,10 @@
+{
+  "phase1": [
+    "\"Stator izolasyonu bozulmas\u0131\" CAUSES \"K\u0131sa devre olu\u015fumu\" [0.8, 0.2];",
+    "\"K\u0131sa devre olu\u015fumu\" CAUSES \"A\u015f\u0131r\u0131 \u0131s\u0131nma\" [1.0, 0.0];",
+    "\"A\u015f\u0131r\u0131 \u0131s\u0131nma\" CAUSES \"Is\u0131 sens\u00f6rleri \u00e7al\u0131\u015f\u0131r\" [0.9, 0.1];",
+    "\"A\u015f\u0131r\u0131 \u0131s\u0131nma\" CAUSES \"Voltaj dalgalanmas\u0131\" [0.8, 0.2];"
+  ],
+  "phase2": [],
+  "processed_chunks": 1
+}

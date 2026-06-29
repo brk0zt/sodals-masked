@@ -1,0 +1,12 @@
+---
+metadata:
+  version: "v1"
+resource:
+  - resource:
+      name: g9c1yzr6KG
+      type: Instance Family
+      root_cause: true
+  - resource:
+      name: fG8wYOz6XO
+      type: Instance Family
+      root_cause: true

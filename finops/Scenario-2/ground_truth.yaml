@@ -1,0 +1,8 @@
+---
+metadata:
+  version: "v1"
+resource:
+  - resource:
+      name: VFRAe4nYaW
+      type: Instance Family
+      root_cause: true

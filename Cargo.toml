@@ -1,0 +1,94 @@
+[package]
+name = "sodals_core"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "sodals_core"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# --- Python Bağlantısı (UPDATED for Python 3.13) ---
+pyo3 = { version = "0.23.3", features = ["extension-module", "abi3-py38"] }
+
+# --- custom allocator & concurrency helpers ---
+# jemalloc moved to target-specific dependencies at the bottom
+dashmap = "5.5"              # sharded hashmap for lock fragmentation
+bumpalo = "3.9"              # arena allocator for short‑lived objects
+
+# --- Frontend / WASM ---
+wasm-bindgen = "0.2"
+console_error_panic_hook = "0.1.7"
+dotenvy = "0.15"
+
+# --- Kriptografi (Lib için) ---
+sha2 = "0.10"
+hkdf = "0.12"
+chacha20poly1305 = "0.10"
+rand = "0.8.5"
+rand_chacha = "0.3"
+getrandom = { version = "0.2", features = ["js"] }
+candle-core = { version = "0.8.2" }
+candle-nn = { version = "0.8.2" }
+candle-transformers = { version = "0.8.2" }
+tokenizers = "0.21.0"
+# --- IoT Client Dependencies ---
+tokio = { version = "1.0", features = ["full"] }
+tokio-tungstenite = { version = "0.21", features = ["native-tls"] }
+futures-util = "0.3"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+url = "2.5"
+anyhow = "1.0"
+sodals_net = { path = "src/crates/sodals_net" }
+sodals_neuro = { path = "src/crates/sodals_neuro" }
+sodals_common = { path = "src/crates/sodals_common" }
+sodals_mcp = { path = "src/crates/sodals_mcp" }
+sodals_kernel = { path = "src/crates/sodals_kernel" }
+cudarc = { version = "0.10", features = ["driver", "f16"] }
+clap = { version = "4.5", features = ["derive"] }
+tracing = "0.1.44"
+tracing-subscriber = "0.3.23"
+
+
+[dev-dependencies]
+criterion = "0.5"
+num-complex = "0.4"
+
+[[bench]]
+name = "ag_simulation"
+harness = false
+
+[[bench]]
+name = "simulation_bench"
+harness = false
+
+[workspace]
+members = [
+    ".",                        # Ana proje (sodals_core)
+    "src/crates/sodals_neuro",  # Beyin
+    "src/crates/sodals_kernel", # Çekirdek
+    "src/crates/sodals_net",    # Ağ (Eğer varsa)
+    "src/crates/sodals_crypto", # Kripto (Eğer varsa)
+    "src/crates/sodals_common", # Paylaşılan tipler ve yardımcılar
+    "src/crates/sodals_mcp",   # MCP Server/Client
+    "src/crates/sodals_industrial", # Endüstriyel RT/OPC UA/ZeroMQ/Sentinel
+]
+
+
+[features]
+default = []
+# KRİTİK EKLEME: Ana pakette 'cuda' çağrılınca, git sodals_neuro'daki 'cuda'yı aç.
+cuda = ["sodals_neuro/cuda"]
+
+[target.'cfg(not(target_os = "windows"))'.dependencies]
+jemallocator = "0.5.0"          # global allocator implementation
+jemalloc-ctl = "0.5.0"          # runtime statistics for limit monitoring
+
+[patch.crates-io]
+candle-kernels = { path = "patched-crates/candle-kernels" }
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+opt-level = 3

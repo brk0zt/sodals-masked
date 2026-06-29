@@ -1,0 +1,20 @@
+[
+    {
+        "model_name": "Vanilla Qwen-7B GGUF (Local Baseline)",
+        "mean_latency_ms": 1360.0,
+        "mean_divergence": 0.2383,
+        "pass_rate": 62.0
+    },
+    {
+        "model_name": "GPT-4o (Commercial API Baseline)",
+        "mean_latency_ms": 2487.7,
+        "mean_divergence": 0.211,
+        "pass_rate": 84.0
+    },
+    {
+        "model_name": "Mistral 7B Instruct v0.2",
+        "mean_latency_ms": 1363.7,
+        "mean_divergence": 0.2407,
+        "pass_rate": 57.0
+    }
+]

@@ -1,0 +1,5 @@
+{
+  "alertname": "Code",
+  "service": "recommendation-service",
+  "status": "firing"
+}

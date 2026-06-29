@@ -1,0 +1,5 @@
+{
+  "alertname": "Deployment",
+  "service": "kafka-service",
+  "status": "firing"
+}

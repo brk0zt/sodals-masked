@@ -1,0 +1,8 @@
+---
+metadata:
+  version: "v1"
+resource:
+  - resource:
+      name: w4ugknieye
+      type: Instance Family
+      root_cause: true

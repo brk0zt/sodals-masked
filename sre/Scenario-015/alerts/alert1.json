@@ -1,0 +1,5 @@
+{
+  "alertname": "Deployment",
+  "service": "valkey-cart",
+  "status": "firing"
+}

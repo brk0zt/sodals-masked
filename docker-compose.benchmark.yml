@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  sodals_benchmark:
+    build:
+      context: .
+      dockerfile: Dockerfile.benchmark
+    image: sodals-benchmark:latest
+    container_name: sodals_eval_runner
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    volumes:
+      # Modellerin ve dataset'in kopyalanması uzun sürebileceğinden volume olarak bağlıyoruz.
+      - ./models:/app/models
+      # Sonuçların anlık olarak ana makineye yazılması için output ve run_logs klasörlerini bağlıyoruz.
+      - ./scripts/benchmark/run_logs:/app/scripts/benchmark/run_logs
+      - ./scripts/benchmark/all_scenarios_output.txt:/app/scripts/benchmark/all_scenarios_output.txt
+      - ./scripts/benchmark/OFFICIAL_EVALUATION_REPORT.txt:/app/scripts/benchmark/OFFICIAL_EVALUATION_REPORT.txt
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NO_CARTRIDGE=1 # Eğer cartridge bellek kullanımını test etmek istemiyorsanız aktif edebilirsiniz

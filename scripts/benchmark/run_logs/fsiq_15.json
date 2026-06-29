@@ -1,0 +1,38 @@
+[
+  {
+    "task_id": "fsiq_15",
+    "timestamp": "2026-06-22T23:16:12.194956",
+    "input_prompt": "### Instructions:\nYou are an expert industrial systems diagnostic engine. Answer the following technical multiple-choice question regarding failure modes and sensors.\nSelect EXACTLY one option from the list below. Provide your final choice as 'Answer: [LETTER]'.\n\n### Question:\nWhen a electric motor has eccentric rotor fault, which sensor out of the choices should be the sensor to be monitored for this failure if I want to build an anomaly detection model?\n\n### Options:\nA. coast down time\nB. power\nC. axial flux\nD. oil debris\nE. temperature\n\n### Final Answer:\nAnswer:",
+    "model_info": {
+      "model_path": "C:\\Users\\Burak\\Desktop\\sodals_core\\models\\model.gguf",
+      "seed": 42,
+      "model_version": "candle_v1.0",
+      "max_new_tokens": 2048,
+      "reproducibility_config": {
+        "seed": 42,
+        "temperature": 0.0,
+        "top_p": 1.0,
+        "do_sample": false
+      }
+    },
+    "seed": 42,
+    "model_version": "candle_v1.0",
+    "decoding_config": {
+      "temperature": 0.0,
+      "top_p": 1.0,
+      "do_sample": false,
+      "max_new_tokens": 2048
+    }
+  },
+  {
+    "raw_output": " c\n\n\n\n\n\n",
+    "parsed_answer": "C",
+    "token_count": 1,
+    "inference_time": 9.060882568359375
+  },
+  {
+    "completed_at": "2026-06-22T23:16:21.256841",
+    "total_time": 9.061884641647339,
+    "final_score": null
+  }
+]

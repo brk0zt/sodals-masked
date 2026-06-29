@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SODALS — Full System Architecture</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600&family=Instrument+Sans:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg:      #07090d;
+  --layer:   #0d1017;
+  --panel:   #111620;
+  --border:  #1c2333;
+  --accent:  #3ecfff;
+  --green:   #2deba8;
+  --gold:    #f0b429;
+  --red:     #ff5a6e;
+  --purple:  #9d7bff;
+  --muted:   #3d4f6a;
+  --dim:     #5a6e8a;
+  --text:    #b8c8dc;
+  --bright:  #e8f0fc;
+  --mono:    'Fira Code', monospace;
+  --sans:    'Instrument Sans', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  font-family: var(--sans);
+  color: var(--text);
+  padding: 48px 40px 80px;
+  min-width: 900px;
+}
+
+/* ── TOP ── */
+.top-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--bright);
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+}
+.tagline {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--dim);
+  margin-bottom: 48px;
+}
+
+/* ── LAYER SYSTEM ── */
+.layers {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  position: relative;
+}
+
+/* vertical connector line */
+.layers::before {
+  content: '';
+  position: absolute;
+  left: 200px;
+  top: 0; bottom: 0;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, var(--border) 5%, var(--border) 95%, transparent);
+  z-index: 0;
+}
+
+.layer-row {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  min-height: 0;
+  position: relative;
+  z-index: 1;
+}
+
+/* dot on the line */
+.layer-row::before {
+  content: '';
+  position: absolute;
+  left: 196px;
+  top: 28px;
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  border: 1.5px solid var(--muted);
+  background: var(--bg);
+  z-index: 2;
+}
+
+.layer-meta {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-end;
+  padding: 22px 22px 22px 0;
+  gap: 4px;
+}
+.layer-num {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.layer-name {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  text-align: right;
+  line-height: 1.4;
+}
+.layer-body {
+  padding: 20px 0 28px 32px;
+  border-left: 1px solid transparent; /* overridden by ::before on parent */
+}
+
+/* color variants */
+.L0 .layer-name { color: var(--gold); }
+.L0::before { border-color: var(--gold); }
+.L1 .layer-name { color: var(--green); }
+.L1::before { border-color: var(--green); }
+.L2 .layer-name { color: var(--accent); }
+.L2::before { border-color: var(--accent); }
+.L3 .layer-name { color: var(--purple); }
+.L3::before { border-color: var(--purple); }
+.L4 .layer-name { color: var(--red); }
+.L4::before { border-color: var(--red); }
+
+/* ── SPACER ROW ── */
+.spacer {
+  height: 10px;
+  grid-column: 1/-1;
+}
+
+/* ── CARD GRID ── */
+.cg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-start;
+}
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 12px 16px;
+}
+.card .ctag {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 5px;
+}
+.card .ctitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--bright);
+  margin-bottom: 4px;
+}
+.card .csub {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--dim);
+  line-height: 1.6;
+}
+.card.g { border-color: #2deba822; }
+.card.a { border-color: #3ecfff22; }
+.card.p { border-color: #9d7bff22; }
+.card.r { border-color: #ff5a6e22; }
+.card.o { border-color: #f0b42922; }
+
+/* ── FORMULA BLOCK ── */
+.fblock {
+  background: #0a0d15;
+  border: 1px solid #9d7bff22;
+  border-radius: 6px;
+  padding: 14px 18px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--purple);
+  line-height: 2;
+  display: inline-block;
+  margin: 8px 0;
+}
+.fblock .label {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+  display: block;
+}
+.fblock .hi   { color: var(--accent); }
+.fblock .hi2  { color: var(--green); }
+.fblock .hi3  { color: var(--gold); }
+.fblock .dim  { color: #2a3550; }
+.fblock .txt  { color: var(--dim); font-size: 11px; }
+
+/* ── DIFF TABLE ── */
+.dtable {
+  font-family: var(--mono);
+  font-size: 11px;
+  border-collapse: collapse;
+  margin: 10px 0;
+}
+.dtable th {
+  background: #0f1420;
+  color: var(--muted);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  text-align: left;
+}
+.dtable td {
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+}
+.dtable tr.active td { background: #0d1a16; }
+.dtable .nd { color: var(--green); font-weight: 600; }
+.dtable .w  { color: var(--gold); }
+.dtable .sys { color: var(--accent); }
+
+/* ── FLOW STRIP ── */
+.flow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 10px 0;
+}
+.fnode {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 7px 12px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--bright);
+  white-space: nowrap;
+}
+.fnode.active { border-color: var(--green); color: var(--green); background: #091410; }
+.fnode.target { border-color: var(--accent); color: var(--accent); background: #091318; }
+.farr {
+  color: var(--muted);
+  font-size: 13px;
+}
+.flabel {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted);
+  display: block;
+  margin-top: 2px;
+  text-align: center;
+}
+
+/* ── NOTE ── */
+.note {
+  display: flex;
+  gap: 10px;
+  background: #0f1420;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-top: 10px;
+  max-width: 640px;
+}
+.note .ico { color: var(--gold); flex-shrink: 0; font-size: 13px; margin-top: 1px; }
+.note .ntxt {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--dim);
+  line-height: 1.65;
+}
+.note .ntxt strong { color: var(--text); }
+
+/* ── RESULT ── */
+.result {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  background: #091812;
+  border: 1px solid #2deba833;
+  border-radius: 8px;
+  padding: 14px 22px;
+  margin-top: 14px;
+}
+.result .icon { color: var(--green); font-size: 20px; }
+.result .rlabel { font-family: var(--mono); font-size: 9px; color: var(--dim); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 4px; }
+.result .rtext { font-size: 18px; font-weight: 700; color: var(--bright); }
+.result .rtext span { color: var(--green); }
+
+/* ── CALIBRATION PANEL ── */
+.calib {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 20px;
+  max-width: 580px;
+}
+.calib .ctitle { font-size: 13px; font-weight: 600; color: var(--bright); margin-bottom: 10px; }
+.calib-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.calib-step {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  gap: 10px;
+  align-items: flex-start;
+}
+.step-n {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  border: 1px solid var(--muted);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.step-txt {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--dim);
+  line-height: 1.6;
+}
+.step-txt strong { color: var(--text); }
+
+/* ── LSQ SECTION ── */
+.lsq-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 10px;
+  max-width: 780px;
+}
+.lsq-col { }
+.lsq-col .col-title {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+/* ── DIVIDER ── */
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 40px 0;
+}
+
+/* ── SYSTEM MAP (bottom) ── */
+.sysmap {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 2px;
+  margin-top: 16px;
+}
+.sm-cell {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  padding: 12px 14px;
+  position: relative;
+}
+.sm-cell:first-child { border-radius: 6px 0 0 6px; }
+.sm-cell:last-child  { border-radius: 0 6px 6px 0; }
+.sm-cell .sm-n {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.sm-cell .sm-t {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bright);
+  margin-bottom: 4px;
+}
+.sm-cell .sm-d {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--dim);
+  line-height: 1.5;
+}
+.sm-cell .sm-bar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+}
+</style>
+</head>
+<body>
+
+<div class="top-label">SODALS BCI — Full Pipeline Overview</div>
+<h1>Subvocal Decode: Kuşbakışı Sistem Mimarisi</h1>
+<div class="tagline">Calibrated sEMG · EBNF Weighted Automata · Newton Difference Analogy · LSQ-Guided LLM Constrained Generation</div>
+
+<div class="layers">
+
+  <!-- ══════════════════════════════════════════
+       LAYER 0 — PER-USER CALIBRATION
+  ══════════════════════════════════════════ -->
+  <div class="layer-row L0">
+    <div class="layer-meta">
+      <span class="layer-num">Layer 0</span>
+      <span class="layer-name">Kullanıcı<br>Kalibrasyonu</span>
+    </div>
+    <div class="layer-body">
+      <div class="calib">
+        <div class="ctitle">Kişiselleştirilmiş sEMG Token Haritası</div>
+        <div class="calib-steps">
+          <div class="calib-step">
+            <div class="step-n">1</div>
+            <div class="step-txt">Kullanıcı <strong>her hece için 5–10 örnek</strong> subvocal sinyal üretir<br>("a", "yak", "ka", "bı", "yı"…)</div>
+          </div>
+          <div class="calib-step">
+            <div class="step-n">2</div>
+            <div class="step-txt"><strong>DTW (Dynamic Time Warping)</strong> ile kişiye özel kas aktivasyon şablonları çıkarılır<br>→ her hece bir <strong>token ID</strong> alır</div>
+          </div>
+          <div class="calib-step">
+            <div class="step-n">3</div>
+            <div class="step-txt">Token ID'ler kullanıcı profilinde kalıcı saklanır.<br>Sistem genelleşebilirliği: <strong>kişi içi</strong> — kişiler arası değil.<br>Bu bir sınırlama değil, bilinçli bir tasarım kararı.</div>
+          </div>
+        </div>
+      </div>
+      <div class="note" style="margin-top:12px;">
+        <span class="ico">◆</span>
+        <span class="ntxt">Bu katman sistemin en kritik önkoşulu. Kalibrasyon kalitesi bütün sonraki katmanların tavanını belirliyor. Kötü kalibrasyon → gürültülü token zinciri → zayıf otomata → LLM'e yanlış kısıt.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       LAYER 1 — EEG GRAMMAR PARSE
+  ══════════════════════════════════════════ -->
+  <div class="layer-row L1">
+    <div class="layer-meta">
+      <span class="layer-num">Layer 1</span>
+      <span class="layer-name">EEG →<br>EBNF Parse<br>Ağacı</span>
+    </div>
+    <div class="layer-body">
+      <p style="font-family:var(--mono);font-size:11px;color:var(--dim);margin-bottom:14px;">
+        EEG semantik rolleri EBNF grameri üzerinden bir parse ağacı oluşturuyor.<br>
+        Bilinmeyen nesne <code style="color:var(--gold);">f(x)</code> olarak işaretleniyor — pozisyonu ve rolü belli, değeri değil.
+      </p>
+      <div class="cg">
+        <div class="card g">
+          <div class="ctag">EEG Output</div>
+          <div class="ctitle">Semantic Roller</div>
+          <div class="csub">
+            &lt;subject&gt; → Ali<br>
+            &lt;object&gt;  → f(x) ← ?<br>
+            &lt;verb&gt;    → iade etti
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;color:var(--muted);font-size:18px;">→</div>
+        <div class="card g">
+          <div class="ctag">EBNF Tree</div>
+          <div class="ctitle">Parse Çıktısı</div>
+          <div class="csub">
+            &lt;stmts&gt;<br>
+            └ &lt;stmt&gt; + &lt;stmt&gt;<br>
+            &nbsp;&nbsp;├ &lt;subject&gt; Ali<br>
+            &nbsp;&nbsp;├ &lt;object&gt; <span style="color:var(--gold)">f(x)</span><br>
+            &nbsp;&nbsp;└ &lt;verb&gt; iade etti
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;color:var(--muted);font-size:18px;">→</div>
+        <div class="card g">
+          <div class="ctag">Constraint Extraction</div>
+          <div class="ctitle">Dilbilgisi Kısıtı</div>
+          <div class="csub">
+            Belirli nesne zorunlu<br>
+            → Türkçe: belirtme eki<br>
+            → "-yı / -yi / -ı / -i"<br>
+            Hece sayısı: EEG'den ~4
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       LAYER 2 — sEMG WEIGHTED AUTOMATA
+               Newton Difference Analogy
+  ══════════════════════════════════════════ -->
+  <div class="layer-row L2">
+    <div class="layer-meta">
+      <span class="layer-num">Layer 2</span>
+      <span class="layer-name">sEMG →<br>Ağırlıklı<br>Otomata<br>+ Newton<br>Fark Analoji</span>
+    </div>
+    <div class="layer-body">
+      <p style="font-family:var(--mono);font-size:11px;color:var(--dim);margin-bottom:14px;">
+        Kalibrasyon token'ları ağırlıklı geçişler oluşturuyor. Newton ileri fark tablosuyla yapısal benzerlik var:
+        her düzey, bir öncekinin diferansiyelidir.
+      </p>
+
+      <!-- Newton diff analogy -->
+      <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;margin-bottom:16px;">
+        <div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px;">Newton İleri Fark Tablosu</div>
+          <table class="dtable">
+            <thead>
+              <tr><th>f[xᵢ]</th><th>Δ¹f</th><th>Δ²f</th><th>Δ³f</th></tr>
+            </thead>
+            <tbody>
+              <tr class="active"><td class="nd">f[x₀]=a</td><td class="nd">Δ¹₀</td><td class="nd">Δ²₀</td><td class="nd">Δ³₀</td></tr>
+              <tr><td class="nd">f[x₁]=yak</td><td class="w">Δ¹₁</td><td class="w">Δ²₁</td><td class="dim" style="color:var(--muted)">—</td></tr>
+              <tr><td class="nd">f[x₂]=ka</td><td class="w">Δ¹₂</td><td class="dim" style="color:var(--muted)">—</td><td class="dim" style="color:var(--muted)">—</td></tr>
+              <tr><td class="nd">f[x₃]=bı</td><td class="dim" style="color:var(--muted)">—</td><td class="dim" style="color:var(--muted)">—</td><td class="dim" style="color:var(--muted)">—</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="display:flex;align-items:center;font-family:var(--mono);font-size:18px;color:var(--muted);padding-top:30px;">↔</div>
+        <div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px;">Sistemdeki Karşılık</div>
+          <table class="dtable">
+            <thead>
+              <tr><th>Hece Düğümü</th><th>1. Fark ≈</th><th>2. Fark ≈</th></tr>
+            </thead>
+            <tbody>
+              <tr class="active"><td class="sys">1241:a</td><td class="w">w₁ geçiş ağırlığı</td><td class="w">Δw₁₂</td></tr>
+              <tr><td class="sys">1806:ggk</td><td class="w">w₂</td><td class="w">Δw₂₃</td></tr>
+              <tr><td class="sys">1809:ka</td><td class="w">w₃</td><td class="dim" style="color:var(--muted)">—</td></tr>
+              <tr><td class="sys">1341:bı</td><td class="dim" style="color:var(--muted)">—</td><td class="dim" style="color:var(--muted)">—</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="note">
+        <span class="ico">◈</span>
+        <span class="ntxt">
+          <strong>Dikkat:</strong> Bu bir analoji, özdeşlik değil. Newton fark tablosu skalar f(x) interpolasyonu yapar.
+          Sistemdeki ağırlıklar ise <strong>sEMG sinyal eşik geçiş olasılıklarıdır</strong> — polinomsal değil, olasılıksal.
+          Analojinin değeri: her "düzey farkı" bir önceki katmanın artık hatasını düzeltiyor, tıpkı Δ²f'nin Δ¹f'i düzeltmesi gibi.
+        </span>
+      </div>
+
+      <div class="fblock" style="margin-top:14px;">
+        <span class="label">Otomata Geçiş Kuralı</span>
+        δ(q, σ) = <span class="hi">argmax</span><sub>i</sub> [ <span class="hi2">w_sEMG</span>(σ, hece_i) · <span class="hi3">w_EEG</span>(role_i) ]<br>
+        <span class="txt">// en yüksek birleşik ağırlıklı geçiş seçilir</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       LAYER 3 — LSQ TRANSPOSE
+  ══════════════════════════════════════════ -->
+  <div class="layer-row L3">
+    <div class="layer-meta">
+      <span class="layer-num">Layer 3</span>
+      <span class="layer-name">LSQ<br>Transpoz<br>Ağırlık<br>Güncellemesi</span>
+    </div>
+    <div class="layer-body">
+      <p style="font-family:var(--mono);font-size:11px;color:var(--dim);margin-bottom:14px;">
+        Otomata ağırlıkları statik değil — her kullanımdan gelen doğrulama sinyaliyle güncelleniyor.
+        Bu güncelleme LSQ normal denklemi yapısını takip ediyor.
+      </p>
+
+      <div class="lsq-cols">
+        <div class="lsq-col">
+          <div class="col-title">LSQ Normal Denklemi</div>
+          <div class="fblock" style="font-size:13px;line-height:2.2;">
+            <span class="label">Klasik En Küçük Kareler</span>
+            min ‖<span class="hi">A</span>w − <span class="hi2">b</span>‖²<br>
+            → <span class="hi">Aᵀ</span><span class="hi">A</span> w = <span class="hi">Aᵀ</span><span class="hi2">b</span><br>
+            → w* = (<span class="hi">Aᵀ</span><span class="hi">A</span>)⁻¹ <span class="hi">Aᵀ</span><span class="hi2">b</span>
+          </div>
+        </div>
+        <div class="lsq-col">
+          <div class="col-title">Sistemdeki Karşılık</div>
+          <div class="fblock" style="font-size:13px;line-height:2.2;">
+            <span class="label">SODALS Ağırlık Güncellemesi</span>
+            <span class="hi">A</span> = hece aktivasyon matrisi<br>
+            <span class="hi2">b</span> = doğrulanan çıktı vektörü<br>
+            w* = minimum residual ağırlık
+          </div>
+        </div>
+      </div>
+
+      <div class="note" style="max-width:780px;margin-top:14px;">
+        <span class="ico">◆</span>
+        <span class="ntxt">
+          <strong>Neden Aᵀ önemli?</strong> — Transpoz işlemi, aktivasyon matrisindeki
+          "hangi hece hangi bağlamda ne kadar güçlü tetiklendi" bilgisini
+          çözüme geri yansıtır. Sistemdeki rolü: kullanıcının belirli bir bağlamda
+          yaptığı hataları (yanlış ağırlık geçişi) minimal artık hatayla düzeltecek
+          optimal ağırlık setini bulmak. <strong>Attention mekanizmasındaki QKᵀ ile yapısal benzerlik var</strong>
+          — ama bu bir özdeşlik değil: LSQ deterministik minimum bulurken,
+          attention softmax ile stokastik ağırlıklandırma yapıyor.
+        </span>
+      </div>
+
+      <div class="fblock" style="margin-top:14px;font-size:12px;line-height:2;">
+        <span class="label">Ağırlık Güncelleme Döngüsü</span>
+        w_new = w_old + η · <span class="hi">Aᵀ</span>(b − <span class="hi">A</span>·w_old)<br>
+        <span class="txt">// gradient descent ile LSQ çözümüne yakınsama</span><br>
+        <span class="txt">// her doğrulanan decode → A ve b güncellenir</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       LAYER 4 — LLM CONSTRAINED GENERATION
+  ══════════════════════════════════════════ -->
+  <div class="layer-row L4">
+    <div class="layer-meta">
+      <span class="layer-num">Layer 4</span>
+      <span class="layer-name">LLM<br>Kısıtlı<br>Üretim +<br>Semantic<br>Doğrulama</span>
+    </div>
+    <div class="layer-body">
+      <p style="font-family:var(--mono);font-size:11px;color:var(--dim);margin-bottom:14px;">
+        Otomata çıktısı LLM logit katmanında hard constraint olarak uygulanır.
+        Model, dil kurallarına sadık kalarak eğitim setinde olmayan kelimeyi üretir.
+      </p>
+
+      <div class="flow">
+        <div>
+          <div class="fnode">Otomata çıktısı<br><span style="font-size:9px;color:var(--muted);">token zinciri + ağırlıklar</span></div>
+        </div>
+        <span class="farr">→</span>
+        <div>
+          <div class="fnode">BCI Logits Processor<br><span style="font-size:9px;color:var(--muted);">fonetik boost + grammar mask</span></div>
+        </div>
+        <span class="farr">→</span>
+        <div>
+          <div class="fnode active">LLM Qwen 3.5 8B<br><span style="font-size:9px;">constrained decode</span></div>
+        </div>
+        <span class="farr">→</span>
+        <div>
+          <div class="fnode">Ouroboros Loop<br><span style="font-size:9px;color:var(--muted);">sim → critique → refine</span></div>
+        </div>
+        <span class="farr">→</span>
+        <div>
+          <div class="fnode target">God's Gate<br><span style="font-size:9px;">Picard / LU doğrulama</span></div>
+        </div>
+      </div>
+
+      <div style="background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--red);border-radius:6px;padding:14px 18px;max-width:600px;margin-top:12px;">
+        <div style="font-family:var(--mono);font-size:9px;color:var(--red);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:8px;">LLM Internal Reasoning</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.8;">
+          Parse ağacı: <span style="color:var(--bright);font-weight:600;">&lt;object&gt;</span> boş, EEG "giyilen nesne" sinyali veriyor.<br>
+          Fonetik zincir: <span style="font-family:var(--mono);color:var(--accent);">1241→1806→1809→1341</span> → 4 hece, "ayak" kökü içeriyor.<br>
+          Dil kısıtı: belirli nesne → <span style="color:var(--bright);font-weight:600;">"-yı"</span> eki zorunlu.<br>
+          <span style="color:var(--dim);">Sonuç:</span> eğitim setinde olmasa da → <span style="font-family:var(--mono);color:var(--green);font-weight:600;">"ayakkabıyı"</span>
+        </div>
+      </div>
+
+      <div class="result">
+        <span class="icon">✓</span>
+        <div>
+          <div class="rlabel">Final Decode</div>
+          <div class="rtext">Ali <span>ayakkabıyı</span> iade etti.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════
+     BOTTOM — SYSTEM SUMMARY MAP
+══════════════════════════════════════════ -->
+<div class="divider"></div>
+
+<div style="font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.15em;margin-bottom:12px;">Sistemin Matematiksel Temelleri — Özet</div>
+
+<div class="sysmap">
+  <div class="sm-cell">
+    <div class="sm-bar" style="background:var(--gold);"></div>
+    <div class="sm-n">Katman 0</div>
+    <div class="sm-t">Kalibrasyon</div>
+    <div class="sm-d">DTW ile kişisel<br>hece → token ID<br>eşlemesi</div>
+  </div>
+  <div class="sm-cell">
+    <div class="sm-bar" style="background:var(--green);"></div>
+    <div class="sm-n">Katman 1</div>
+    <div class="sm-t">EBNF Parse</div>
+    <div class="sm-d">EEG semantik<br>roller → gramer<br>kısıtları</div>
+  </div>
+  <div class="sm-cell">
+    <div class="sm-bar" style="background:var(--accent);"></div>
+    <div class="sm-n">Katman 2</div>
+    <div class="sm-t">Newton Analoji</div>
+    <div class="sm-d">Ağırlıklı otomata<br>geçişleri ≈ ileri<br>fark düzeyleri</div>
+  </div>
+  <div class="sm-cell">
+    <div class="sm-bar" style="background:var(--purple);"></div>
+    <div class="sm-n">Katman 3</div>
+    <div class="sm-t">LSQ Aᵀ</div>
+    <div class="sm-d">w* = (AᵀA)⁻¹Aᵀb<br>artık hata ile<br>ağırlık güncelleme</div>
+  </div>
+  <div class="sm-cell">
+    <div class="sm-bar" style="background:var(--red);"></div>
+    <div class="sm-n">Katman 4</div>
+    <div class="sm-t">LLM + Interpolasyon</div>
+    <div class="sm-d">Constrained decode<br>→ eğitim setinde<br>olmayan kelime</div>
+  </div>
+</div>
+
+<div style="margin-top:32px; display:flex; gap:24px; flex-wrap:wrap;">
+  <div class="fblock" style="font-size:11px;line-height:1.9;">
+    <span class="label">Sistemin Tam Hedef Fonksiyonu</span>
+    ŷ = <span class="hi">LLM</span>( <span class="hi2">constrain</span>( logits, δ*(q, σ) ) )<br>
+    δ*(q, σ) = <span class="hi">argmax</span> [ <span class="hi2">w_sEMG</span> · <span class="hi3">w_EEG</span> ]<br>
+    w* güncelleme: <span class="hi">Aᵀ</span>(b − Aw) → sıfır artık hataya yakınsama
+  </div>
+  <div style="font-family:var(--mono);font-size:10px;color:var(--muted);max-width:300px;line-height:1.7;padding-top:8px;">
+    <span style="color:var(--dim);">Not:</span> Newton fark tablosu ve LSQ transpoz<br>
+    <span style="color:var(--text);">yapısal analojiler</span> — matematiksel özdeşlikler değil.<br>
+    Sistemin gücü bu analoglardan değil,<br>
+    <span style="color:var(--text);">constrained decoding + kişisel kalibrasyon</span><br>
+    kombinasyonundan geliyor.
+  </div>
+</div>
+
+</body>
+</html>
