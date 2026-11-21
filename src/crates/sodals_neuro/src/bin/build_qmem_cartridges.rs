@@ -25,6 +25,9 @@ fn main() {
     println!("╠══════════════════════════════════════════════════════════╣");
     println!("║  Töz Bilgi    → primordial_cognition.qmem                ║");
     println!("║  Domain       → industrial_topology.qmem                 ║");
+    println!("║  Math (D1)    → mathematics_analysis_topology.qmem       ║");
+    println!("║  Algebra (D2) → abstract_algebra.qmem                    ║");
+    println!("║  ArXiv        → arxiv_physics.qmem                       ║");
     println!("║  Birleşik     → sodals_core_merged.qmem                  ║");
     println!("╚══════════════════════════════════════════════════════════╝");
     println!("Çıktı dizini: {}", output_dir);

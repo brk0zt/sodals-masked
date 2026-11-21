@@ -298,6 +298,7 @@ impl CortexActor {
                             callback,
                             &NeuroConfig::default(),
                             0,  // PHASE 49.6: No visual tokens for text-only generation
+                            0,  // max_tokens (default 0)
                         )
                     }),
                 )

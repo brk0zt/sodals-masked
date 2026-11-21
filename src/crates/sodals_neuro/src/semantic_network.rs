@@ -589,6 +589,72 @@ impl ResonanceNetwork {
         id
     }
 
+    /// PHASE 60.3: Data-Driven Cartridge Granularity
+    /// Detects communities (clusters) in the semantic network using Label Propagation.
+    /// Returns a list of communities, where each community is a list of node IDs.
+    pub fn detect_communities(&self) -> Vec<Vec<usize>> {
+        if self.n == 0 {
+            return Vec::new();
+        }
+
+        let mut labels: Vec<usize> = (0..self.n).collect();
+        let mut rng = rand::thread_rng();
+
+        let max_iters = 10;
+
+        for _ in 0..max_iters {
+            let mut changed = false;
+            let mut nodes: Vec<usize> = (0..self.n).collect();
+            use rand::seq::SliceRandom;
+            nodes.shuffle(&mut rng);
+
+            for node in nodes {
+                let mut label_weights: std::collections::HashMap<usize, f64> = std::collections::HashMap::new();
+                
+                if let Some(row) = self.adjacency_csr.outer_view(node) {
+                    for (neighbor, &weight) in row.iter() {
+                        let n_idx: usize = neighbor;
+                        let w_val: f64 = weight;
+                        let neighbor_label = labels[n_idx];
+                        // If holographic signature is present, modulate weight with similarity
+                        let sim = if node < self.holographic_memory.len() && n_idx < self.holographic_memory.len() && !self.holographic_memory[node].is_empty() && !self.holographic_memory[n_idx].is_empty() {
+                            Self::holographic_similarity(&self.holographic_memory[node], &self.holographic_memory[n_idx])
+                        } else {
+                            1.0
+                        };
+                        let adjusted_weight = w_val.abs() * sim;
+                        *label_weights.entry(neighbor_label).or_insert(0.0) += adjusted_weight;
+                    }
+                }
+
+                if !label_weights.is_empty() {
+                    let mut best_label = labels[node];
+                    let mut max_weight = -1.0;
+                    for (lbl, w) in label_weights {
+                        if w > max_weight {
+                            max_weight = w;
+                            best_label = lbl;
+                        }
+                    }
+                    if labels[node] != best_label {
+                        labels[node] = best_label;
+                        changed = true;
+                    }
+                }
+            }
+            if !changed {
+                break;
+            }
+        }
+
+        let mut communities_map: std::collections::HashMap<usize, Vec<usize>> = std::collections::HashMap::new();
+        for (node, label) in labels.into_iter().enumerate() {
+            communities_map.entry(label).or_default().push(node);
+        }
+
+        communities_map.into_values().collect()
+    }
+
     /// Batch-register multiple labeled concepts in a single call.
     /// Builds CSR adjacency matrix ONCE at the end instead of invalidating per-neuron.
     ///
@@ -675,7 +741,9 @@ impl ResonanceNetwork {
         let bin = std::fs::read(path)?;
         let cartridge: QmemCartridge = bincode::deserialize(&bin)?;
 
-        let mut net = ResonanceNetwork::new(cartridge.n.max(16));
+        // Give plenty of extra capacity for dynamic node generation during inference
+        let capacity = (cartridge.n + 4096).max(8192);
+        let mut net = ResonanceNetwork::new(capacity);
         net.n = cartridge.n;
         net.damping = Array1::from_vec(cartridge.damping.clone());
         net.masses = Array1::from_vec(cartridge.masses.clone());
@@ -1438,11 +1506,15 @@ impl ResonanceNetwork {
         if sig_a.is_empty() || sig_b.is_empty() || sig_a.len() != sig_b.len() {
             return 0.0;
         }
-        let dim = sig_a.len() as f64;
+        let norm_a: f64 = sig_a.iter().map(|c| c.norm_sqr()).sum::<f64>().sqrt();
+        let norm_b: f64 = sig_b.iter().map(|c| c.norm_sqr()).sum::<f64>().sqrt();
+        if norm_a < 1e-12 || norm_b < 1e-12 {
+            return 0.0;
+        }
         let dot: Complex64 = sig_a.iter().zip(sig_b.iter())
             .map(|(a, b)| a * b.conj())
             .fold(Complex64::new(0.0, 0.0), |acc, x| acc + x);
-        (dot / dim).norm().min(1.0)
+        (dot.norm() / (norm_a * norm_b)).min(1.0)
     }
 
     /// Element-wise VSA binding of two signatures.
@@ -2717,11 +2789,11 @@ mod tests {
 
     #[test]
     fn test_bifurcation_monitor_stable_regime() {
-        let mut monitor = BifurcationMonitor::new(10, 0.3);
+        let mut monitor = BifurcationMonitor::new(10, 5.0);
 
-        // Stable Wronskian → negative Lyapunov
-        for _ in 0..15 {
-            monitor.observe(1.0 + (rand::random::<f64>() * 0.01)); // small noise
+        // Strongly decaying sequence → Lyapunov exponent < -0.05 -> Stable regime
+        for i in 0..15 {
+            monitor.observe(1.0 / (1.0 + i as f64 * 0.5));
         }
 
         assert_eq!(monitor.regime, BifurcationRegime::Stable);

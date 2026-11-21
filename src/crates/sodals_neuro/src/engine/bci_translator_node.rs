@@ -115,7 +115,7 @@ impl BciTranslator {
         // Tier-1 is a PURE phonetic sub-word synthesizer.
         // Semantic domain intelligence is injected at Tier-2 (QYPTOS) level,
         // not here. Hard vocabulary masking destroys the phonetic engine.
-        bci_proc.semantic_masking_enabled = false;
+        bci_proc.semantic_masking_enabled = true;
         // Initialize Tier-1 phonetic quarantine: only 1-4 char ASCII alphabetic tokens allowed.
         bci_proc.initialize_phonetic_quarantine(&engine.tokenizer)?;
         bci_proc.set_semg_latent(adapted_latent);
@@ -137,7 +137,7 @@ impl BciTranslator {
             
             let logits = {
                 let model_guard = engine.model.read().unwrap();
-                model_guard.forward(&input_ids, seq_len, None, None, None, None, None, None, None)?
+                model_guard.forward(&input_ids, seq_len, None, None, None, None, None, None, None, None, None)?
             };
             
             // Extract last token logits

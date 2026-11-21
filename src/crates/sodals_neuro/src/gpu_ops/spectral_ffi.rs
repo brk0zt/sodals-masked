@@ -42,6 +42,8 @@ pub fn apply_fused_resonance_gemm(
     num_layers: i32,
     n_nodes: i32,
 ) -> Result<()> {
+    // Fused Resonance GEMM relies on Double-Buffer Native VRAM
+
     match q.device() {
         Device::Cuda(_) => {},
         _ => return Err(candle_core::Error::Msg("Fused Resonance requires a Bare-Metal CUDA device.".to_string())),
@@ -63,8 +65,10 @@ pub fn apply_fused_resonance_gemm(
         ));
     }
 
-    eprintln!("[CUDA] apply_fused_resonance_gemm: batch={}, heads={}, kv_heads={}, seq_q={}, seq_k={}, head_dim={}, n_nodes={}, layer={}/{}",
-        batch_size, num_heads, num_kv_heads, seq_q, seq_k, head_dim, n_nodes, layer_idx, num_layers);
+    if std::env::var("SODALS_VERBOSE").is_ok() {
+        eprintln!("[CUDA] apply_fused_resonance_gemm: batch={}, heads={}, kv_heads={}, seq_q={}, seq_k={}, head_dim={}, n_nodes={}, layer={}/{}",
+            batch_size, num_heads, num_kv_heads, seq_q, seq_k, head_dim, n_nodes, layer_idx, num_layers);
+    }
 
     let head_dim_cplx = (head_dim / 2) as i32;
     assert!(head_dim_cplx <= 128, "Head dimension exceeds CUDA kernel bounds (MAX_HEAD_DIM_CPLX=128)");

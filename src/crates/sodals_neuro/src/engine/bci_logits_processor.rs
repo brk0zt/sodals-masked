@@ -154,6 +154,12 @@ impl SemanticDomainRegistry {
 
         let mut mask_data = vec![penalty; self.vocab_size];
 
+        for token_id in 0..self.vocab_size {
+            let id_u32 = token_id as u32;
+            if self.is_token_in_domain(id_u32, active_domains) || token_id < 256 {
+                mask_data[token_id] = 0.0;
+            }
+        }
 
         Tensor::from_vec(mask_data, self.vocab_size, &self.device)
             .map_err(|e| anyhow::anyhow!("Failed to create domain mask: {}", e))

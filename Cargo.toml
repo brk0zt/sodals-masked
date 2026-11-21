@@ -72,7 +72,7 @@ members = [
     "src/crates/sodals_crypto", # Kripto (Eğer varsa)
     "src/crates/sodals_common", # Paylaşılan tipler ve yardımcılar
     "src/crates/sodals_mcp",   # MCP Server/Client
-    "src/crates/sodals_industrial", # Endüstriyel RT/OPC UA/ZeroMQ/Sentinel
+    "src/crates/sodals_industrial", "rope_test_project", # Endüstriyel RT/OPC UA/ZeroMQ/Sentinel
 ]
 
 

@@ -10,6 +10,7 @@ use crate::retrieval_engine::RetrievalEngine;
 #[cfg(test)]
 mod integration_tests {
     use super::*;
+    use num_complex::Complex64;
 
     #[test]
     fn test_resonance_chunker_basic() {

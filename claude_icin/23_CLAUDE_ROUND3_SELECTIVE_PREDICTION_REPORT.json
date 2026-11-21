@@ -1,0 +1,93 @@
+{
+  "consistent_hallucination_rate_clean125": 0.25,
+  "consistent_hallucination_rate_grpo_train": 0.0,
+  "auroc_comparison": {
+    "sympy_valid": 0.5114200595829196,
+    "inv_length": 0.733862959285005,
+    "answer_stability": 0.48510427010923535,
+    "top1_agreement": 0.49354518371400197,
+    "mean_stability": 0.3723932472691162
+  },
+  "paired_bootstrap": {
+    "diff": -0.24875868917576965,
+    "ci_95": [
+      -0.47100483289646133,
+      -0.02750589374421148
+    ],
+    "p_val": 0.022
+  },
+  "risk_coverage_curve": [
+    {
+      "coverage": 1.0,
+      "retained_count": 125,
+      "abstain_count": 0,
+      "selective_acc": 0.848,
+      "risk": 0.15200000000000002,
+      "score_threshold": 0.765401953125
+    },
+    {
+      "coverage": 0.95,
+      "retained_count": 119,
+      "abstain_count": 6,
+      "selective_acc": 0.8487394957983193,
+      "risk": 0.1512605042016807,
+      "score_threshold": 0.9758417968750002
+    },
+    {
+      "coverage": 0.9,
+      "retained_count": 112,
+      "abstain_count": 13,
+      "selective_acc": 0.8660714285714286,
+      "risk": 0.1339285714285714,
+      "score_threshold": 1.692094140625
+    },
+    {
+      "coverage": 0.85,
+      "retained_count": 106,
+      "abstain_count": 19,
+      "selective_acc": 0.8867924528301887,
+      "risk": 0.1132075471698113,
+      "score_threshold": 1.8164179687500002
+    },
+    {
+      "coverage": 0.8,
+      "retained_count": 100,
+      "abstain_count": 25,
+      "selective_acc": 0.9,
+      "risk": 0.09999999999999998,
+      "score_threshold": 1.847454296875
+    },
+    {
+      "coverage": 0.75,
+      "retained_count": 94,
+      "abstain_count": 31,
+      "selective_acc": 0.9042553191489362,
+      "risk": 0.0957446808510638,
+      "score_threshold": 1.87698359375
+    },
+    {
+      "coverage": 0.7,
+      "retained_count": 88,
+      "abstain_count": 37,
+      "selective_acc": 0.9204545454545454,
+      "risk": 0.07954545454545459,
+      "score_threshold": 1.888116796875
+    },
+    {
+      "coverage": 0.6,
+      "retained_count": 75,
+      "abstain_count": 50,
+      "selective_acc": 0.92,
+      "risk": 0.07999999999999996,
+      "score_threshold": 1.925107421875
+    },
+    {
+      "coverage": 0.5,
+      "retained_count": 62,
+      "abstain_count": 63,
+      "selective_acc": 0.9032258064516129,
+      "risk": 0.09677419354838712,
+      "score_threshold": 1.944321875
+    }
+  ]
+}

@@ -11,8 +11,15 @@
 use crate::{fail_safe, SensorPayload, IndustrialError, RtRingBuffer};
 use core::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
-use std::time::{Duration, Instant};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 use tokio::time::{interval, MissedTickBehavior};
+
+fn unix_now_ns() -> u64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_nanos() as u64)
+        .unwrap_or(0)
+}
 
 /// OPC UA NodeId tanımları (Siemens S7-1500 / Allen-Bradley uyumlu).
 pub struct OpcUaNodeIds {
@@ -77,7 +84,7 @@ impl OpcUaRtClient {
         ticker.set_missed_tick_behavior(MissedTickBehavior::Skip);
         loop {
             let _ = ticker.tick().await;
-            let now = Instant::now().elapsed().as_nanos() as u64;
+            let now = unix_now_ns();
             let payload = SensorPayload {
                 timestamp_ns: now,
                 temperature: 25.0,
@@ -227,7 +234,7 @@ impl OpcUaRtClient {
             }
         }
 
-        payload.timestamp_ns = Instant::now().elapsed().as_nanos() as u64;
+        payload.timestamp_ns = unix_now_ns();
 
         if let Ok(mut ring) = self.tx_ring.lock() {
             ring.push(payload)?;

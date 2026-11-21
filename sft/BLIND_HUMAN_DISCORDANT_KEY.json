@@ -1,0 +1,277 @@
+{
+  "items": [
+    {
+      "audit_id": "Clean125_Q055",
+      "unique_id": "test/prealgebra/572.json",
+      "mapping": {
+        "Option_A": {
+          "arm": "Primary_G1",
+          "predicted": "0.15",
+          "grader_ok": true
+        },
+        "Option_B": {
+          "arm": "Baseline_SFT",
+          "predicted": "0",
+          "grader_ok": false
+        },
+        "Option_C": {
+          "arm": "Arkhe_Forced",
+          "predicted": "0.15",
+          "grader_ok": true
+        }
+      }
+    },
+    {
+      "audit_id": "Clean125_Q108",
+      "unique_id": "test/number_theory/914.json",
+      "mapping": {
+        "Option_A": {
+          "arm": "Arkhe_Forced",
+          "predicted": "14",
+          "grader_ok": false
+        },
+        "Option_B": {
+          "arm": "Baseline_SFT",
+          "predicted": "9",
+          "grader_ok": true
+        },
+        "Option_C": {
+          "arm": "Primary_G1",
+          "predicted": "14",
+          "grader_ok": false
+        }
+      }
+    },
+    {
+      "audit_id": "Clean125_Q120",
+      "unique_id": "test/prealgebra/1733.json",
+      "mapping": {
+        "Option_A": {
+          "arm": "Primary_G1",
+          "predicted": "2",
+          "grader_ok": false
+        },
+        "Option_B": {
+          "arm": "Arkhe_Forced",
+          "predicted": "-9",
+          "grader_ok": true
+        },
+        "Option_C": {
+          "arm": "Baseline_SFT",
+          "predicted": "126. (1",
+          "grader_ok": false
+        }
+      }
+    },
+    {
+      "audit_id": "Clean125_Q124",
+      "unique_id": "test/geometry/283.json",
+      "mapping": {
+        "Option_A": {
+          "arm": "Arkhe_Forced",
+          "predicted": "8",
+          "grader_ok": true
+        },
+        "Option_B": {
+          "arm": "Primary_G1",
+          "predicted": "10",
+          "grader_ok": false
+        },
+        "Option_C": {
+          "arm": "Baseline_SFT",
+          "predicted": "10",
+          "grader_ok": false
+        }
+      }
+    },
+    {
+      "audit_id": "Clean125_Q138",
+      "unique_id": "test/number_theory/1257.json",
+      "mapping": {
+        "Option_A": {
+          "arm": "Baseline_SFT",
+          "predicted": "224_5",
+          "grader_ok": false
+        },
+        "Option_B": {
+          "arm": "Arkhe_Forced",
+          "predicted": "204_5",
+          "grader_ok": true
+        },
+        "Option_C": {
+          "arm": "Primary_G1",
+          "predicted": "224_5",
+          "grader_ok": false
+        }
+      }
+    },
+    {
+      "audit_id": "Pristine20_Q151",
+      "unique_id": "test/intermediate_algebra/964.json",
+      "mapping": {
+        "Option_A": {
+          "arm": "Baseline_SFT",
+          "predicted": "2",
+          "grader_ok": false
+        },
+        "Option_B": {
+          "arm": "Pass1_Fixed",
+          "predicted": "1",
+          "grader_ok": true
+        },
+        "Option_C": {
+          "arm": "Arkhe_Forced",
+          "predicted": "1",
+          "grader_ok": true
+        }
+      }
+    },
+    {
+      "audit_id": "Pristine20_Q160",
+      "unique_id": "test/algebra/621.json",
+      "mapping": {
+        "Option_A": {
+          "arm": "Pass1_Fixed",
+          "predicted": "3.21",
+          "grader_ok": true
+        },
+        "Option_B": {
+          "arm": "Baseline_SFT",
+          "predicted": "3",
+          "grader_ok": false
+        },
+        "Option_C": {
+          "arm": "Arkhe_Forced",
+          "predicted": "3.21",
+          "grader_ok": true
+        }
+      }
+    },
+    {
+      "audit_id": "Pristine30_Q174",
+      "unique_id": "test/algebra/686.json",
+      "mapping": {
+        "Option_A": {
+          "arm": "Pass1_Greedy",
+          "predicted": "3267",
+          "grader_ok": false
+        },
+        "Option_B": {
+          "arm": "Arkhe_Forced",
+          "predicted": "4",
+          "grader_ok": true
+        },
+        "Option_C": {
+          "arm": "Baseline_SFT",
+          "predicted": "4",
+          "grader_ok": true
+        }
+      }
+    },
+    {
+      "audit_id": "Pristine30_Q177",
+      "unique_id": "test/number_theory/598.json",
+      "mapping": {
+        "Option_A": {
+          "arm": "Pass1_Greedy",
+          "predicted": "0.0000672",
+          "grader_ok": true
+        },
+        "Option_B": {
+          "arm": "Arkhe_Forced",
+          "predicted": "0.0000672",
+          "grader_ok": true
+        },
+        "Option_C": {
+          "arm": "Baseline_SFT",
+          "predicted": "0",
+          "grader_ok": false
+        }
+      }
+    },
+    {
+      "audit_id": "Pristine30_Q178",
+      "unique_id": "test/geometry/65.json",
+      "mapping": {
+        "Option_A": {
+          "arm": "Arkhe_Forced",
+          "predicted": "30",
+          "grader_ok": true
+        },
+        "Option_B": {
+          "arm": "Baseline_SFT",
+          "predicted": "60",
+          "grader_ok": false
+        },
+        "Option_C": {
+          "arm": "Pass1_Greedy",
+          "predicted": "30",
+          "grader_ok": true
+        }
+      }
+    },
+    {
+      "audit_id": "Pristine30_Q180",
+      "unique_id": "test/precalculus/659.json",
+      "mapping": {
+        "Option_A": {
+          "arm": "Arkhe_Forced",
+          "predicted": "5x - 7y + 11z + 4 = 0",
+          "grader_ok": true
+        },
+        "Option_B": {
+          "arm": "Pass1_Greedy",
+          "predicted": "5x - 7y + 11z + 4 = 0",
+          "grader_ok": true
+        },
+        "Option_C": {
+          "arm": "Baseline_SFT",
+          "predicted": "seems to be 5x - 7y + 11z + 4 = 0",
+          "grader_ok": false
+        }
+      }
+    },
+    {
+      "audit_id": "Pristine30_Q190",
+      "unique_id": "test/geometry/702.json",
+      "mapping": {
+        "Option_A": {
+          "arm": "Arkhe_Forced",
+          "predicted": "280 - 20\\sqrt{11}",
+          "grader_ok": false
+        },
+        "Option_B": {
+          "arm": "Baseline_SFT",
+          "predicted": "160",
+          "grader_ok": true
+        },
+        "Option_C": {
+          "arm": "Pass1_Greedy",
+          "predicted": "280 - 20\\sqrt{11}",
+          "grader_ok": false
+        }
+      }
+    },
+    {
+      "audit_id": "Pristine30_Q195",
+      "unique_id": "test/intermediate_algebra/2196.json",
+      "mapping": {
+        "Option_A": {
+          "arm": "Pass1_Greedy",
+          "predicted": "3^{1/4}/6",
+          "grader_ok": false
+        },
+        "Option_B": {
+          "arm": "Baseline_SFT",
+          "predicted": "1/4",
+          "grader_ok": true
+        },
+        "Option_C": {
+          "arm": "Arkhe_Forced",
+          "predicted": "3^{1/4}/6",
+          "grader_ok": false
+        }
+      }
+    }
+  ]
+}

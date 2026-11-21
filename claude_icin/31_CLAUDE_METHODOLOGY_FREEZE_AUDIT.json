@@ -1,0 +1,495 @@
+{
+  "runtime_metadata": {
+    "timestamp_utc": "2026-11-17T14:49:37.204984+00:00",
+    "sys_executable": "C:\\Python\\Python313\\python.exe",
+    "interpreter_in_windows_old": false,
+    "python_version": "3.13.7",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "packages": {
+      "torch": "2.8.0+cu126",
+      "transformers": "not_installed",
+      "peft": "not_installed",
+      "bitsandbytes": "not_installed",
+      "sympy": "1.13.3",
+      "numpy": "2.1.2"
+    },
+    "cuda_available": true,
+    "cuda_version": "12.6",
+    "gpu_name": "NVIDIA GeForce RTX 4060 Laptop GPU"
+  },
+  "frozen_code_sha256": {
+    "cst_symbolic_verifier.py": "ab421629b7d5838d574be3992ea8ee2a4c5139f0cce14104bdce15d8728af422",
+    "arkhe_neurosymbolic_pipeline.py": "78ad3212df1745443ce6ed0e8f677bb85494ba47049b0c0c2f886036e5322cf5",
+    "eval_pristine30_q171_q200_arkhe_pipeline.py": "28cf5ad7be3a37d1411eb5599f50d1f4ad94b19cd27544ee8040eb2ba600af05",
+    "train_grpo_math_train_100.py": "9ee76761ab94a69ea37b6d87dd563a70b4ba8ce523bd0620feeaefee1822ed18"
+  },
+  "symmetrical_frozen_baseline_sft": {
+    "full_500_old_correct": 389,
+    "full_500_frozen_correct": 398,
+    "clean125_q026_q150": {
+      "n": 125,
+      "old_correct": 100,
+      "old_acc_pct": 80.0,
+      "frozen_correct": 104,
+      "frozen_acc_pct": 83.2
+    },
+    "pristine20_q151_q170": {
+      "n": 20,
+      "old_correct": 12,
+      "old_acc_pct": 60.0,
+      "frozen_correct": 12,
+      "frozen_acc_pct": 60.0
+    },
+    "pristine30_q171_q200": {
+      "n": 30,
+      "old_correct": 24,
+      "old_acc_pct": 80.0,
+      "frozen_correct": 25,
+      "frozen_acc_pct": 83.33
+    },
+    "pristine50_q151_q200": {
+      "n": 50,
+      "old_correct": 36,
+      "old_acc_pct": 72.0,
+      "frozen_correct": 37,
+      "frozen_acc_pct": 74.0
+    },
+    "confirmatory_reserve_q201_q500_count_only": {
+      "n": 300,
+      "old_correct": 232,
+      "old_acc_pct": 77.33,
+      "frozen_correct": 235,
+      "frozen_acc_pct": 78.33
+    },
+    "baseline_flips_on_q001_q200": [
+      {
+        "index": 24,
+        "unique_id": "test/algebra/2193.json",
+        "gt": "x=5",
+        "pred": "5",
+        "old_ok": false,
+        "frozen_ok": true
+      },
+      {
+        "index": 32,
+        "unique_id": "test/prealgebra/1302.json",
+        "gt": "11\\sqrt2",
+        "pred": "11\\sqrt{2}",
+        "old_ok": false,
+        "frozen_ok": true
+      },
+      {
+        "index": 54,
+        "unique_id": "test/precalculus/1105.json",
+        "gt": "-\\frac{\\pi}{6}",
+        "pred": "-\\pi/6",
+        "old_ok": false,
+        "frozen_ok": true
+      },
+      {
+        "index": 98,
+        "unique_id": "test/prealgebra/105.json",
+        "gt": "\\text{east}",
+        "pred": "East",
+        "old_ok": false,
+        "frozen_ok": true
+      },
+      {
+        "index": 128,
+        "unique_id": "test/number_theory/847.json",
+        "gt": "4210_{5}",
+        "pred": "4210_5",
+        "old_ok": false,
+        "frozen_ok": true
+      },
+      {
+        "index": 199,
+        "unique_id": "test/counting_and_probability/508.json",
+        "gt": "10,\\!080",
+        "pred": "10080",
+        "old_ok": false,
+        "frozen_ok": true
+      }
+    ],
+    "baseline_flips_on_q201_q500_count_only": 5
+  },
+  "clean125_audit": {
+    "n": 125,
+    "baseline_sft_frozen": 104,
+    "primary_ponder_frozen": 104,
+    "arkhe_forced_frozen": 107,
+    "arkhe_selective": {
+      "correct": 107,
+      "answered": 120
+    },
+    "paired_arkhe_forced_vs_baseline": {
+      "a_correct": 104,
+      "b_correct": 107,
+      "gains_a0_b1": 4,
+      "losses_a1_b0": 1,
+      "net": 3,
+      "exact_mcnemar_p": 0.375
+    },
+    "paired_arkhe_forced_vs_primary": {
+      "a_correct": 104,
+      "b_correct": 107,
+      "gains_a0_b1": 3,
+      "losses_a1_b0": 0,
+      "net": 3,
+      "exact_mcnemar_p": 0.25
+    },
+    "tuple_truthiness_recompute_mismatches": []
+  },
+  "pristine20_audit": {
+    "n": 20,
+    "baseline_sft_frozen": 12,
+    "pass1_fixed_frozen": 14,
+    "arkhe_forced_frozen": 14,
+    "arkhe_selective": {
+      "correct": 14,
+      "answered": 19
+    },
+    "paired_arkhe_forced_vs_baseline": {
+      "a_correct": 12,
+      "b_correct": 14,
+      "gains_a0_b1": 2,
+      "losses_a1_b0": 0,
+      "net": 2,
+      "exact_mcnemar_p": 0.5
+    }
+  },
+  "pristine30_audit": {
+    "n": 30,
+    "baseline_sft_frozen": 25,
+    "pass1_greedy_frozen": 25,
+    "arkhe_forced_frozen": 26,
+    "arkhe_selective": {
+      "correct": 26,
+      "answered": 30
+    },
+    "paired_baseline_to_pass1": {
+      "a_correct": 25,
+      "b_correct": 25,
+      "gains_a0_b1": 3,
+      "losses_a1_b0": 3,
+      "net": 0,
+      "exact_mcnemar_p": 1.0
+    },
+    "paired_pass1_to_arkhe": {
+      "a_correct": 25,
+      "b_correct": 26,
+      "gains_a0_b1": 1,
+      "losses_a1_b0": 0,
+      "net": 1,
+      "exact_mcnemar_p": 1.0
+    },
+    "paired_baseline_to_arkhe": {
+      "a_correct": 25,
+      "b_correct": 26,
+      "gains_a0_b1": 3,
+      "losses_a1_b0": 2,
+      "net": 1,
+      "exact_mcnemar_p": 1.0
+    }
+  },
+  "pristine50_combined_audit": {
+    "n": 50,
+    "baseline_sft_frozen": 37,
+    "pass1_frozen": 39,
+    "arkhe_forced_frozen": 40,
+    "arkhe_selective": {
+      "correct": 40,
+      "answered": 49
+    },
+    "paired_arkhe_forced_vs_baseline": {
+      "a_correct": 37,
+      "b_correct": 40,
+      "gains_a0_b1": 5,
+      "losses_a1_b0": 2,
+      "net": 3,
+      "exact_mcnemar_p": 0.4531
+    }
+  },
+  "contras_2x2_table_clean125": {
+    "legacy_stored_contras": {
+      "TP_contra_wrong": 3,
+      "FP_contra_correct": 6,
+      "FN_clean_wrong": 18,
+      "TN_clean_correct": 98
+    },
+    "legacy_fp_examples": [
+      {
+        "index": 31,
+        "contras": [
+          "5 * 8 + 2 (42.0) != 52 (52.0)"
+        ]
+      },
+      {
+        "index": 63,
+        "contras": [
+          "-2 (-2.0) != 4 (4.0)"
+        ]
+      },
+      {
+        "index": 71,
+        "contras": [
+          "58 (58.0) != 5 * 9 + 8 (53.0)",
+          "18 (18.0) != 1 * 9 + 8 (17.0)",
+          "36 (36.0) != 40 (40.0)"
+        ]
+      },
+      {
+        "index": 87,
+        "contras": [
+          "8 (8.0) != 30 (30.0)",
+          "8 (8.0) != 240 (240.0)"
+        ]
+      },
+      {
+        "index": 112,
+        "contras": [
+          "factorial(7) / factorial(factorial(3) * (7-3)) (8.123157358324436e-21) != (7 * 6 * 5) / (3 * 2 * 1) (35.0)",
+          "factorial(4) / factorial(factorial(2) * (4-2)) (1.0) != (4 * 3) / (2 * 1) (6.0)"
+        ]
+      }
+    ],
+    "upgraded_symbolic_step_checker": {
+      "TP_contra_wrong": 8,
+      "FP_contra_correct": 3,
+      "FN_clean_wrong": 13,
+      "TN_clean_correct": 101
+    },
+    "upgraded_fp_examples": [
+      {
+        "index": 29,
+        "contras": [
+          "LeanRingViolation: Broken algebraic simplification chain: 7*i + 2*i**2 != 7*i - 2 (residual 2*i**2 + 2 != 0)"
+        ]
+      },
+      {
+        "index": 74,
+        "contras": [
+          "2 (2.0) != ((sqrt(9 * 2 + 9))/(sqrt(9 * 2 - 2))) (1.299038105676658)"
+        ]
+      },
+      {
+        "index": 105,
+        "contras": [
+          "4*sqrt(41) + 41 (66.6124969497314) != 45 (45.0)"
+        ]
+      }
+    ]
+  },
+  "random_30_pass_spot_check": [
+    {
+      "arm": "Baseline_SFT",
+      "index": 59,
+      "uid": "test/algebra/722.json",
+      "gt": "9901",
+      "pred": "9901"
+    },
+    {
+      "arm": "Baseline_SFT",
+      "index": 34,
+      "uid": "test/algebra/1072.json",
+      "gt": "\\frac{243}{625}",
+      "pred": "243/625"
+    },
+    {
+      "arm": "Baseline_SFT",
+      "index": 109,
+      "uid": "test/intermediate_algebra/894.json",
+      "gt": "2",
+      "pred": "2"
+    },
+    {
+      "arm": "Baseline_SFT",
+      "index": 99,
+      "uid": "test/prealgebra/1924.json",
+      "gt": "2k+2",
+      "pred": "2k + 2"
+    },
+    {
+      "arm": "Clean125_Arkhe_Forced",
+      "index": 91,
+      "uid": "test/prealgebra/1761.json",
+      "gt": "\\frac{3}{2}",
+      "pred": "\\frac{3}{2}"
+    },
+    {
+      "arm": "Baseline_SFT",
+      "index": 69,
+      "uid": "test/precalculus/1313.json",
+      "gt": "46",
+      "pred": "46"
+    },
+    {
+      "arm": "Clean125_Arkhe_Forced",
+      "index": 56,
+      "uid": "test/algebra/187.json",
+      "gt": "3",
+      "pred": "3"
+    },
+    {
+      "arm": "Baseline_SFT",
+      "index": 52,
+      "uid": "test/intermediate_algebra/1217.json",
+      "gt": "x^5 - x^4 + x^3 - x^2 + x - 1",
+      "pred": "x^5 - x^4 + x^3 - x^2 + x - 1"
+    },
+    {
+      "arm": "Pristine20_Arkhe_Forced",
+      "index": 159,
+      "uid": "test/algebra/2570.json",
+      "gt": "2107",
+      "pred": "2107"
+    },
+    {
+      "arm": "Baseline_SFT",
+      "index": 36,
+      "uid": "test/number_theory/627.json",
+      "gt": "3",
+      "pred": "3"
+    },
+    {
+      "arm": "Clean125_Arkhe_Forced",
+      "index": 35,
+      "uid": "test/counting_and_probability/119.json",
+      "gt": "-125",
+      "pred": "-125"
+    },
+    {
+      "arm": "Clean125_Arkhe_Forced",
+      "index": 53,
+      "uid": "test/prealgebra/951.json",
+      "gt": "12",
+      "pred": "12"
+    },
+    {
+      "arm": "Baseline_SFT",
+      "index": 90,
+      "uid": "test/number_theory/357.json",
+      "gt": "21",
+      "pred": "21"
+    },
+    {
+      "arm": "Baseline_SFT",
+      "index": 94,
+      "uid": "test/algebra/873.json",
+      "gt": "33",
+      "pred": "33"
+    },
+    {
+      "arm": "Pristine30_Arkhe_Forced",
+      "index": 191,
+      "uid": "test/counting_and_probability/51.json",
+      "gt": "\\frac{13}{18}",
+      "pred": "13/18"
+    },
+    {
+      "arm": "Clean125_Arkhe_Forced",
+      "index": 34,
+      "uid": "test/algebra/1072.json",
+      "gt": "\\frac{243}{625}",
+      "pred": "243/625"
+    },
+    {
+      "arm": "Baseline_SFT",
+      "index": 85,
+      "uid": "test/algebra/893.json",
+      "gt": "-1",
+      "pred": "-1"
+    },
+    {
+      "arm": "Pristine20_Arkhe_Forced",
+      "index": 156,
+      "uid": "test/counting_and_probability/803.json",
+      "gt": "\\frac{1}{4}",
+      "pred": "1/4"
+    },
+    {
+      "arm": "Clean125_Arkhe_Forced",
+      "index": 90,
+      "uid": "test/number_theory/357.json",
+      "gt": "21",
+      "pred": "21"
+    },
+    {
+      "arm": "Baseline_SFT",
+      "index": 174,
+      "uid": "test/algebra/686.json",
+      "gt": "4",
+      "pred": "4"
+    },
+    {
+      "arm": "Baseline_SFT",
+      "index": 110,
+      "uid": "test/precalculus/44.json",
+      "gt": "120^\\circ",
+      "pred": "120"
+    },
+    {
+      "arm": "Baseline_SFT",
+      "index": 149,
+      "uid": "test/algebra/988.json",
+      "gt": "11",
+      "pred": "11"
+    },
+    {
+      "arm": "Pristine20_Arkhe_Forced",
+      "index": 166,
+      "uid": "test/prealgebra/1356.json",
+      "gt": "\\frac{4}{9}",
+      "pred": "4/9"
+    },
+    {
+      "arm": "Clean125_Arkhe_Forced",
+      "index": 28,
+      "uid": "test/prealgebra/1840.json",
+      "gt": "78",
+      "pred": "78"
+    },
+    {
+      "arm": "Clean125_Arkhe_Forced",
+      "index": 141,
+      "uid": "test/number_theory/156.json",
+      "gt": "13",
+      "pred": "13"
+    },
+    {
+      "arm": "Clean125_Arkhe_Forced",
+      "index": 147,
+      "uid": "test/algebra/1519.json",
+      "gt": "\\frac{\\sqrt{3}}{3}",
+      "pred": "\\frac{\\sqrt{3}}{3}"
+    },
+    {
+      "arm": "Baseline_SFT",
+      "index": 50,
+      "uid": "test/prealgebra/1388.json",
+      "gt": "83",
+      "pred": "83"
+    },
+    {
+      "arm": "Baseline_SFT",
+      "index": 133,
+      "uid": "test/prealgebra/1686.json",
+      "gt": "4",
+      "pred": "4"
+    },
+    {
+      "arm": "Clean125_Arkhe_Forced",
+      "index": 88,
+      "uid": "test/algebra/567.json",
+      "gt": "1",
+      "pred": "1"
+    },
+    {
+      "arm": "Baseline_SFT",
+      "index": 78,
+      "uid": "test/algebra/1004.json",
+      "gt": "4",
+      "pred": "4"
+    }
+  ]
+}

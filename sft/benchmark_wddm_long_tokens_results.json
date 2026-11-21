@@ -1,0 +1,68 @@
+{
+  "baseline_alloc_mb": 3907.3,
+  "baseline_res_mb": 4572.0,
+  "physical_headroom_mb": 3616.0,
+  "gpu_total_capacity_mb": 8188.0,
+  "tests": [
+    {
+      "seq_len": 768,
+      "resp_len": 640,
+      "time_sec": 2.13,
+      "peak_alloc_mb": 4445.6,
+      "peak_res_mb": 4942.0,
+      "headroom_mb": 3246.0,
+      "is_paged": false,
+      "has_nan": false
+    },
+    {
+      "seq_len": 1024,
+      "resp_len": 896,
+      "time_sec": 2.73,
+      "peak_alloc_mb": 4625.0,
+      "peak_res_mb": 5260.0,
+      "headroom_mb": 2928.0,
+      "is_paged": false,
+      "has_nan": false
+    },
+    {
+      "seq_len": 1280,
+      "resp_len": 1152,
+      "time_sec": 3.38,
+      "peak_alloc_mb": 4804.4,
+      "peak_res_mb": 5592.0,
+      "headroom_mb": 2596.0,
+      "is_paged": false,
+      "has_nan": false
+    },
+    {
+      "seq_len": 1536,
+      "resp_len": 1408,
+      "time_sec": 4.10,
+      "peak_alloc_mb": 4983.8,
+      "peak_res_mb": 5828.0,
+      "headroom_mb": 2360.0,
+      "is_paged": false,
+      "has_nan": false
+    },
+    {
+      "seq_len": 1792,
+      "resp_len": 1664,
+      "time_sec": 4.73,
+      "peak_alloc_mb": 5163.2,
+      "peak_res_mb": 6088.0,
+      "headroom_mb": 2100.0,
+      "is_paged": false,
+      "has_nan": false
+    },
+    {
+      "seq_len": 2048,
+      "resp_len": 1920,
+      "time_sec": 5.50,
+      "peak_alloc_mb": 5342.6,
+      "peak_res_mb": 6366.0,
+      "headroom_mb": 1822.0,
+      "is_paged": false,
+      "has_nan": false
+    }
+  ]
+}

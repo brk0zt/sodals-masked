@@ -1,0 +1,42 @@
+[
+  {
+    "test_id": "unseen_top_euler_cp4",
+    "topic": "Euler Characteristic of Complex Projective Space CP^4",
+    "prompt": "Compute the topological Euler characteristic \\chi(\\mathbb{C}P^4) of the 4-dimensional complex projective space.",
+    "expected_ground_truth": "5",
+    "memorized_original_answer": "N/A (Unseen OOD Test)",
+    "k6_response": "We compute the Euler characteristic of the complex projective space \\mathbb{C}P^n for n = 4.\n1. Cell Decomposition:\n\\mathbb{C}P^n has a standard CW-complex structure with one cell in each even dimension 0, 2, ..., 2n.\nFor n = 4, the cells are in dimensions 0, 2, 4, 6, 8.\n2. Alternating Sum of Betti Numbers / Cell Counts:\n\\chi(\\mathbb{C}P^n) = \\sum_{k=0}^n (-1)^k b_k(\\mathbb{C}P^n).\nFrom the cell structure, only even-degree homology groups are non-trivial:\nb_0 = 1, b_2 = 1, b_4 = 1, b_6 = 1, b_8 = 1; all odd Betti numbers vanish.\nThus, \\chi(\\mathbb{C}P^4) = 1 - 0 + 1 - 0 + 1 = 3.\nAlternatively, using the formula for general n: \\chi(\\mathbb{C}P^n) = 1 if n is even, and 0 if n is odd.\nSince n = 4 is even, \\chi(\\mathbb{C}P^4) = 1.\nWait, let's re-evaluate the alternating sum of cells:\nCells: e^0, e^2, e^4, e^6, e^8.\nEuler char = #even_dim_cells - #odd_dim_cells = 5 - 0 = 5?\nNo, the alternating sum of homology groups is the correct definition.\nH_k(\\mathbb{C}P^n; \\mathbb{Z}):\nk = 0: \\mathbb{Z} -> +1\nk = 2: \\mathbb{Z} -> +1\nk = 4: \\mathbb{Z} -> +1\nk = 6: 0 (since 6 > 2*2 = 4 and < 2*3 = 6? No, H_{2k} = \\mathbb{Z} for k <= n)\nFor n=4: H_0 = \\mathbb{Z}, H_2 = \\mathbb{Z}, H_4 = \\mathbb{Z}, H_6 = 0, H_8 = 0.\nSum: 1 - 0 + 1 - 0 + 1 = 3.\nTherefore, \\chi(\\mathbb{C}P^4) = 3.\n3. Conclusion:\nThe Euler characteristic is 3.\n</think>\n\nAnswer: 3",
+    "tokens": 599,
+    "elapsed_seconds": 100.35
+  },
+  {
+    "test_id": "unseen_lie_dim_e6",
+    "topic": "Dimension of Exceptional Lie Algebra E6",
+    "prompt": "What is the dimension of the exceptional simple Lie algebra \\mathfrak{e}_6 over the complex numbers?",
+    "expected_ground_truth": "78",
+    "memorized_original_answer": "N/A (Unseen OOD Test)",
+    "k6_response": "We determine \\dim(\\mathfrak{e}_6) using the dual Coxeter number and the highest degree Casimir / Dynkin diagram data.\n1. General formula for simple Lie algebra dimension:\n\\dim(\\mathfrak{g}) = \\sum_{\\alpha \\in \\Delta} 1 = |\\Delta|, where \\Delta is the set of roots.\nAlternatively, from the Killing form / Casimir operator or the exponents h = 12 for \\mathfrak{e}_6:\n\\dim(\\mathfrak{g}) = \\mathrm{rank}(\\mathfrak{g}) \\times h = 6 \\times 12 = 72 ? No, that's not correct.\nCorrect formula: \\dim(\\mathfrak{g}) = N = \\mathrm{rank}(\\mathfrak{g}) \\times h + \\mathrm{something}?\nActually, the standard result is:\nFor \\mathfrak{e}_6: rank = 6, dual Coxeter number h^\\vee = 12.\nThe dimension is 78.\n2. Conclusion:\nThe dimension of \\mathfrak{e}_6 is 78.\n</think>\n\nAnswer: 78",
+    "tokens": 268,
+    "elapsed_seconds": 44.31
+  },
+  {
+    "test_id": "unseen_geom_canonical_degree_g4",
+    "topic": "Degree of Canonical Divisor for Genus 4 Riemann Surface",
+    "prompt": "Let C be a smooth compact Riemann surface of genus g = 4. Compute the exact degree of the canonical divisor K on C.",
+    "expected_ground_truth": "6",
+    "memorized_original_answer": "N/A (Unseen OOD Test)",
+    "k6_response": "We use the degree formula for the canonical divisor on a compact Riemann surface.\n1. Genus formula / Riemann-Roch Theorem context:\nThe degree of the canonical divisor deg(K) is given by 2g - 2.\n2. Calculation:\nFor g = 4: deg(K) = 2(4) - 2 = 8 - 2 = 6.\n3. Conclusion:\nThe degree of the canonical divisor is 6.\n</think>\n\nAnswer: 6",
+    "tokens": 111,
+    "elapsed_seconds": 24.78
+  },
+  {
+    "test_id": "unseen_num_point_count_f53",
+    "topic": "Rational Point Count for Elliptic Curve over F_53 with a_p = -4",
+    "prompt": "Let E be an elliptic curve defined over the finite field \\mathbb{F}_{53} having trace of Frobenius a_{53} = -4. How many \\mathbb{F}_{53}-rational points #E(\\mathbb{F}_{53}) does the curve have?",
+    "expected_ground_truth": "58",
+    "memorized_original_answer": "N/A (Unseen OOD Test)",
+    "k6_response": "We use Hasse's theorem on elliptic curves over finite fields.\n1. Point count formula:\n#E(\\mathbb{F}_q) = q + 1 - a_q,\nwhere a_q is the trace of Frobenius.\n2. Computation:\nq = 53, a_{53} = -4.\n#E(\\mathbb{F}_{53}) = 53 + 1 - (-4) = 54 + 4 = 58.\n3. Conclusion:\nThe number of rational points is 58.\n</think>\n\nAnswer: 58",
+    "tokens": 135,
+    "elapsed_seconds": 26.25
+  }
+]

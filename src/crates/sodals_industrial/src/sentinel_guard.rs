@@ -68,9 +68,9 @@ impl SentinelGuard {
             return SentinelDecision::Hold; // Bekle, henüz reddetme
         }
 
-        // 2. Spektral benzerlik (cosine similarity)
+        // 2. Spektral benzerlik (cosine similarity) — fail-closed on NaN/Inf!
         let sim = candidate.cosine_similarity(&self.reference.signature);
-        if sim < COSINE_THRESHOLD {
+        if !sim.is_finite() || sim < COSINE_THRESHOLD {
             self.last_anomaly_ns.store(now, Ordering::Relaxed);
             let count = self.anomaly_counter.fetch_add(1, Ordering::Relaxed) + 1;
             if count >= self.debounce_threshold {
@@ -95,15 +95,23 @@ impl SentinelGuard {
         logits: &[f32; 8],
         sensor: &SensorPayload,
     ) -> Result<(), IndustrialError> {
-        // 1. Fiziksel sınır kontrolü (örn: sıcaklık > 200C -> STOP)
-        if sensor.temperature > 200.0 || sensor.pressure > 50.0 {
+        // 1. Fiziksel sınır kontrolü — NaN/Inf fail-closed!
+        if !sensor.temperature.is_finite()
+            || !sensor.pressure.is_finite()
+            || !sensor.motor_rpm.is_finite()
+            || sensor.temperature > 200.0
+            || sensor.pressure > 50.0
+        {
             return Err(IndustrialError::SentinelRejected);
         }
 
-        // 2. Logit kararlılığı (variyans kontrolü)
+        // 2. Logit kararlılığı (NaN/Inf fail-closed + variyans kontrolü)
+        if logits.iter().any(|x| !x.is_finite()) {
+            return Err(IndustrialError::SentinelRejected);
+        }
         let mean = logits.iter().sum::<f32>() / 8.0;
         let variance = logits.iter().map(|x| (x - mean).powi(2)).sum::<f32>() / 8.0;
-        if variance > 100.0 {
+        if !variance.is_finite() || variance > 100.0 {
             // Model kararsız -> reddet
             return Err(IndustrialError::SentinelRejected);
         }

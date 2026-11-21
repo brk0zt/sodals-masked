@@ -1,9 +1,14 @@
+#[cfg(feature = "python")]
 use pyo3::prelude::*;
+#[cfg(feature = "python")]
 use pyo3::types::PyModule;
+#[cfg(feature = "python")]
 use pyo3::Bound;
-use candle_core::{Device, Tensor, DType, Shape};
+use candle_core::Tensor;
+#[cfg(feature = "python")]
+use candle_core::{Device, DType, Shape};
 use std::sync::{Arc, Mutex};
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::AtomicBool;
 use once_cell::sync::Lazy;
 
 
@@ -15,6 +20,7 @@ pub static BCI_ISOLATION_MODE: AtomicBool = AtomicBool::new(false);
 
 /// Injects a raw CUDA device pointer from PyTorch into the Rust RK4 Engine.
 /// This achieves O(1) zero-copy tensor sharing across the FFI boundary.
+#[cfg(feature = "python")]
 #[pyfunction]
 pub fn inject_ghost_tensor(device_ptr: usize, hidden_dim: usize) -> PyResult<()> {
     println!("[BCI] Process ID (Rust): {}", std::process::id());
@@ -72,6 +78,7 @@ pub fn inject_ghost_tensor(device_ptr: usize, hidden_dim: usize) -> PyResult<()>
 
 /// PHASE 64: Diagnostic Read-Back
 /// Proves that Rust can read the PyTorch-allocated VRAM pointer natively.
+#[cfg(feature = "python")]
 #[pyfunction]
 pub fn verify_ghost_slot() -> PyResult<f32> {
     if let Ok(slot) = GHOST_VECTOR_SLOT.lock() {
@@ -88,6 +95,7 @@ pub fn verify_ghost_slot() -> PyResult<f32> {
     Err(pyo3::exceptions::PyValueError::new_err("GHOST_VECTOR_SLOT is currently empty or inaccessible."))
 }
 
+#[cfg(feature = "python")]
 #[pymodule]
 fn sodals_bci(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(inject_ghost_tensor, m)?)?;

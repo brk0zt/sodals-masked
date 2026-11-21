@@ -1,0 +1,89 @@
+{
+  "epistemic_floor": {
+    "total_prompts": 100,
+    "all_4_correct": 38,
+    "mixed_1_to_3_correct": 36,
+    "all_4_wrong": 26,
+    "prompts_with_errors": 62,
+    "consistent_wrong_ge3": 9,
+    "unanimous_wrong_4of4": 4,
+    "consistent_wrong_rate_in_errors": 0.1452,
+    "epistemic_floor_rate_overall": 0.09,
+    "consistent_wrong_items": [
+      {"step": 27, "subject": "Intermediate Algebra", "level": "Level 5", "majority_count": 4, "ground_truth": "\\frac{4}{3}", "majority_ans": "1"},
+      {"step": 31, "subject": "Intermediate Algebra", "level": "Level 5", "majority_count": 3, "ground_truth": "10", "majority_ans": "5"},
+      {"step": 33, "subject": "Geometry", "level": "Level 5", "majority_count": 4, "ground_truth": "42.1875", "majority_ans": "42"},
+      {"step": 35, "subject": "Counting & Probability", "level": "Level 5", "majority_count": 4, "ground_truth": "0.411", "majority_ans": "0"},
+      {"step": 59, "subject": "Intermediate Algebra", "level": "Level 5", "majority_count": 3, "ground_truth": "1850", "majority_ans": "1225"},
+      {"step": 64, "subject": "Prealgebra", "level": "Level 5", "majority_count": 3, "ground_truth": "15", "majority_ans": "11"},
+      {"step": 82, "subject": "Precalculus", "level": "Level 5", "majority_count": 3, "ground_truth": "8", "majority_ans": "4"},
+      {"step": 86, "subject": "Counting & Probability", "level": "Level 5", "majority_count": 4, "ground_truth": "\\frac{9}{25}", "majority_ans": "0"},
+      {"step": 97, "subject": "Intermediate Algebra", "level": "Level 5", "majority_count": 3, "ground_truth": "10100", "majority_ans": "1"}
+    ]
+  },
+  "auroc_benchmarks": {
+    "agreement_rate": {
+      "auroc": 0.8864,
+      "ci": [0.8278, 0.9388]
+    },
+    "outcome_reward": {
+      "auroc": 0.9992,
+      "ci": [0.9968, 1.0]
+    },
+    "shorter_length": {
+      "auroc": 0.7414,
+      "ci": [0.6661, 0.8124]
+    },
+    "paired_delta_agree_vs_len": {
+      "delta_mean": 0.1454,
+      "delta_ci": [0.0785, 0.2151],
+      "excludes_zero": true,
+      "p_value": 0.0002
+    },
+    "mixed_cohort_agreement": {
+      "auroc": 0.8179,
+      "shorter_length_auroc": 0.4959,
+      "delta_mean": 0.3196,
+      "delta_ci": [0.1755, 0.4532],
+      "excludes_zero": true,
+      "p_value": 0.0002
+    },
+    "tuned_lens_greedy_clean125": {
+      "mean_stability": 0.3721,
+      "answer_stability": 0.4881,
+      "top1_agreement": 0.4953,
+      "shorter_length": 0.7336
+    }
+  },
+  "risk_coverage": {
+    "agreement_rate": {
+      "aurc": 0.1903,
+      "aurc_oracle": 0.1144,
+      "e_aurc": 0.0759,
+      "tiers": {
+        "0.50": {"accuracy": 0.86, "risk": 0.14},
+        "0.60": {"accuracy": 0.8292, "risk": 0.1708},
+        "0.70": {"accuracy": 0.775, "risk": 0.225},
+        "0.80": {"accuracy": 0.6844, "risk": 0.3156},
+        "0.90": {"accuracy": 0.6167, "risk": 0.3833},
+        "1.00": {"accuracy": 0.5625, "risk": 0.4375}
+      }
+    },
+    "shorter_length": {
+      "aurc": 0.2519,
+      "aurc_oracle": 0.1144,
+      "e_aurc": 0.1375
+    }
+  },
+  "ternary_reward_simulation": {
+    "0.25": {"lambda": 0.25, "bayes_p": 0.2, "tau_opt": 0.3333, "oof_utility": 0.5019, "unselective_utility": 0.4531, "utility_gain": 0.0488, "coverage": 0.68, "accuracy": 0.789},
+    "0.50": {"lambda": 0.5, "bayes_p": 0.3333, "tau_opt": 0.3333, "oof_utility": 0.4662, "unselective_utility": 0.3438, "utility_gain": 0.1225, "coverage": 0.68, "accuracy": 0.789},
+    "0.75": {"lambda": 0.75, "bayes_p": 0.4286, "tau_opt": 0.3333, "oof_utility": 0.4306, "unselective_utility": 0.2344, "utility_gain": 0.1963, "coverage": 0.68, "accuracy": 0.789},
+    "1.00": {"lambda": 1.0, "bayes_p": 0.5, "tau_opt": 0.3333, "oof_utility": 0.395, "unselective_utility": 0.125, "utility_gain": 0.27, "coverage": 0.68, "accuracy": 0.789},
+    "1.50": {"lambda": 1.5, "bayes_p": 0.6, "tau_opt": 0.6667, "oof_utility": 0.3463, "unselective_utility": -0.0938, "utility_gain": 0.44, "coverage": 0.54, "accuracy": 0.86},
+    "2.00": {"lambda": 2.0, "bayes_p": 0.6667, "tau_opt": 0.6667, "oof_utility": 0.3075, "unselective_utility": -0.3125, "utility_gain": 0.62, "coverage": 0.54, "accuracy": 0.86},
+    "3.00": {"lambda": 3.0, "bayes_p": 0.75, "tau_opt": 0.9333, "oof_utility": 0.23, "unselective_utility": -0.75, "utility_gain": 0.98, "coverage": 0.45, "accuracy": 0.9},
+    "4.00": {"lambda": 4.0, "bayes_p": 0.8, "tau_opt": 1.0, "oof_utility": 0.22, "unselective_utility": -1.1875, "utility_gain": 1.4075, "coverage": 0.42, "accuracy": 0.918},
+    "5.00": {"lambda": 5.0, "bayes_p": 0.8333, "tau_opt": 1.0, "oof_utility": 0.18, "unselective_utility": -1.625, "utility_gain": 1.805, "coverage": 0.42, "accuracy": 0.918}
+  }
+}

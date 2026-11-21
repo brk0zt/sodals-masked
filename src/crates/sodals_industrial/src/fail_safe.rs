@@ -24,21 +24,23 @@ pub enum SystemState {
 }
 
 /// PLC'ye yazılacak güvenli durum komutu.
-/// `repr(C)` ile OPC UA ve ZeroMQ üzerinden binary taşınabilir.
+/// `repr(C)` ile OPC UA ve ZeroMQ üzerinden binary taşınabilir (tam 16 byte hizalı).
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
 pub struct FailSafeCommand {
-    /// Komut kodu: 0=RUN, 1=STOP_MOTOR, 2=ISOLATE_VALVE, 255=EMERGENCY_STOP
-    pub command_code: u8,
+    /// Zaman damgası (8-byte doğal hizalama, sıfır iç dolgu)
+    pub timestamp_ns: u64,
     /// Parametre (örneğin: stop gecikmesi ms)
     pub param: u16,
-    /// Zaman damgası
-    pub timestamp_ns: u64,
+    /// Komut kodu: 0=RUN, 1=STOP_MOTOR, 2=ISOLATE_VALVE, 255=EMERGENCY_STOP
+    pub command_code: u8,
     /// Hatanın sebebi
     pub triggered_by: u8,
-    /// _padding 8-byte hizalama
+    /// _padding 16-byte toplam boyut
     pub _pad: [u8; 4],
 }
+
+const _: () = assert!(core::mem::size_of::<FailSafeCommand>() == 16);
 
 impl FailSafeCommand {
     /// O(1), branch-predictable hata -> eylem dönüşümü.
@@ -51,9 +53,9 @@ impl FailSafeCommand {
         };
 
         Self {
-            command_code: code,
-            param: 0,
             timestamp_ns,
+            param: 0,
+            command_code: code,
             triggered_by: triggered,
             _pad: [0; 4],
         }
@@ -70,17 +72,23 @@ impl FailSafeCommand {
     }
 }
 
-/// Global durumu atomik olarak günceller.
+/// Global durumu atomik olarak günceller (güvenli match, sıfır transmute UB).
 /// O(1), lock-free.
 pub fn transition_state(new: SystemState) -> SystemState {
     let prev = SYSTEM_STATE.swap(new as u8, Ordering::SeqCst);
-    unsafe { core::mem::transmute(prev) }
+    match prev {
+        0 => SystemState::Initializing,
+        1 => SystemState::Running,
+        2 => SystemState::Degraded,
+        3 => SystemState::FailSafe,
+        _ => SystemState::Panic,
+    }
 }
 
-/// Sensör verisi geçersizse (NaN, sapma) Fail-Safe tetiklenir.
+/// Sensör verisi geçersizse (NaN, Inf, sapma) Fail-Safe tetiklenir.
 /// O(1), deterministik.
 pub fn validate_sensor_payload(p: &SensorPayload) -> Result<(), IndustrialError> {
-    if p.temperature.is_nan() || p.pressure.is_nan() {
+    if !p.temperature.is_finite() || !p.pressure.is_finite() || !p.motor_rpm.is_finite() {
         return Err(IndustrialError::OpcUaDisconnect);
     }
     if p.status_mask == 0xFF {

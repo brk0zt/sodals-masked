@@ -185,18 +185,35 @@ pub struct SodalsState {
     pub transition_failed_count: usize,
 }
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     let args: Vec<String> = env::args().collect();
     
     let mut cartridge_path = None;
     let mut qmem_manifest_path = None;
     let mut qmem_ram_bytes = None;
+    let mut mab_dir_path = None;
     let mut draft_model_path = None;
+    let mut prompt_override = None;
+    let mut max_tokens_override = None;
+    let mut temperature = None;
+    let mut repeat_penalty = None;
+    let mut image_path = None;
+    let mut model_path = None;
+    let mut tokenizer_path = None;
+    let mut min_think_override = None;
+    let mut minimal_mode = false;
     let mut clean_args = Vec::new();
     let mut i = 0;
     while i < args.len() {
         if args[i] == "--cartridge" && i + 1 < args.len() {
             cartridge_path = Some(args[i + 1].clone());
+            i += 2;
+        } else if args[i] == "--mab-dir" && i + 1 < args.len() {
+            mab_dir_path = Some(args[i + 1].clone());
+            i += 2;
+        } else if args[i] == "--image" && i + 1 < args.len() {
+            image_path = Some(args[i + 1].clone());
             i += 2;
         } else if args[i] == "--qmem-manifest" && i + 1 < args.len() {
             qmem_manifest_path = Some(args[i + 1].clone());
@@ -207,6 +224,30 @@ fn main() -> Result<()> {
         } else if args[i] == "--draft-model" && i + 1 < args.len() {
             draft_model_path = Some(args[i + 1].clone());
             i += 2;
+        } else if args[i] == "--prompt" && i + 1 < args.len() {
+            prompt_override = Some(args[i + 1].clone());
+            i += 2;
+        } else if args[i] == "--max-tokens" && i + 1 < args.len() {
+            max_tokens_override = args[i + 1].parse::<usize>().ok();
+            i += 2;
+        } else if args[i] == "--temperature" && i + 1 < args.len() {
+            temperature = args[i + 1].parse::<f64>().ok();
+            i += 2;
+        } else if args[i] == "--repeat-penalty" && i + 1 < args.len() {
+            repeat_penalty = args[i + 1].parse::<f32>().ok();
+            i += 2;
+        } else if args[i] == "--model" && i + 1 < args.len() {
+            model_path = Some(args[i + 1].clone());
+            i += 2;
+        } else if args[i] == "--tokenizer" && i + 1 < args.len() {
+            tokenizer_path = Some(args[i + 1].clone());
+            i += 2;
+        } else if args[i] == "--min-think" && i + 1 < args.len() {
+            min_think_override = args[i + 1].parse::<usize>().ok();
+            i += 2;
+        } else if args[i] == "--minimal-mode" {
+            minimal_mode = true;
+            i += 1;
         } else {
             clean_args.push(args[i].clone());
             i += 1;
@@ -216,15 +257,21 @@ fn main() -> Result<()> {
 
     let use_stdin = args.iter().any(|arg| arg == "--stdin");
     
-    if !use_stdin && args.len() < 2 {
+    // A --prompt override satisfies the argument requirement even when no positional
+    // prompt was given (the option parser consumed it out of clean_args).
+    if !use_stdin && prompt_override.is_none() && args.len() < 2 {
         eprintln!("Usage: candle_inference_full <prompt> [max_tokens] [model_path] [tokenizer_path]");
         eprintln!("   or: candle_inference_full --stdin [max_tokens] [model_path] [tokenizer_path]");
         eprintln!();
         eprintln!("Options:");
+        eprintln!("  --image <path>            Load image for multimodal inference");
         eprintln!("  --cartridge <path>        Load QMEM cartridge");
         eprintln!("  --qmem-manifest <path>    Initialize hierarchical QMEM loader from manifest");
         eprintln!("  --qmem-ram-bytes <bytes>  Set RAM budget for hierarchical QMEM loader");
         eprintln!("  --draft-model <path>      Load lightweight draft model for speculative decoding");
+        eprintln!("  --model <path>            Override GGUF model path (default: ./models/model.gguf)");
+        eprintln!("  --tokenizer <path>        Override tokenizer path (default: ./models/tokenizer.json)");
+        eprintln!("  --min-think <tokens>      Override min-think gate (0 = no forced thinking)");
         eprintln!();
         eprintln!("QMEM Layer-wise Mixed-Precision Support:");
         eprintln!("  Manifest dtype field: f32, f16, bf16 (default: f32)");
@@ -232,23 +279,30 @@ fn main() -> Result<()> {
         std::process::exit(1);
     }
     
-    let prompt = if use_stdin {
-        use std::io::{self, Read};
-        let mut buffer = String::new();
-        io::stdin().read_to_string(&mut buffer)?;
-        buffer
-    } else {
-        args.get(1).cloned().unwrap_or_default()
-    };
+    let prompt = prompt_override.unwrap_or_else(|| {
+        if use_stdin {
+            use std::io::{self, Read};
+            let mut buffer = String::new();
+            io::stdin().read_to_string(&mut buffer).unwrap_or_default();
+            if buffer.starts_with('\u{feff}') {
+                buffer.remove(0);
+            }
+            buffer.replace("\r\n", "\n")
+        } else {
+            args.get(1).cloned().unwrap_or_default()
+        }
+    });
     
     if prompt.trim().is_empty() {
         eprintln!("Error: Empty prompt provided");
         std::process::exit(1);
     }
 
-    let max_tokens = args.get(2).and_then(|a| a.parse::<usize>().ok()).unwrap_or(2048);
-    let model_path = args.get(3).cloned();
-    let tokenizer_path = args.get(4).cloned();
+    let max_tokens = max_tokens_override.unwrap_or_else(|| {
+        args.get(2).and_then(|a: &String| a.parse::<usize>().ok()).unwrap_or(2048)
+    });
+    let model_path = model_path.or_else(|| args.get(3).cloned());
+    let tokenizer_path = tokenizer_path.or_else(|| args.get(4).cloned());
 
     eprintln!("[DEBUG] Mode: {}", if use_stdin { "stdin" } else { "args" });
     eprintln!("[DEBUG] Tokens: {}", max_tokens);
@@ -257,7 +311,9 @@ fn main() -> Result<()> {
     eprintln!("[DEBUG] Cartridge: {:?}", cartridge_path);
     eprintln!("[DEBUG] QMEM manifest: {:?}", qmem_manifest_path);
     eprintln!("[DEBUG] QMEM RAM bytes: {:?}", qmem_ram_bytes);
+    eprintln!("[DEBUG] MAB Directory: {:?}", mab_dir_path);
     eprintln!("[DEBUG] Draft Model: {:?}", draft_model_path);
+    eprintln!("[DEBUG] Image: {:?}", image_path);
     
     let seed = 42;
     let result = run_full_sodals_inference(
@@ -267,9 +323,15 @@ fn main() -> Result<()> {
         model_path.as_deref(),
         tokenizer_path.as_deref(),
         cartridge_path.as_deref(),
+        mab_dir_path.as_deref(),
         qmem_manifest_path.as_deref(),
         qmem_ram_bytes,
         draft_model_path.as_deref(),
+        temperature,
+        repeat_penalty,
+        image_path.as_deref(),
+        min_think_override,
+        minimal_mode,
     )?;
     
     let output = serde_json::json!({
@@ -286,7 +348,10 @@ fn main() -> Result<()> {
         "semantic_network_active": true,
         "physics_reasoning_active": true
     });
-    
+
+    // Fix: Add guaranteed newline before JSON output to prevent parsing issues
+    // when progressive token printing doesn't end with newline
+    println!(); // Ensure we're on a fresh line for stdout
     println!("{}", output);
     Ok(())
 }
@@ -299,14 +364,20 @@ struct InferenceResult {
 
 fn run_full_sodals_inference(
     prompt: &str, 
-    _max_tokens: usize, 
+    max_tokens: usize, 
     _seed: u64,
     model_path: Option<&str>,
     tokenizer_path: Option<&str>,
     cartridge_path: Option<&str>,
+    mab_dir_path: Option<&str>,
     _qmem_manifest_path: Option<&str>,
     _qmem_ram_bytes: Option<usize>,
     _draft_model_path: Option<&str>,
+    temperature: Option<f64>,
+    repeat_penalty: Option<f32>,
+    image_path: Option<&str>,
+    min_think_override: Option<usize>,
+    minimal_mode: bool,
 ) -> Result<InferenceResult> {
     let mut config = SystemConfig::default();
     if let Some(mp) = model_path {
@@ -321,26 +392,64 @@ fn run_full_sodals_inference(
     
     if let Some(cp) = cartridge_path {
         engine.load_qmem_cartridge(cp)?;
+    } else if let Some(mab_dir) = mab_dir_path {
+        engine.init_cartridge_library(mab_dir, 1.414);
+        engine.load_best_cartridge(None)?;
     }
     
     let mut neuro_config = sodals_neuro::engine::chimera_router::NeuroConfig::default();
-    neuro_config.strict_determinism = true;
+    if let Some(t) = temperature {
+        neuro_config.temperature = t;
+        neuro_config.sampling_override = true;
+        if t == 0.0 {
+            neuro_config.strict_determinism = true;
+        }
+    }
+    if let Some(rp) = repeat_penalty {
+        neuro_config.repeat_penalty = rp;
+        neuro_config.sampling_override = true;
+    }
+    if let Some(mt) = min_think_override {
+        neuro_config.min_think_tokens = Some(mt);
+    }
+    if minimal_mode {
+        neuro_config.minimal_mode = true;
+    }
     
-    let text = sodals_neuro::engine::generation_loop::generate_stream(
-        &mut engine,
-        prompt,
-        None,
-        None,
-        |token| {
-            use std::io::Write;
-            print!("{}", token);
-            let _ = std::io::stdout().flush();
-        },
-        &neuro_config,
-        0,
-    )?;
+    eprintln!("[DEBUG] token_to_id('<think>') = {:?}", engine.tokenizer.token_to_id("<think>"));
     
-    let token_count = text.split_whitespace().count();
+    let text = if let Some(img_path) = image_path {
+        let image_bytes = std::fs::read(img_path)?;
+        engine.generate_multimodal(
+            prompt,
+            &[("image/jpeg", &image_bytes)],
+            &neuro_config,
+            max_tokens
+        )?
+    } else {
+        sodals_neuro::engine::generation_loop::generate_stream(
+            &mut engine,
+            prompt,
+            None,
+            None,
+            |token| {
+                use std::io::Write;
+                print!("{}", token);
+                let _ = std::io::stdout().flush();
+            },
+            &neuro_config,
+            0, // visual_token_count
+            max_tokens,
+        )?
+    };
+    
+    let token_count = engine.tokenizer.encode(text.as_str(), false)
+        .map(|e| e.get_ids().len())
+        .unwrap_or_else(|_| text.split_whitespace().count());
+    
+    if mab_dir_path.is_some() {
+        engine.observe_cartridge_reward();
+    }
     
     Ok(InferenceResult {
         text,
@@ -353,6 +462,8 @@ fn run_full_sodals_inference(
 
 
     
+
+
 
 
 

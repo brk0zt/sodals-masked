@@ -14,15 +14,15 @@
 //!   sodals_alloc::register_pressure_hook(tx);
 //!   // Spawn a listener on `rx` that reduces CortexActor load.
 
-#[cfg(not(target_os = "windows"))]
+#[cfg(all(not(target_os = "windows"), feature = "jemalloc"))]
 use jemallocator::Jemalloc;
-#[cfg(not(target_os = "windows"))]
+#[cfg(all(not(target_os = "windows"), feature = "jemalloc"))]
 use jemalloc_ctl::{epoch, stats};
 
 use std::sync::{OnceLock, mpsc::SyncSender};
 
-// make jemalloc the real allocator
-#[cfg(not(target_os = "windows"))]
+// make jemalloc the real allocator when explicitly enabled on Unix
+#[cfg(all(not(target_os = "windows"), feature = "jemalloc"))]
 #[global_allocator]
 static GLOBAL: Jemalloc = Jemalloc;
 
@@ -55,7 +55,7 @@ pub fn register_pressure_hook(tx: SyncSender<()>) {
 // IIIIII Monitor thread ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /// Spawn the memory monitor thread. Call this once early in main.rs.
-#[cfg(not(target_os = "windows"))]
+#[cfg(all(not(target_os = "windows"), feature = "jemalloc"))]
 pub fn init_memory_monitor() {
     std::thread::Builder::new()
         .name("mem-monitor".into())
@@ -68,13 +68,8 @@ pub fn init_memory_monitor() {
             loop {
                 std::thread::sleep(std::time::Duration::from_secs(1));
 
-                #[cfg(not(target_os = "windows"))]
                 let _ = epoch::advance();
-
-                #[cfg(not(target_os = "windows"))]
                 let used = stats::allocated::read().unwrap_or(0);
-                #[cfg(target_os = "windows")]
-                let used = 0usize;
 
                 if used > hard_threshold {
                     eprintln!(
@@ -84,7 +79,6 @@ pub fn init_memory_monitor() {
                         limit        as f64 / 1_073_741_824.0,
                         used as f64 / limit as f64 * 100.0,
                     );
-                    // Continue III enterprise jobs must never be killed silently.
                 }
 
                 if used > soft_threshold {
@@ -96,39 +90,38 @@ pub fn init_memory_monitor() {
                             used as f64 / limit as f64 * 100.0,
                         );
                         if let Some(tx) = PRESSURE_SENDER.get() {
-                            // Non-blocking: if the receiver is busy, skip this tick.
                             let _ = tx.try_send(());
                         }
                         last_signalled = true;
                     }
                 } else {
-                    last_signalled = false; // reset so next crossing fires again
+                    last_signalled = false;
                 }
             }
         })
         .expect("failed to start memory monitor");
 }
 
-#[cfg(target_os = "windows")]
+#[cfg(not(all(not(target_os = "windows"), feature = "jemalloc")))]
 pub fn init_memory_monitor() {
     std::thread::Builder::new()
         .name("mem-monitor-stub".into())
         .spawn(|| {
-            eprintln!("[MEM] Memory monitor disabled on Windows (jemalloc not supported natively).");
+            eprintln!("[MEM] Memory monitor stub active (enable feature `jemalloc` on Unix for live stats).");
         })
         .expect("failed to start stub memory monitor");
 }
 
 // IIIIII Public helpers ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/// Returns current jemalloc allocated bytes (or 0 on Windows).
-#[cfg(not(target_os = "windows"))]
+/// Returns current jemalloc allocated bytes (or 0 when jemalloc feature is disabled).
+#[cfg(all(not(target_os = "windows"), feature = "jemalloc"))]
 pub fn current_usage() -> usize {
     let _ = epoch::advance();
     stats::allocated::read().unwrap_or(0)
 }
 
-#[cfg(target_os = "windows")]
+#[cfg(not(all(not(target_os = "windows"), feature = "jemalloc")))]
 pub fn current_usage() -> usize { 0 }
 
 pub fn memory_limit_human() -> String {

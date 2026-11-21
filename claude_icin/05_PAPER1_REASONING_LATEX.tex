@@ -1,0 +1,334 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{microtype}
+\usepackage{caption}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=blue,
+    urlcolor=blue,
+    pdftitle={SODALS v2.1: Self-Distillation Policy Optimization (SDPO), Long-Context GRPO, and Continuous Manifold Stabilization in Frontier Reasoning},
+    pdfauthor={Burak Ozturk}
+}
+
+\title{\textbf{SODALS v2.1: Self-Distillation Policy Optimization (SDPO), Long-Context GRPO, and Continuous Manifold Stabilization in Frontier Reasoning}}
+
+\author{
+    \textbf{Burak \"Ozt\"urk} \\
+    Independent Researcher, SODALS Project \\
+    \texttt{burak.ozturk@sodals-research.org}
+}
+
+\date{October 2026 \\ \vspace{0.5em} \small Archive Identifier: \texttt{arxiv/sodals-v2.1-sdpo-grpo-20261001}}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+We present an empirical study investigating the causal dynamics and optimization limits of post-training reasoning enhancements in parameter-efficient, hardware-constrained regimes (NVIDIA GeForce RTX 4060 Laptop GPU, 8GB VRAM). We systematically trace the progression of mathematical reasoning through five decoupled paradigms: (1) \textbf{Self-Distillation Policy Optimization (SDPO)} with symbolic verifiers; (2) \textbf{Continuous Soft Mixture-of-Adapters (Soft-MoA)} across disjoint mathematical domains; (3) \textbf{Hardware-Constrained Long-Context Group Relative Policy Optimization (GRPO)}; (4) \textbf{Continuous Manifold Regulation via Prefill Pondering ODEs}; and (5) \textbf{Test-Time Neurosymbolic Verification and Tuned Lens (J-Lens) Geometric Stability Gating}.
+
+First, to isolate causal learning from stochastic weight perturbation on pre-selected error distributions, we introduce a \textbf{Placebo Negative Control Ablation}: updating an identical low-rank adapter ($r=4$, $\alpha=8$) over an identical gradient budget (17 optimization steps, learning rate $3 \times 10^{-5}$, Gram matrix subspace orthogonality regularizer $\lambda_{\mathrm{ortho}} = 0.005$) on unrelated canonical mathematics examples. Under strict greedy decoding ($T=0.0$), the \textbf{Placebo Control scored 0 / 35 (0.0\%)} on strictly held-out failure questions, whereas \textbf{Pure SDPO achieved 4 / 35 (11.4\%) zero-shot recovery} (Fisher exact two-sided $p = 0.114$, one-sided $p = 0.057$, McNemar paired test $p = 0.125$). While providing an encouraging directional signal, we document a \textbf{Pareto capacity trade-off}: incorporating static factual anchors to prevent localized representation drift on the exceptional Lie algebra $F_4$ ($52 \to 28$) reduced held-out recovery yield from 4 / 35 (11.4\%) to 2 / 35 (5.71\%). Furthermore, multi-domain scaling across 170 evaluation cases revealed the \textbf{Subspace Interference Effect}: joint multi-adapter fine-tuning induces cross-subspace covariance ($A_1 A_2^T \neq 0$), eroding delicate frontier representations ($E_7 = 133 \to 70$). In contrast, an \textbf{Untrained Soft Blender} modulated by Layer-32 Gaussian Phase Routing achieves peak multi-domain accuracy (138 / 170, 81.18\%), matching discrete regex routing while eliminating brittle manual parsing rules.
+
+To expand reasoning horizons on consumer hardware, we introduce a \textbf{Zero-Paging VRAM Architecture} that offloads token embeddings to host CPU RAM, quantizes the linear language model head to 4-bit NF4, and computes policy gradients via chunked micro-batches ($\text{chunk\_size}=32$). This reduces baseline model footprint from 7,298 MB to 3,907 MB, unlocking 3,616 MB of physical headroom and enabling 1536--2048 token autoregressive rollout and policy updates with \textbf{zero WDDM driver paging} on commodity 8GB GPUs. Exploiting this horizon, \textbf{Long-Context GRPO ($L=1536$, $G=4$)} advances the frozen SFT baseline on the strictly unseen \textbf{Clean 125 Held-Out MATH-500} subset from \textbf{99 / 125 (79.20\%)} to \textbf{100 / 125 (80.00\%)} under the legacy grader---and from \textbf{103 / 125 (82.40\%)} to \textbf{104 / 125 (83.20\%)} under normalized symbolic equivalence (+1 net problem on unseen items, exact McNemar $p = 1.0000$; 123 / 150 vs.\ 122 / 150 legacy overall) with \textbf{zero regressions (0 drops)}, autonomously executing 1,023 tokens of sustained chain-of-thought to solve difficult intermediate algebra problems (Q105) missed by SFT. Finally, a unified-grader ablation across four test-time inference modules on the Clean 125 Held-Out set demonstrates that: (i) \textbf{Prefill Pondering ODE (Module 1)} preserves \textbf{100 / 125 (80.00\% legacy; 104 / 125, 83.20\% normalized symbolic)} as a neutral invariance operator; (ii) naive regex-based \textbf{CST Symbolic PRM Gating (Module 2, $G=1$)} suffers a \textbf{$-1$ problem regression} (\textbf{99 / 125 legacy; 103 / 125 normalized symbolic}) due to a false-positive fraction contradiction on Q055; (iii) \textbf{Tri-Modal Tuned Lens Geometric Stability Gating (Module 3, $G=1$)} eliminates the Q055 false positive, restoring \textbf{100 / 125 (80.00\% legacy; 104 / 125, 83.20\% normalized symbolic)} with zero regressions while uncovering the \textbf{Confident Hallucination Phenomenon} under greedy ($T=0$) decoding: inter-layer affine consensus (Layers 28 \& 30 $\to$ Layer 31) is slightly higher on failed derivations (\textbf{0.7867}, $n=21$) than on correct derivations (\textbf{0.7756}, $n=104$; overall $0.7775 \pm 0.0191$, Top-1 vocabulary agreement \textbf{124 / 125 = 99.20\%}); and (iv) \textbf{Targeted Best-of-$G$ ($G=4$) Multi-Branch Neurosymbolic PRM Rollout (Module 4)} overcomes this greedy hallucination barrier—triggering blindly on only 15 / 150 structurally flawed trajectories to advance Clean 125 Held-Out accuracy to \textbf{102 / 125 (81.60\% legacy)} and \textbf{106 / 125 (84.80\% normalized symbolic; 129 / 150 = 86.00\% combined)} with \textbf{+2 genuine Held-Out gains over GRPO (Q120 and Q138), +3 net gains (+2.40\%) over SFT, and 0 regressions}, notably outperforming majority voting on base-5 arithmetic (Q138: $224_5 \to 204_5$) via exact SymPy base-$n$ process verification.
+\end{abstract}
+
+\section{Experimental Progression \& Decoupled Architecture}
+
+The SODALS v2.1 research pipeline investigates reasoning optimization across nine systematically controlled stages on Qwen 3.5 9B Base (NF4 Quantized / FP16 Native):
+\begin{enumerate}
+    \item \textbf{Stage 1 (Balanced SFT):} 815 master examples $\to$ Baseline Adapter (\texttt{balanced\_r4}, 389/500 on full MATH-500).
+    \item \textbf{Stage 2 (Error Mining):} 111 MATH-500 failures $\to$ Stratified split (Seed 42) into 76 training failures and 35 strictly held-out unseen failures.
+    \item \textbf{Stage 3 (SDPO \& Placebo Control):} 17 SymPy-verified self-corrections trained across Pure SDPO LoRA (17 steps), Placebo Control LoRA (17 unrelated math items, 17 steps), and Anchored SDPO-A (17 self-corrections + 3 domain anchors, 20 steps).
+    \item \textbf{Stage 4 (Multi-Domain MoA):} Domain 1 (MATH-500) + Domain 2 (Lie Theory \& Abstract Algebra) governed by Layer-32 Gaussian Phase Routing (Untrained Soft Blender: 138/170, 81.18\%).
+    \item \textbf{Stage 5 (Zero-Paging VRAM Architecture):} CPU Embedding Offload + 4-bit NF4 LM Head + Chunked Policy Loss, reducing base VRAM from 7,298 MB to 3,907 MB (unlocking $L=1536\text{--}2048$ with 0 WDDM page faults).
+    \item \textbf{Stage 6 (Long-Context GRPO):} Group Relative Policy Optimization ($L=1536$, $G=4$ rollouts, 25 training prompts). Clean Held-Out MATH-500 (125Q): 100 / 125 (80.00\% legacy) and 104 / 125 (83.20\% normalized symbolic) vs.\ SFT 99 / 125 (79.20\% legacy) and 103 / 125 (82.40\% normalized symbolic), 0 drops, +1 gain (Q105).
+    \item \textbf{Stage 7 (Prefill Pondering ODE --- Module 1):} Explicit RK4 continuous manifold relaxation on prefill latent states, preserving 100 / 125 legacy (104 / 125 normalized symbolic) on Clean Held-Out with 0 regressions.
+    \item \textbf{Stage 8 (Test-Time Neurosymbolic PRM \& Tuned Lens Gating --- Modules 2 \& 3):} Unified-grader evaluation isolating grader normalization (+4 formatting matches across all models) from gate intervention, showing that Module 3 (Tuned Lens + Tri-Modal PRM) eliminates Module 2's Q055 false-positive regression ($99 \to 100/125$ legacy; $103 \to 104/125$ normalized symbolic) and reveals high inter-layer stability on failed greedy chains ($0.7867$ vs.\ $0.7756$).
+    \item \textbf{Stage 9 (Targeted Best-of-$G$ Neurosymbolic Rollout --- Module 4):} Multi-branch sampling ($G=4$) with Tri-Modal PRM selection over 15 blindly triggered flaw candidates, achieving 102 / 125 (81.60\% legacy) and 106 / 125 (84.80\% normalized symbolic) on Clean Held-Out (+2 net gains on Q120 and Q138, 0 regressions, overruling majority voting on Q138).
+\end{enumerate}
+
+\subsection{Hyperparameter and Configuration Matrix}
+
+\begin{table}[htbp]
+\centering
+\caption{Hyperparameter and Hardware Configuration Matrix across Experimental Arms.}
+\label{tab:config}
+\small
+\begin{tabular}{@{}llllll@{}}
+\toprule
+\textbf{Dimension / Stage} & \textbf{Balanced SFT} & \textbf{Placebo Control} & \textbf{SDPO-A} & \textbf{Soft-MoA} & \textbf{Long GRPO} \\
+\midrule
+Base Model & Qwen 3.5 9B & Qwen 3.5 9B & Qwen 3.5 9B & Qwen 3.5 9B & Qwen 3.5 9B \\
+Adapter Rank ($r$) & $r=4, \alpha=8$ & $r=4, \alpha=8$ & $r=4, \alpha=8$ & D1:$r=4$, D2:$r=8$ & $r=4, \alpha=8$ \\
+Training Scheme & Supervised SFT & Supervised SFT & Supervised SFT & Inference Blend & GRPO RL \\
+Dataset Size & 815 Items & 17 Unrelated & 20 (17+3) & 170 Eval & 25 Prompts ($G=4$) \\
+Context Window ($L$) & 384 tokens & 384 tokens & 384 tokens & 384 tokens & \textbf{1536 tokens} \\
+GPU Hardware & RTX 4060 (8GB) & RTX 4060 (8GB) & RTX 4060 (8GB) & RTX 4060 (8GB) & RTX 4060 (8GB) \\
+Base VRAM Footprint & 7,298 MB & 7,298 MB & 7,298 MB & 7,490 MB & \textbf{3,907 MB} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Multi-Benchmark Empirical Results}
+
+All evaluations were executed under deterministic greedy decoding ($T=0.0$, repetition penalty 1.05) directly on an NVIDIA GeForce RTX 4060 Laptop GPU.
+
+\subsection{Master Multi-Arm Comparison}
+
+\begin{table}[htbp]
+\centering
+\caption{Master Multi-Arm Comparison Across Held-Out Failures, Frontier STEM, and Safety Control.}
+\label{tab:master_arms}
+\small
+\begin{tabular}{@{}p{3.4cm}ccccp{4.8cm}@{}}
+\toprule
+\textbf{Evaluation Suite} & \textbf{Baseline} & \textbf{Placebo} & \textbf{Pure SDPO} & \textbf{SDPO-A} & \textbf{Causal \& Epistemic Verdict} \\
+\midrule
+\textbf{1. 35 Held-Out Failures} \newline \textit{(Generalization Repair)} & 0 / 35 \newline (0.0\%) & \textbf{0 / 35} \newline \textbf{(0.0\%)} & \textbf{4 / 35} \newline \textbf{(11.4\%)} & \textbf{2 / 35} \newline \textbf{(5.71\%)} & Placebo flips 0 boundary items. SDPO drives near-miss repairs (Fisher two-sided $p=0.114$, McNemar $p=0.125$). Anchor exhibits capacity trade-off. \\
+\addlinespace
+\textbf{2. Pristine 24Q STEM} \newline \textit{(Invariant Integrity)} & \textbf{21 / 24} \newline (87.5\%) & \textbf{21 / 24} \newline (87.5\%) & \textbf{20 / 24} \newline (83.3\%) & \textbf{21 / 24} \newline (87.5\%) & Anchor restores $F_4=52$ via Cartan formula ($\dim = \mathrm{rank} + |\Phi|$). $\mathfrak{sp}(6)$ remains broken (`12` vs.\ `21`). \\
+\addlinespace
+\textbf{3. 50Q MATH-500} \newline \textit{(Forgetting Tripwire)} & \textbf{39 / 50} \newline (78.0\%) & \textbf{39 / 50} \newline (78.0\%) & \textbf{40 / 50} \newline (80.0\%) & \textbf{40 / 50} \newline (80.0\%) & Zero regression: all post-training updates pass the safety tripwire without catastrophic forgetting. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Extended Multi-Benchmark Validation Suite}
+
+To evaluate whether low-rank fine-tuning introduces broad regression across standard reasoning distributions, models were evaluated across three independent benchmarks (Table~\ref{tab:extended}).
+
+\begin{table}[htbp]
+\centering
+\caption{Extended Benchmark Evaluations comparing Balanced SFT Baseline (\texttt{balanced\_r4}) against Anchored SDPO (SDPO-A).}
+\label{tab:extended}
+\small
+\begin{tabular}{@{}lccccl@{}}
+\toprule
+\textbf{Benchmark Suite} & $N$ & \textbf{Mode} & \textbf{Balanced SFT Baseline} & \textbf{SDPO-A ($\alpha=0.25$)} & \textbf{Metric \& Divergence} \\
+\midrule
+\textbf{MATH-500 (Full)}~\cite{hendrycks2021math} & 500 & Greedy & \textbf{389 / 500 (77.8\%)} & \textbf{384 / 500 (76.8\%)} & $\Delta = -1.0\%$; 96.2\% agreement \\
+ & & & {\scriptsize [95\% CI: 74.0, 81.2]} & {\scriptsize [95\% CI: 72.9, 80.3]} & (481/500 identical outputs) \\
+\addlinespace
+\textbf{MMLU-Pro (STEM)} & 20 & Greedy & \textbf{15 / 20 (75.0\%)} & \textbf{15 / 20 (75.0\%)} & Exact tie; 85.0\% agreement \\
+\addlinespace
+\textbf{Humanity's Last Exam}~\cite{phan2025hle} & 50 & Greedy & \textbf{2 / 50 (4.0\%)} & \textbf{1 / 50 (2.0\%)} & Frontier floor effects ($\le 4\%$) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Forensic Autopsy \& Scientific Analyses}
+
+\subsection{Causal Attribution via Negative Control (Placebo Ablation)}
+
+A critical vulnerability in post-training evaluations is the \textbf{boundary perturbation fallacy}: when evaluating on questions pre-selected for initial failure, an evaluation score of 0 / 35 before fine-tuning is an artifact of selection rather than an empirical baseline. To determine whether an arbitrary 17-step weight perturbation would flip borderline answers purely by chance, we trained the Placebo Control model on 17 unrelated mathematics examples (\texttt{control\_17\_curriculum.jsonl}).
+
+The Placebo Control model achieved \textbf{0 / 35 (0.0\%)} on the held-out failure distribution, whereas Pure SDPO achieved \textbf{4 / 35 (11.4\%)}. Under Fisher's exact test, the 4/35 vs.\ 0/35 difference corresponds to a two-sided $p = 0.114$ and one-sided $p = 0.057$ (McNemar paired $p \approx 0.125$). While the zero-flip outcome of the placebo control provides an encouraging empirical contrast against random boundary perturbation, the sample size ($N=35$) is statistically underpowered to definitively reject the null hypothesis at $\alpha = 0.05$. Expanding the failure cohort to $N \ge 100$ is strictly required to establish asymptotic causal attribution.
+
+\subsection{The $F_4$ Anomaly and Pristine 24Q Frontier STEM Decomposition}
+
+In initial 8-question evaluations, the Placebo model scored 7 / 8 (87.5\%), outperforming Pure SDPO (6 / 8, 75.0\%) on Question 1:
+\[
+\text{Problem: What is the dimension of the exceptional Lie algebra } F_4? \quad (\text{Ground Truth: } 52)
+\]
+Placebo predicted \texttt{52} (PASS), whereas Pure SDPO predicted \texttt{28} (FAIL). An audit of \texttt{control\_17\_curriculum.jsonl} revealed that Item 17 in the Placebo set primed the Cartan root-dimension formula ($\dim(\mathfrak{g}) = \mathrm{rank}(\mathfrak{g}) + |\Phi|$) on $\mathfrak{g}_2$, enabling exact computation of $\dim(F_4) = 4 + 48 = 52$. Conversely, Pure SDPO experienced localized representation drift, misidentifying $F_4$ with $D_4 = \mathfrak{so}(8)$ ($28$).
+
+To eliminate small-sample noise ($n=8$), we evaluated all models on the \textbf{Pristine 24Q Frontier STEM Benchmark} (3 canonical textbook invariant questions across 8 domains: Lie Theory, Modular Forms, Symplectic Geometry, Arithmetic Geometry, Algebraic Topology, Representation Theory, Complex Analysis, and Characteristic Classes). Across all 24 questions, 20 are resolved identically across all four models, with $F_4$ serving as the sole differentiator between Baseline (21/24), Placebo (21/24), Pure SDPO (20/24), and Anchored SDPO-A (21/24).
+
+\subsection{Capacity Cost of Anchor Regularization and Epistemic Scope}
+
+Incorporating 3 static frontier anchors alongside the 17 self-corrections in SDPO-A restored $F_4 = 52$ (21/24), but reduced held-out repair yield from \textbf{4 / 35 (11.4\%)} (Q6, Q8, Q9, Q35) to \textbf{2 / 35 (5.71\%)} (Q9, Q35). In a hyper-parameter-efficient regime ($r=4$, 20 steps), allocating 15\% of the gradient trajectory to static anchors dilutes optimization pressure away from generative error repair. Furthermore, all models consistently failed Question 7 ($\dim \mathfrak{sp}(6) = 21$, predicting \texttt{12}), demonstrating that post-training anchor regularization operates via \textbf{template-specific formula recall} rather than generalized symbolic deduction.
+
+\subsection{Multi-Adapter Cartridge Routing \& Continuous Soft LoRA Blending}
+
+To surpass single-adapter capacity ceilings across Domain 1 (Competition MATH-500) and Domain 2 (Abstract Algebra \& Lie Theory), SODALS introduces a modular \textbf{Mixture-of-Adapters (MoA)} governed by a Layer-32 \textbf{Gaussian Phase Router (GPR)} ($\tau = 0.004913$, Fisher separation $= 15.30$):
+\begin{equation}
+\Delta W = (1 - \alpha) s_1 W_1 + \alpha s_2 W_2, \quad \alpha = \sigma(z_i / 0.03)
+\end{equation}
+On the 170-question multi-domain benchmark (150 MATH-500 + 20 Abstract Algebra), the \textbf{Untrained Soft Blender} achieved \textbf{138 / 170 (81.18\%)} (122/150 Domain 1, 16/20 Domain 2), outperforming joint fine-tuning variants (Phase 3 Scratch: 128/170; Phase 3 Calibrated: 135/170; Phase 13 Warm-Start: 137/170). Joint training induced cross-subspace perturbation ($A_1 A_2^T \neq 0$), erasing $E_7 = 133 \to 70$ and corrupting $\mathfrak{sp}(6) = 21 \to 1$.
+
+\subsection{Hardware-Constrained Long-Context VRAM Architecture}
+
+To unlock the 1536--2048 token window on an 8GB laptop GPU (NVIDIA RTX 4060, 8,188 MB physical VRAM) without WDDM driver paging, we engineered three memory optimizations:
+\begin{enumerate}
+    \item \textbf{Host CPU Embedding Offload (\texttt{CPUEmbeddingWrapper}):} Transfers the 248,320-token lookup table to CPU RAM ($<0.1\text{ ms}$ transfer overhead), freeing \textbf{1,645 MB} VRAM.
+    \item \textbf{4-Bit NF4 LM Head Quantization:} Quantizes the frozen $[248320, 4096]$ projection matrix from FP16 (1,940 MB) to NF4 (508 MB), saving \textbf{1,431 MB} VRAM.
+    \item \textbf{Chunked Policy Cross-Entropy Loss ($\text{chunk\_size}=32$):} Caps intermediate vocabulary logit memory at \textbf{15.8 MB}.
+\end{enumerate}
+Base VRAM plummeted from \textbf{7,298 MB to 3,907 MB}, opening \textbf{3,616 MB} of physical headroom (Table~\ref{tab:vram}).
+
+\begin{table}[htbp]
+\centering
+\caption{Forward + Backward Training Benchmark Across Context Horizons (RTX 4060 8GB).}
+\label{tab:vram}
+\small
+\begin{tabular}{@{}ccccccc@{}}
+\toprule
+\textbf{Seq Length ($L$)} & \textbf{Response ($R$)} & \textbf{Step Time (s)} & \textbf{Peak Alloc} & \textbf{Peak Reserved} & \textbf{Headroom} & \textbf{WDDM Paging} \\
+\midrule
+768 & 640 & 2.13 s & 4,445.6 MB & 4,942.0 MB & 3,246.0 MB & \textbf{NO (0 Pages)} \\
+1024 & 896 & 2.73 s & 4,625.0 MB & 5,260.0 MB & 2,928.0 MB & \textbf{NO (0 Pages)} \\
+1280 & 1,152 & 3.38 s & 4,804.4 MB & 5,592.0 MB & 2,596.0 MB & \textbf{NO (0 Pages)} \\
+1536 & 1,408 & 4.10 s & 4,983.8 MB & 5,828.0 MB & 2,360.0 MB & \textbf{NO (0 Pages)} \\
+1792 & 1,664 & 4.73 s & 5,163.2 MB & 6,088.0 MB & 2,100.0 MB & \textbf{NO (0 Pages)} \\
+\textbf{2048} & \textbf{1,920} & \textbf{5.50 s} & \textbf{5,342.6 MB} & \textbf{6,366.0 MB} & \textbf{1,822.0 MB} & \textbf{NO (0 Pages)} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Long-Context Group Relative Policy Optimization (GRPO)}
+
+With the zero-paging 1536-token window operational, we trained a policy via Group Relative Policy Optimization (GRPO)~\cite{shao2024deepseekmath}:
+\begin{equation}
+\mathcal{L}_{\mathrm{GRPO}}(\theta) = -\frac{1}{G} \sum_{i=1}^G \left( \min \left( r_i(\theta) A_i, \mathrm{clip}(r_i(\theta), 1-\epsilon, 1+\epsilon) A_i \right) - \beta D_{\mathrm{KL}}(\pi_\theta \| \pi_{\mathrm{ref}}) \right)
+\end{equation}
+across 25 competition prompts ($G=4$, 100 rollouts). To prevent train-test contamination, the 25 training prompts are strictly segregated (\texttt{Table~\ref{tab:grpo_train}}) from the 125 unseen held-out evaluation questions (\texttt{Table~\ref{tab:grpo_clean}}).
+
+\begin{table}[htbp]
+\centering
+\caption{Table 4A — Primary Benchmark: Clean Held-Out Generalization Evaluation (125 Strictly Unseen MATH-500 Questions, Zero Training Overlap).}
+\label{tab:grpo_clean}
+\small
+\begin{tabular}{@{}lccccl@{}}
+\toprule
+\textbf{Evaluation Metric} & \textbf{Frozen SFT Baseline} & \textbf{Long GRPO ($L=1536$)} & \textbf{Pondering ODE} & \textbf{Net Delta} & \textbf{Statistical Significance} \\
+\midrule
+\textbf{Clean Held-Out Acc.} & \textbf{99 / 125 (79.20\%)} & \textbf{100 / 125 (80.00\%)} & \textbf{100 / 125 (80.00\%)} & \textbf{+1 (+0.80\%)} & McNemar $p = 1.0000$ \\
+ & {\scriptsize [95\% CI: 71.27, 85.39]} & {\scriptsize [95\% CI: 72.14, 86.07]} & {\scriptsize [95\% CI: 72.14, 86.07]} & & Bootstrap: $[0.00\%, 2.40\%]$ \\
+\addlinespace
+\textbf{Regressions (Drops)} & --- & \textbf{0 Drops (0 / 125)} & \textbf{0 Drops (0 / 125)} & \textbf{0} & \textbf{100\% Policy Stability} \\
+\textbf{Gained Problems} & --- & \textbf{1 Problem (Q105)} & \textbf{1 Problem (Q105)} & \textbf{+1} & 1,023-Token CoT \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Table 4B — Secondary Evaluation: Training Subset Stability \& Reconstruction (25 Pilot Prompts).}
+\label{tab:grpo_train}
+\small
+\begin{tabular}{@{}lccccl@{}}
+\toprule
+\textbf{Metric / Subset} & \textbf{Frozen SFT} & \textbf{Long GRPO} & \textbf{Pondering ODE} & \textbf{Delta} & \textbf{Finding} \\
+\midrule
+\textbf{Training Solve Rate} & \textbf{23 / 25 (92.00\%)} & \textbf{23 / 25 (92.00\%)} & \textbf{23 / 25 (92.00\%)} & \textbf{0} & Zero Catastrophic Forgetting \\
+\textbf{Combined 150-Item Ref.} & 122 / 150 (81.33\%) & 123 / 150 (82.00\%) & 123 / 150 (82.00\%) & +1 & Overall Invariance Envelope \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Statistical Disclosure \& Case Study (Q105):}
+On the 125 unseen problems, GRPO achieves a net gain of +1 problem (Q105: Intermediate Algebra radical system, ground truth $40$, where SFT failed with `18` and GRPO generated \textbf{1,023 tokens} of sustained CoT to reach $\boxed{40}$). Under an exact two-sided McNemar test, $p = 1.0000$. Thus, this gain is statistically non-significant. Rather than claiming to have ``shattered the SFT ceiling,'' the verified contribution is (1) the zero-paging VRAM architecture enabling 1536-token RL on 8GB GPUs, and (2) 100\% policy stability (0 regressions). Because baseline accuracy on the 25 training prompts was high ($92.0\%$), homogeneous rollout groups yielded zero reward variance ($\sigma_r = 0$) and zero policy gradient, explaining the minimal parameter drift.
+
+\subsection{Continuous Manifold Stabilization via Prefill Pondering ODE}
+
+Integrating 4th-order Runge-Kutta (RK4) relaxation ($\frac{dh}{dt} = \tanh(W_2 \mathrm{GELU}(W_1 h + b_1) + b_2)$) at the final transformer layer during prompt prefill preserved \textbf{100 / 125 (80.00\%)} on the clean held-out set (123/150 overall, 0 gains, 0 drops). We report this as a \textbf{null result regarding accuracy}: because final-layer prefill activations do not mutate earlier-layer KV caches in a causal decoder, the ODE acts strictly as a neutral invariance operator.
+
+\subsection{Test-Time Neurosymbolic Verification, Tuned Lens Geometric Stability, and the Confident Hallucination Phenomenon (Clean 125 Held-Out Ablation)}
+
+To test whether autonomous test-time verification can detect and repair derivation errors without ground-truth leakage, we evaluated two progressive Process Reward Model (PRM) architectures on top of the 1536-token GRPO + Prefill Pondering ODE pipeline (Table~\ref{tab:step3_unified}):
+\begin{itemize}
+    \item \textbf{Module 2 --- CST Symbolic PRM \& Contradiction Gate (\texttt{eval\_grpo\_long\_cst\_prm\_150.py}):} Extracts intermediate equations ($L=R$) from the primary greedy chain (Pass 1) and checks algebraic consistency via SymPy alongside a Reasoning Chain Jacobian Filter ($\text{jump\_threshold}=3.5$). When an arithmetic contradiction ($|f_1 - f_2| > 10^{-4}$) or proof abandonment is flagged, a targeted self-correction pass (Pass 2) is triggered and scored by symbolic consistency.
+    \item \textbf{Module 3 --- Tuned Lens (J-Lens) \& Tri-Modal Geometric Stability Gate (\texttt{eval\_grpo\_long\_tuned\_lens\_150.py}):} Augments the refined CST Verifier and Jacobian Filter with a trained \textbf{Tuned Lens}~\cite{belrose2023tunedlens} probing workspace layers $l \in \{28, 30\}$ against Layer 31 via learned affine projections ($h_{\mathrm{proj},l} = W_l h_l + b_l$, \texttt{jlens\_weights.safetensors}), measuring mean cosine stability $\bar{S}$, final-token answer stability $S_{\mathrm{ans}}$, and Top-1 vocabulary agreement.
+\end{itemize}
+
+\begin{table}[htbp]
+\centering
+\caption{Table 5 --- Unified-Grader Six-Stage Ablation across Clean 125 Held-Out (\texttt{indices 26..150}), 25 Training Pilot (\texttt{indices 1..25}), and Combined 150 Sets.}
+\label{tab:step3_unified}
+\footnotesize
+\begin{tabular}{@{}lccccl@{}}
+\toprule
+\textbf{Stage / Model} & \textbf{Clean 125} & \textbf{Clean 125} & \textbf{Train 25} & \textbf{Combined 150} & \textbf{Net Delta vs.\ SFT} \\
+ & \textbf{(Legacy)} & \textbf{(NormSym)} & \textbf{(Leg/Sym)} & \textbf{(Legacy / NormSym)} & \textbf{(Clean 125)} \\
+\midrule
+\textbf{0. SFT Soft-Blended} & \textbf{99/125 (79.20\%)} & \textbf{103/125 (82.40\%)} & 23/25 & 122/150 / 126/150 & Reference \\
+\textbf{1. GRPO Long ($L=1536$)} & \textbf{100/125 (80.00\%)} & \textbf{104/125 (83.20\%)} & 23/25 & 123/150 / 127/150 & \textbf{+1 (+0.80\%, Q105)} \\
+\textbf{2. Mod 1: Pondering ODE} & \textbf{100/125 (80.00\%)} & \textbf{104/125 (83.20\%)} & 23/25 & 123/150 / 127/150 & \textbf{+1 (100\% Parity)} \\
+\textbf{3. Mod 2: CST PRM Gate ($G=1$)} & \textbf{99/125 (79.20\%)} & \textbf{103/125 (82.40\%)} & 23/25 & 122/150 / 126/150 & \textbf{0 ($-1$ Reg.\ Q055)} \\
+\textbf{4. Mod 3: Tuned Lens PRM ($G=1$)} & \textbf{100/125 (80.00\%)} & \textbf{104/125 (83.20\%)} & 23/25 & 123/150 / 127/150 & \textbf{+1 (Q055 Restored)} \\
+\textbf{5. Mod 4: Best-of-$G$ ($G=4$) PRM} & \textbf{102/125 (81.60\%)} & \textbf{106/125 (84.80\%)} & \textbf{23/25} & \textbf{125/150 / 129/150} & \textbf{+3 (+2.40\%, Q120 \& Q138)} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Elimination of Grader Drift \& Confident Hallucination under Greedy Decoding:}
+Grading all five models under both evaluators proves that the $+4$ item difference between Legacy and Normalized Symbolic metrics on Clean 125 (\texttt{Q032}: \texttt{11\textbackslash sqrt\{2\}} vs.\ \texttt{11\textbackslash sqrt2}; \texttt{Q054}: \texttt{-\textbackslash pi/6} vs.\ \texttt{-\textbackslash frac\{\textbackslash pi\}\{6\}}; \texttt{Q098}: \texttt{East} vs.\ \texttt{\textbackslash text\{east\}}; \texttt{Q128}: \texttt{4210\_5} vs.\ \texttt{4210\_\{5\}}) is a formatting normalization artifact already present in Pass 1 across all five models. Furthermore, while Module 2 suffered a $-1$ regression on \texttt{Q055} (\texttt{0.15} PASS overwritten with \texttt{0} FAIL due to a false-positive fraction split), Module 3 eliminated the false positive (\texttt{Q055} restored, 0 regressions across all 9 triggered held-out problems). Across Clean 125, Tuned Lens probing measured mean stability $\bar{S} = 0.7775 \pm 0.0191$ ($\min = 0.7266$), answer stability $0.6705 \pm 0.0282$, and Top-1 vocabulary agreement \textbf{124 / 125 (99.20\%)}. Crucially, failed greedy derivations ($n=21$) exhibited slightly \textbf{higher} inter-layer stability (\textbf{0.7867}) than passing derivations ($n=104$, \textbf{0.7756}), proving that under greedy ($T=0$) decoding, the 9B model errs via high-consensus parametric misconceptions (\textit{Confident Hallucination}) that cannot be overturned by a single deterministic retry without multi-branch sampling ($G > 1$).
+
+\subsection{Module 4 --- Targeted Best-of-$G$ ($G=4$) Neurosymbolic Rollout and Process Verification}
+
+To directly address confident hallucination under tight compute constraints, Module 4 activates an autonomous multi-branch search ($G=4$: 1 targeted deterministic correction + 3 stochastic $T=0.6$ rollouts) \textit{strictly} when Pass 1 exhibits verifiable structural flaws (reasoning truncation, SymPy contradiction, or $\ge 2$ doubt markers; 15/150 triggered). Candidates are evaluated by the Tri-Modal PRM combining SymPy equation soundness, contradiction penalties, doubt counts, and Tuned Lens affine stability. On the Clean 125 Held-Out set, Module 4 achieves \textbf{102 / 125 (81.60\% legacy)} and \textbf{106 / 125 (84.80\% normalized symbolic; 129 / 150 = 86.00\% combined)} with \textbf{0 regressions and +2 genuine gains}:
+\begin{itemize}
+    \item \textbf{Q120 Recovery (GT: $-9$):} Pass 1 truncated in a 2048-token loop predicting `2'. Candidate 4 generated a complete 11-equation sound trajectory ($+35.63$ PRM), correctly recovering $\boxed{-9}$ (PASS).
+    \item \textbf{Q138 Overruling Majority Voting (GT: $204_5$):} Pass 1 and two stochastic rollouts predicted $224_5$ (a 3-to-1 false consensus). SymPy CST base-$n$ verification detected the base-5 arithmetic contradiction in $224_5$ ($-16.7$ PRM), selecting the single sound branch $\text{Cand2} = 204_5$ ($+27.4$ PRM). This demonstrates neurosymbolic process verification decisively outperforming uncalibrated majority voting.
+\end{itemize}
+
+\section{Related Work}
+
+Self-correction in LLMs~\cite{madaan2023selfrefine,shinn2023reflexion} requires ground-truth verifiers to avoid accuracy degradation~\cite{huang2023cannot}, which we corroborate at the latent level via the Tuned Lens~\cite{belrose2023tunedlens}. Preference optimization via DPO~\cite{rafailov2023dpo}, STaR~\cite{zelikman2022star}, and critic-free GRPO~\cite{shao2024deepseekmath} enables reasoning alignment, which we adapt to 8GB GPUs alongside test-time budget forcing~\cite{muennighoff2025s1}. Parameter-efficient adaptation via LoRA~\cite{hu2021lora} and QLoRA~\cite{dettmers2023qlora} faces cross-task interference in multi-adapter composition~\cite{huang2023lorahub}, which we resolve via inference-time soft blending. Continuous latent trajectories build upon Neural ODEs~\cite{chen2018neuralode} and Gated Delta Networks~\cite{yang2024gateddelta}.
+
+\section{Discussion, Limitations \& Conclusion}
+
+Our investigation highlights several methodological boundaries: (1) sample sizes ($N=35$ failure cohort with $p=0.114$, and $N=125$ clean held-out GRPO cohort with $p=1.0000$) are underpowered for asymptotic significance, and 4/35 falls within baseline parameter perturbation churn (9.3\%--21.4\%); (2) high baseline pass rates on the 25 RL prompts caused zero intra-group advantage variance ($\sigma_r=0$) on most steps, requiring larger difficulty-stratified pools ($N \ge 1000$, $0.2 \le p \le 0.8$) in future work; and (3) both Pondering ODE (Module 1) and deterministic single-retry PRM gating (Modules 2 \& 3) yielded zero net new solved problems over GRPO Long on Clean 125, as failed greedy chains exhibit high inter-layer stability ($0.7867$ vs.\ $0.7756$). By establishing placebo negative controls, documenting subspace interference, unlocking zero-paging 2048-token VRAM horizons on 8GB hardware, disentangling grader drift, and characterizing confident hallucination, this work provides a reproducible foundation for resource-efficient reasoning research.
+
+\begin{thebibliography}{99}
+
+\bibitem{hu2021lora}
+E.~J. Hu, Y.~Shen, P.~Wallis, Z.~Allen-Zhu, Y.~Li, S.~Wang, L.~Wang, and W.~Chen, ``LoRA: Low-Rank Adaptation of Large Language Models,'' in \textit{Proc. ICLR}, 2022.
+
+\bibitem{rafailov2023dpo}
+R.~Rafailov, A.~Sharma, E.~Mitchell, S.~Ermon, C.~D. Manning, and C.~Finn, ``Direct Preference Optimization: Your Language Model is Secretly a Reward Model,'' in \textit{Proc. NeurIPS}, 2023.
+
+\bibitem{zelikman2022star}
+E.~Zelikman, Y.~Wu, J.~Mu, and N.~D. Goodman, ``STaR: Bootstrapping Reasoning With Reasoning,'' in \textit{Proc. NeurIPS}, 2022.
+
+\bibitem{madaan2023selfrefine}
+A.~Madaan \textit{et al.}, ``Self-Refine: Iterative Refinement with Self-Feedback,'' in \textit{Proc. NeurIPS}, 2023.
+
+\bibitem{shinn2023reflexion}
+N.~Shinn, F.~Cassano, A.~Gopinath, K.~Narasimhan, and S.~Yao, ``Reflexion: Language Agents with Verbal Reinforcement Learning,'' in \textit{Proc. NeurIPS}, 2023.
+
+\bibitem{huang2023cannot}
+J.~Huang, X.~Chen, S.~Mishra, H.~S. Zheng, A.~W. Yu, X.~Song, and D.~Zhou, ``Large Language Models Cannot Self-Correct Reasoning Yet,'' in \textit{Proc. ICLR}, 2024.
+
+\bibitem{hendrycks2021math}
+D.~Hendrycks, C.~Burns, S.~Kadavath, A.~Arora, S.~Basart, E.~Tang, D.~Song, and J.~Steinhardt, ``Measuring Mathematical Problem Solving With the MATH Dataset,'' in \textit{Proc. NeurIPS}, 2021.
+
+\bibitem{huang2023lorahub}
+C.~Huang, Q.~Liu, B.~Y. Lin, T.~Pang, C.~Du, and M.~Lin, ``LoraHub: Efficient Cross-Task Generalization via Dynamic LoRA Composition,'' \textit{arXiv preprint arXiv:2307.13269}, 2023.
+
+\bibitem{shao2024deepseekmath}
+Z.~Shao \textit{et al.}, ``DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models,'' \textit{arXiv preprint arXiv:2402.03300}, 2024.
+
+\bibitem{chen2018neuralode}
+R.~T.~Q. Chen, Y.~Rubanova, J.~Bettencourt, and D.~K. Duvenaud, ``Neural Ordinary Differential Equations,'' in \textit{Proc. NeurIPS}, 2018.
+
+\bibitem{dettmers2023qlora}
+T.~Dettmers, A.~Pagnoni, A.~Holtzman, and L.~Zettlemoyer, ``QLoRA: Efficient Finetuning of Quantized LLMs,'' in \textit{Proc. NeurIPS}, 2023.
+
+\bibitem{phan2025hle}
+L.~Phan \textit{et al.}, ``Humanity's Last Exam,'' Center for AI Safety (CAIS) \& Scale AI, \textit{arXiv preprint arXiv:2501.14249}, 2025.
+
+\bibitem{yang2024gateddelta}
+S.~Yang, J.~Kautz, and A.~Hatamizadeh, ``Gated Delta Networks: Improving Mamba2 with Delta Rule,'' \textit{arXiv preprint arXiv:2412.06464}, 2024.
+
+\bibitem{muennighoff2025s1}
+N.~Muennighoff \textit{et al.}, ``s1: Simple test-time scaling,'' \textit{arXiv preprint arXiv:2501.19393}, 2025.
+
+\bibitem{belrose2023tunedlens}
+N.~Belrose, Z.~Furman, L.~Smith, D.~Halawi, I.~Ostrovsky, L.~McKinney, S.~Biderman, and J.~Steinhardt, ``Eliciting Latent Predictions from Transformers with the Tuned Lens,'' \textit{arXiv preprint arXiv:2303.08112}, 2023.
+
+\end{thebibliography}
+
+\end{document}

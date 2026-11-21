@@ -221,6 +221,35 @@ impl NeuroAdapter {
         Ok(())
     }
 
+    /// Apply GNN adjacency bias to the attention scores.
+    pub fn apply_gnn_bias_raw(
+        &self,
+        _wptr: u64,
+        _q_nodes: u64,
+        _k_nodes: u64,
+        _indptr: u64,
+        _indices: u64,
+        _data_ptr: u64,
+        _b: i32, _h: i32, _q: i32, _k: i32,
+        _gnn_weight: f32,
+    ) -> std::result::Result<(), Box<dyn std::error::Error>> {
+        #[cfg(feature = "cuda")]
+        unsafe {
+            crate::gpu_ops::gnn_mask::apply_gnn_mask(
+                std::ptr::null_mut() as *mut c_void,
+                _wptr as *mut c_void,
+                _q_nodes as *const std::os::raw::c_int,
+                _k_nodes as *const std::os::raw::c_int,
+                _indptr as *const usize,
+                _indices as *const std::os::raw::c_int,
+                _data_ptr as *const c_void,
+                _b, _h, _q, _k,
+                _gnn_weight,
+            );
+        }
+        Ok(())
+    }
+
     /// Block host until all async GPU ops on the DEFAULT COMPUTE stream complete.
     /// PHASE 7: We use this instead of Device::synchronize() to avoid deadlocking with DMA.
     pub fn synchronize(&self) -> std::result::Result<(), Box<dyn std::error::Error>> {
@@ -291,6 +320,74 @@ impl NeuroAdapter {
         
         self.front.store(0, std::sync::atomic::Ordering::SeqCst);
         eprintln!("[NeuroAdapter] ✅ Sidecar neutralized.");
+        Ok(())
+    }
+
+    /// Apply Complex GEMM using cuBLAS.
+    pub fn apply_complex_gemm_raw(
+        &self,
+        _a_r: u64, _a_i: u64,
+        _b_r: u64, _b_i: u64,
+        _c_r: u64, _c_i: u64,
+        _m: i32, _n: i32, _k: i32,
+        _trans_a: bool, _trans_b: bool
+    ) -> std::result::Result<(), Box<dyn std::error::Error>> {
+        #[cfg(feature = "cuda")]
+        unsafe {
+            crate::gpu_ops::complex_gemm_ffi::apply_cublas_cgemm_raw(
+                _a_r, _a_i, _b_r, _b_i, _c_r, _c_i, _m, _n, _k, _trans_a, _trans_b
+            );
+        }
+        Ok(())
+    }
+
+    /// GPU-accelerated bind_phasors
+    pub fn bind_phasors_raw(
+        &self,
+        _a_r: u64, _a_i: u64,
+        _b_r: u64, _b_i: u64,
+        _out_r: u64, _out_i: u64,
+        _size: usize
+    ) -> std::result::Result<(), Box<dyn std::error::Error>> {
+        #[cfg(feature = "cuda")]
+        unsafe {
+            crate::gpu_ops::complex_gemm_ffi::bind_phasors_raw(
+                _a_r, _a_i, _b_r, _b_i, _out_r, _out_i, _size
+            );
+        }
+        Ok(())
+    }
+
+    /// GPU-accelerated unbind_phasors
+    pub fn unbind_phasors_raw(
+        &self,
+        _c_r: u64, _c_i: u64,
+        _k_r: u64, _k_i: u64,
+        _out_r: u64, _out_i: u64,
+        _size: usize
+    ) -> std::result::Result<(), Box<dyn std::error::Error>> {
+        #[cfg(feature = "cuda")]
+        unsafe {
+            crate::gpu_ops::complex_gemm_ffi::unbind_phasors_raw(
+                _c_r, _c_i, _k_r, _k_i, _out_r, _out_i, _size
+            );
+        }
+        Ok(())
+    }
+
+    /// GPU-accelerated apply_viscosity
+    pub fn apply_viscosity_raw(
+        &self,
+        _p_r: u64, _p_i: u64,
+        _impedance: f32,
+        _size: usize
+    ) -> std::result::Result<(), Box<dyn std::error::Error>> {
+        #[cfg(feature = "cuda")]
+        unsafe {
+            crate::gpu_ops::complex_gemm_ffi::apply_viscosity_raw(
+                _p_r, _p_i, _impedance, _size
+            );
+        }
         Ok(())
     }
 }

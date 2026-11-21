@@ -350,7 +350,7 @@ QUESTION: {}\n\
             }
             
             let sodals_res = if !decoded_media.is_empty() {
-                 engine.generate_multimodal(&formatted_prompt, &[("image/png", &decoded_media[0])], &NeuroConfig::engineer_mode())
+                 engine.generate_multimodal(&formatted_prompt, &[("image/png", &decoded_media[0])], &NeuroConfig::engineer_mode(), 0)
                      .unwrap_or_else(|e| format!("Error: {}", e))
             } else {
                  engine.ask(&formatted_prompt, None, &NeuroConfig::engineer_mode()).await
@@ -369,7 +369,7 @@ QUESTION: {}\n\
             // ADDITIONAL PASSES FOR DETERMINISM VALIDATION
             // ----------------------------------------------------
             let sodals_res2 = if !decoded_media.is_empty() {
-                 engine.generate_multimodal(&formatted_prompt, &[("image/png", &decoded_media[0])], &NeuroConfig::engineer_mode())
+                 engine.generate_multimodal(&formatted_prompt, &[("image/png", &decoded_media[0])], &NeuroConfig::engineer_mode(), 0)
                      .unwrap_or_else(|e| format!("Error: {}", e))
             } else {
                  engine.ask(&formatted_prompt, None, &NeuroConfig::engineer_mode()).await
@@ -377,7 +377,7 @@ QUESTION: {}\n\
             };
 
             let sodals_res3 = if !decoded_media.is_empty() {
-                 engine.generate_multimodal(&formatted_prompt, &[("image/png", &decoded_media[0])], &NeuroConfig::engineer_mode())
+                 engine.generate_multimodal(&formatted_prompt, &[("image/png", &decoded_media[0])], &NeuroConfig::engineer_mode(), 0)
                      .unwrap_or_else(|e| format!("Error: {}", e))
             } else {
                  engine.ask(&formatted_prompt, None, &NeuroConfig::engineer_mode()).await

@@ -1,0 +1,108 @@
+{
+  "benchmark": "MATH-500 Clean Held-Out Subset",
+  "sample_size": 125,
+  "excluded_train_prompts_count": 25,
+  "contingency_matrix": {
+    "both_correct": 99,
+    "baseline_only_drop": 0,
+    "grpo_only_gain": 1,
+    "both_wrong": 25
+  },
+  "metrics": {
+    "baseline_score": 99,
+    "baseline_accuracy": 79.2,
+    "baseline_wilson_ci": [
+      71.26703312982823,
+      85.3916857932525
+    ],
+    "grpo_score": 100,
+    "grpo_accuracy": 80.0,
+    "grpo_wilson_ci": [
+      72.14084909988655,
+      86.0701634923197
+    ],
+    "net_gain": 1,
+    "mcnemar_exact_p_value": 1.0,
+    "bootstrap_ci_95": [
+      0.0,
+      2.4000000000000057
+    ],
+    "is_statistically_significant": false
+  },
+  "subject_breakdown": {
+    "Intermediate Algebra": {
+      "total": 30,
+      "base_correct": 20,
+      "grpo_correct": 21
+    },
+    "Counting & Probability": {
+      "total": 10,
+      "base_correct": 9,
+      "grpo_correct": 9
+    },
+    "Prealgebra": {
+      "total": 22,
+      "base_correct": 17,
+      "grpo_correct": 17
+    },
+    "Precalculus": {
+      "total": 12,
+      "base_correct": 10,
+      "grpo_correct": 10
+    },
+    "Number Theory": {
+      "total": 14,
+      "base_correct": 9,
+      "grpo_correct": 9
+    },
+    "Algebra": {
+      "total": 29,
+      "base_correct": 28,
+      "grpo_correct": 28
+    },
+    "Geometry": {
+      "total": 8,
+      "base_correct": 6,
+      "grpo_correct": 6
+    }
+  },
+  "level_breakdown": {
+    "5": {
+      "total": 26,
+      "base_correct": 16,
+      "grpo_correct": 16
+    },
+    "2": {
+      "total": 30,
+      "base_correct": 27,
+      "grpo_correct": 27
+    },
+    "3": {
+      "total": 24,
+      "base_correct": 21,
+      "grpo_correct": 21
+    },
+    "4": {
+      "total": 33,
+      "base_correct": 24,
+      "grpo_correct": 25
+    },
+    "1": {
+      "total": 12,
+      "base_correct": 11,
+      "grpo_correct": 11
+    }
+  },
+  "divergent_items": [
+    {
+      "type": "GAIN",
+      "index": 105,
+      "unique_id": "test/intermediate_algebra/362.json",
+      "subject": "Intermediate Algebra",
+      "problem": "The graphs of $x^2 + y^2 + 6x - 24y + 72 = 0$ and $x^2 - y^2 + 6x + 16y - 46 = 0$ intersect at four points.  Compute the sum of the distances from these four points to the point $(-3,2).$",
+      "ground_truth": "40",
+      "predicted": "40",
+      "tokens": 1023
+    }
+  ]
+}

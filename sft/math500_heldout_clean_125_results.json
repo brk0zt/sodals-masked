@@ -1,0 +1,3046 @@
+{
+  "benchmark_name": "MATH-500 Clean Held-Out Validation Benchmark",
+  "sample_size": 125,
+  "contamination_status": "Pristine (0% overlap with 25 GRPO training prompts)",
+  "scores": {
+    "frozen_sft_baseline": {
+      "score": 99,
+      "accuracy": 79.2,
+      "wilson_ci_95": [
+        71.26703312982823,
+        85.3916857932525
+      ]
+    },
+    "long_context_grpo": {
+      "score": 100,
+      "accuracy": 80.0,
+      "wilson_ci_95": [
+        72.14084909988655,
+        86.0701634923197
+      ]
+    },
+    "prefill_pondering_ode": {
+      "score": 100,
+      "accuracy": 80.0,
+      "wilson_ci_95": [
+        72.14084909988655,
+        86.0701634923197
+      ]
+    }
+  },
+  "statistical_tests": {
+    "grpo_vs_sft": {
+      "net_delta": 1,
+      "gains": 1,
+      "drops": 0,
+      "contingency_matrix": {
+        "both_correct": 99,
+        "sft_only_drop": 0,
+        "grpo_only_gain": 1,
+        "both_wrong": 25
+      },
+      "mcnemar_exact_p": 1.0,
+      "bootstrap_delta_ci_95": [
+        0.0,
+        2.4
+      ],
+      "verdict": "Statistically Non-Significant (p = 1.0000; Null hypothesis cannot be rejected)"
+    },
+    "pondering_vs_grpo": {
+      "net_delta": 0,
+      "gains": 0,
+      "drops": 0,
+      "mcnemar_exact_p": 1.0,
+      "verdict": "Exact Null Result (0 gains, 0 drops; 100% verdict invariance)"
+    }
+  },
+  "subject_breakdown": {
+    "Algebra": {
+      "total": 29,
+      "sft_correct": 28,
+      "sft_pct": 96.55172413793103,
+      "grpo_correct": 28,
+      "grpo_pct": 96.55172413793103,
+      "pond_correct": 28,
+      "pond_pct": 96.55172413793103
+    },
+    "Counting & Probability": {
+      "total": 10,
+      "sft_correct": 9,
+      "sft_pct": 90.0,
+      "grpo_correct": 9,
+      "grpo_pct": 90.0,
+      "pond_correct": 9,
+      "pond_pct": 90.0
+    },
+    "Geometry": {
+      "total": 8,
+      "sft_correct": 6,
+      "sft_pct": 75.0,
+      "grpo_correct": 6,
+      "grpo_pct": 75.0,
+      "pond_correct": 6,
+      "pond_pct": 75.0
+    },
+    "Intermediate Algebra": {
+      "total": 30,
+      "sft_correct": 20,
+      "sft_pct": 66.66666666666666,
+      "grpo_correct": 21,
+      "grpo_pct": 70.0,
+      "pond_correct": 21,
+      "pond_pct": 70.0
+    },
+    "Number Theory": {
+      "total": 14,
+      "sft_correct": 9,
+      "sft_pct": 64.28571428571429,
+      "grpo_correct": 9,
+      "grpo_pct": 64.28571428571429,
+      "pond_correct": 9,
+      "pond_pct": 64.28571428571429
+    },
+    "Prealgebra": {
+      "total": 22,
+      "sft_correct": 17,
+      "sft_pct": 77.27272727272727,
+      "grpo_correct": 17,
+      "grpo_pct": 77.27272727272727,
+      "pond_correct": 17,
+      "pond_pct": 77.27272727272727
+    },
+    "Precalculus": {
+      "total": 12,
+      "sft_correct": 10,
+      "sft_pct": 83.33333333333334,
+      "grpo_correct": 10,
+      "grpo_pct": 83.33333333333334,
+      "pond_correct": 10,
+      "pond_pct": 83.33333333333334
+    }
+  },
+  "level_breakdown": {
+    "1": {
+      "total": 12,
+      "sft_correct": 11,
+      "sft_pct": 91.66666666666666,
+      "grpo_correct": 11,
+      "grpo_pct": 91.66666666666666,
+      "pond_correct": 11,
+      "pond_pct": 91.66666666666666
+    },
+    "2": {
+      "total": 30,
+      "sft_correct": 27,
+      "sft_pct": 90.0,
+      "grpo_correct": 27,
+      "grpo_pct": 90.0,
+      "pond_correct": 27,
+      "pond_pct": 90.0
+    },
+    "3": {
+      "total": 24,
+      "sft_correct": 21,
+      "sft_pct": 87.5,
+      "grpo_correct": 21,
+      "grpo_pct": 87.5,
+      "pond_correct": 21,
+      "pond_pct": 87.5
+    },
+    "4": {
+      "total": 33,
+      "sft_correct": 24,
+      "sft_pct": 72.72727272727273,
+      "grpo_correct": 25,
+      "grpo_pct": 75.75757575757575,
+      "pond_correct": 25,
+      "pond_pct": 75.75757575757575
+    },
+    "5": {
+      "total": 26,
+      "sft_correct": 16,
+      "sft_pct": 61.53846153846154,
+      "grpo_correct": 16,
+      "grpo_pct": 61.53846153846154,
+      "pond_correct": 16,
+      "pond_pct": 61.53846153846154
+    }
+  },
+  "details": [
+    {
+      "index": 26,
+      "unique_id": "test/intermediate_algebra/1388.json",
+      "subject": "Intermediate Algebra",
+      "level": 5,
+      "ground_truth": "1,-2",
+      "baseline_sft": {
+        "verdict": "FAIL",
+        "predicted": "0, 5"
+      },
+      "grpo_long": {
+        "verdict": "FAIL",
+        "predicted": "0, 5",
+        "generated_tokens": 674,
+        "time_seconds": 120.74
+      },
+      "pondering_ode": {
+        "verdict": "FAIL",
+        "predicted": "0, 5",
+        "generated_tokens": 674,
+        "time_seconds": 139.97
+      }
+    },
+    {
+      "index": 27,
+      "unique_id": "test/counting_and_probability/525.json",
+      "subject": "Counting & Probability",
+      "level": 5,
+      "ground_truth": "144",
+      "baseline_sft": {
+        "verdict": "FAIL",
+        "predicted": "2"
+      },
+      "grpo_long": {
+        "verdict": "FAIL",
+        "predicted": "2",
+        "generated_tokens": 2048,
+        "time_seconds": 370.23
+      },
+      "pondering_ode": {
+        "verdict": "FAIL",
+        "predicted": "2",
+        "generated_tokens": 2048,
+        "time_seconds": 409.08
+      }
+    },
+    {
+      "index": 28,
+      "unique_id": "test/prealgebra/1840.json",
+      "subject": "Prealgebra",
+      "level": 2,
+      "ground_truth": "78",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "78"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "78",
+        "generated_tokens": 189,
+        "time_seconds": 36.16
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "78",
+        "generated_tokens": 189,
+        "time_seconds": 39.14
+      }
+    },
+    {
+      "index": 29,
+      "unique_id": "test/precalculus/779.json",
+      "subject": "Precalculus",
+      "level": 2,
+      "ground_truth": "-2 + 7i",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "-2 + 7i"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "-2 + 7i",
+        "generated_tokens": 133,
+        "time_seconds": 24.48
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "-2 + 7i",
+        "generated_tokens": 133,
+        "time_seconds": 27.98
+      }
+    },
+    {
+      "index": 30,
+      "unique_id": "test/counting_and_probability/666.json",
+      "subject": "Counting & Probability",
+      "level": 2,
+      "ground_truth": "225",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "225"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "225",
+        "generated_tokens": 186,
+        "time_seconds": 35.25
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "225",
+        "generated_tokens": 186,
+        "time_seconds": 40.36
+      }
+    },
+    {
+      "index": 31,
+      "unique_id": "test/number_theory/864.json",
+      "subject": "Number Theory",
+      "level": 3,
+      "ground_truth": "52_8",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "52_8"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "52_8",
+        "generated_tokens": 101,
+        "time_seconds": 24.18
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "52_8",
+        "generated_tokens": 101,
+        "time_seconds": 21.99
+      }
+    },
+    {
+      "index": 32,
+      "unique_id": "test/prealgebra/1302.json",
+      "subject": "Prealgebra",
+      "level": 4,
+      "ground_truth": "11\\sqrt2",
+      "baseline_sft": {
+        "verdict": "FAIL",
+        "predicted": "11\\sqrt{2}"
+      },
+      "grpo_long": {
+        "verdict": "FAIL",
+        "predicted": "11\\sqrt{2}",
+        "generated_tokens": 159,
+        "time_seconds": 35.06
+      },
+      "pondering_ode": {
+        "verdict": "FAIL",
+        "predicted": "11\\sqrt{2}",
+        "generated_tokens": 159,
+        "time_seconds": 33.56
+      }
+    },
+    {
+      "index": 33,
+      "unique_id": "test/counting_and_probability/134.json",
+      "subject": "Counting & Probability",
+      "level": 4,
+      "ground_truth": "720",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "720"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "720",
+        "generated_tokens": 172,
+        "time_seconds": 37.65
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "720",
+        "generated_tokens": 172,
+        "time_seconds": 37.07
+      }
+    },
+    {
+      "index": 34,
+      "unique_id": "test/algebra/1072.json",
+      "subject": "Algebra",
+      "level": 4,
+      "ground_truth": "\\frac{243}{625}",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "243/625"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "243/625",
+        "generated_tokens": 480,
+        "time_seconds": 93.08
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "243/625",
+        "generated_tokens": 480,
+        "time_seconds": 101.73
+      }
+    },
+    {
+      "index": 35,
+      "unique_id": "test/counting_and_probability/119.json",
+      "subject": "Counting & Probability",
+      "level": 4,
+      "ground_truth": "-125",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "-125"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "-125",
+        "generated_tokens": 210,
+        "time_seconds": 50.03
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "-125",
+        "generated_tokens": 210,
+        "time_seconds": 44.12
+      }
+    },
+    {
+      "index": 36,
+      "unique_id": "test/number_theory/627.json",
+      "subject": "Number Theory",
+      "level": 2,
+      "ground_truth": "3",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "3"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "3",
+        "generated_tokens": 233,
+        "time_seconds": 65.12
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "3",
+        "generated_tokens": 233,
+        "time_seconds": 48.73
+      }
+    },
+    {
+      "index": 37,
+      "unique_id": "test/intermediate_algebra/428.json",
+      "subject": "Intermediate Algebra",
+      "level": 2,
+      "ground_truth": "3, 5, 7",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "3, 5, 7"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "3, 5, 7",
+        "generated_tokens": 291,
+        "time_seconds": 87.66
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "3, 5, 7",
+        "generated_tokens": 291,
+        "time_seconds": 61.42
+      }
+    },
+    {
+      "index": 38,
+      "unique_id": "test/geometry/967.json",
+      "subject": "Geometry",
+      "level": 3,
+      "ground_truth": "72",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "72"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "72",
+        "generated_tokens": 189,
+        "time_seconds": 55.64
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "72",
+        "generated_tokens": 189,
+        "time_seconds": 41.57
+      }
+    },
+    {
+      "index": 39,
+      "unique_id": "test/algebra/24.json",
+      "subject": "Algebra",
+      "level": 1,
+      "ground_truth": "2000",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "2000"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "2000",
+        "generated_tokens": 160,
+        "time_seconds": 38.43
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "2000",
+        "generated_tokens": 160,
+        "time_seconds": 34.3
+      }
+    },
+    {
+      "index": 40,
+      "unique_id": "test/number_theory/45.json",
+      "subject": "Number Theory",
+      "level": 3,
+      "ground_truth": "23",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "23"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "23",
+        "generated_tokens": 189,
+        "time_seconds": 41.86
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "23",
+        "generated_tokens": 189,
+        "time_seconds": 40.42
+      }
+    },
+    {
+      "index": 41,
+      "unique_id": "test/prealgebra/930.json",
+      "subject": "Prealgebra",
+      "level": 2,
+      "ground_truth": "12",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "12"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "12",
+        "generated_tokens": 100,
+        "time_seconds": 23.47
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "12",
+        "generated_tokens": 100,
+        "time_seconds": 23.49
+      }
+    },
+    {
+      "index": 42,
+      "unique_id": "test/geometry/627.json",
+      "subject": "Geometry",
+      "level": 4,
+      "ground_truth": "17",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "17"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "17",
+        "generated_tokens": 647,
+        "time_seconds": 136.21
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "17",
+        "generated_tokens": 647,
+        "time_seconds": 129.83
+      }
+    },
+    {
+      "index": 43,
+      "unique_id": "test/algebra/2214.json",
+      "subject": "Algebra",
+      "level": 2,
+      "ground_truth": "4",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "4"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "4",
+        "generated_tokens": 97,
+        "time_seconds": 20.74
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "4",
+        "generated_tokens": 97,
+        "time_seconds": 20.19
+      }
+    },
+    {
+      "index": 44,
+      "unique_id": "test/intermediate_algebra/1454.json",
+      "subject": "Intermediate Algebra",
+      "level": 5,
+      "ground_truth": "70 \\sqrt{2}",
+      "baseline_sft": {
+        "verdict": "FAIL",
+        "predicted": "65"
+      },
+      "grpo_long": {
+        "verdict": "FAIL",
+        "predicted": "80",
+        "generated_tokens": 2048,
+        "time_seconds": 448.31
+      },
+      "pondering_ode": {
+        "verdict": "FAIL",
+        "predicted": "80",
+        "generated_tokens": 2048,
+        "time_seconds": 426.11
+      }
+    },
+    {
+      "index": 45,
+      "unique_id": "test/prealgebra/1558.json",
+      "subject": "Prealgebra",
+      "level": 5,
+      "ground_truth": "1.25",
+      "baseline_sft": {
+        "verdict": "FAIL",
+        "predicted": "1"
+      },
+      "grpo_long": {
+        "verdict": "FAIL",
+        "predicted": "1",
+        "generated_tokens": 158,
+        "time_seconds": 33.35
+      },
+      "pondering_ode": {
+        "verdict": "FAIL",
+        "predicted": "1",
+        "generated_tokens": 158,
+        "time_seconds": 33.36
+      }
+    },
+    {
+      "index": 46,
+      "unique_id": "test/geometry/178.json",
+      "subject": "Geometry",
+      "level": 3,
+      "ground_truth": "2",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "2"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "2",
+        "generated_tokens": 178,
+        "time_seconds": 40.71
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "2",
+        "generated_tokens": 178,
+        "time_seconds": 37.75
+      }
+    },
+    {
+      "index": 47,
+      "unique_id": "test/precalculus/285.json",
+      "subject": "Precalculus",
+      "level": 2,
+      "ground_truth": "6",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "6"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "6",
+        "generated_tokens": 306,
+        "time_seconds": 71.27
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "6",
+        "generated_tokens": 306,
+        "time_seconds": 65.23
+      }
+    },
+    {
+      "index": 48,
+      "unique_id": "test/algebra/305.json",
+      "subject": "Algebra",
+      "level": 5,
+      "ground_truth": "5",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "5"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "5",
+        "generated_tokens": 267,
+        "time_seconds": 63.19
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "5",
+        "generated_tokens": 267,
+        "time_seconds": 56.66
+      }
+    },
+    {
+      "index": 49,
+      "unique_id": "test/algebra/1265.json",
+      "subject": "Algebra",
+      "level": 2,
+      "ground_truth": "\\frac{3}{2}",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "\\frac{3}{2}"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "\\frac{3}{2}",
+        "generated_tokens": 128,
+        "time_seconds": 31.16
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "\\frac{3}{2}",
+        "generated_tokens": 128,
+        "time_seconds": 27.58
+      }
+    },
+    {
+      "index": 50,
+      "unique_id": "test/prealgebra/1388.json",
+      "subject": "Prealgebra",
+      "level": 4,
+      "ground_truth": "83",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "83"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "83",
+        "generated_tokens": 157,
+        "time_seconds": 34.71
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "83",
+        "generated_tokens": 157,
+        "time_seconds": 34.21
+      }
+    },
+    {
+      "index": 51,
+      "unique_id": "test/number_theory/1055.json",
+      "subject": "Number Theory",
+      "level": 5,
+      "ground_truth": "203",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "203"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "203",
+        "generated_tokens": 421,
+        "time_seconds": 85.15
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "203",
+        "generated_tokens": 421,
+        "time_seconds": 88.05
+      }
+    },
+    {
+      "index": 52,
+      "unique_id": "test/intermediate_algebra/1217.json",
+      "subject": "Intermediate Algebra",
+      "level": 2,
+      "ground_truth": "x^5 - x^4 + x^3 - x^2 + x - 1",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "x^5 - x^4 + x^3 - x^2 + x - 1"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "x^5 - x^4 + x^3 - x^2 + x - 1",
+        "generated_tokens": 570,
+        "time_seconds": 115.64
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "x^5 - x^4 + x^3 - x^2 + x - 1",
+        "generated_tokens": 570,
+        "time_seconds": 116.69
+      }
+    },
+    {
+      "index": 53,
+      "unique_id": "test/prealgebra/951.json",
+      "subject": "Prealgebra",
+      "level": 5,
+      "ground_truth": "12",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "12"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "12",
+        "generated_tokens": 148,
+        "time_seconds": 30.51
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "12",
+        "generated_tokens": 148,
+        "time_seconds": 31.26
+      }
+    },
+    {
+      "index": 54,
+      "unique_id": "test/precalculus/1105.json",
+      "subject": "Precalculus",
+      "level": 2,
+      "ground_truth": "-\\frac{\\pi}{6}",
+      "baseline_sft": {
+        "verdict": "FAIL",
+        "predicted": "-\\pi/6"
+      },
+      "grpo_long": {
+        "verdict": "FAIL",
+        "predicted": "-\\pi/6",
+        "generated_tokens": 160,
+        "time_seconds": 33.14
+      },
+      "pondering_ode": {
+        "verdict": "FAIL",
+        "predicted": "-\\pi/6",
+        "generated_tokens": 160,
+        "time_seconds": 33.54
+      }
+    },
+    {
+      "index": 55,
+      "unique_id": "test/prealgebra/572.json",
+      "subject": "Prealgebra",
+      "level": 2,
+      "ground_truth": "0.15",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "0.15"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "0.15",
+        "generated_tokens": 223,
+        "time_seconds": 44.72
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "0.15",
+        "generated_tokens": 223,
+        "time_seconds": 47.77
+      }
+    },
+    {
+      "index": 56,
+      "unique_id": "test/algebra/187.json",
+      "subject": "Algebra",
+      "level": 4,
+      "ground_truth": "3",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "3"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "3",
+        "generated_tokens": 247,
+        "time_seconds": 47.55
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "3",
+        "generated_tokens": 247,
+        "time_seconds": 59.72
+      }
+    },
+    {
+      "index": 57,
+      "unique_id": "test/algebra/769.json",
+      "subject": "Algebra",
+      "level": 3,
+      "ground_truth": "11",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "11"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "11",
+        "generated_tokens": 156,
+        "time_seconds": 30.7
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "11",
+        "generated_tokens": 156,
+        "time_seconds": 33.72
+      }
+    },
+    {
+      "index": 58,
+      "unique_id": "test/intermediate_algebra/1168.json",
+      "subject": "Intermediate Algebra",
+      "level": 2,
+      "ground_truth": "16",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "16"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "16",
+        "generated_tokens": 171,
+        "time_seconds": 34.46
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "16",
+        "generated_tokens": 171,
+        "time_seconds": 36.28
+      }
+    },
+    {
+      "index": 59,
+      "unique_id": "test/algebra/722.json",
+      "subject": "Algebra",
+      "level": 1,
+      "ground_truth": "9901",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "9901"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "9901",
+        "generated_tokens": 143,
+        "time_seconds": 28.06
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "9901",
+        "generated_tokens": 143,
+        "time_seconds": 30.35
+      }
+    },
+    {
+      "index": 60,
+      "unique_id": "test/prealgebra/1247.json",
+      "subject": "Prealgebra",
+      "level": 2,
+      "ground_truth": "5",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "5"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "5",
+        "generated_tokens": 183,
+        "time_seconds": 35.96
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "5",
+        "generated_tokens": 183,
+        "time_seconds": 38.7
+      }
+    },
+    {
+      "index": 61,
+      "unique_id": "test/intermediate_algebra/956.json",
+      "subject": "Intermediate Algebra",
+      "level": 5,
+      "ground_truth": "(6,31,-1)",
+      "baseline_sft": {
+        "verdict": "FAIL",
+        "predicted": "(-3, 0, -16)"
+      },
+      "grpo_long": {
+        "verdict": "FAIL",
+        "predicted": "(-3, 0, -16)",
+        "generated_tokens": 710,
+        "time_seconds": 140.45
+      },
+      "pondering_ode": {
+        "verdict": "FAIL",
+        "predicted": "(-3, 0, -16)",
+        "generated_tokens": 710,
+        "time_seconds": 154.66
+      }
+    },
+    {
+      "index": 62,
+      "unique_id": "test/intermediate_algebra/1247.json",
+      "subject": "Intermediate Algebra",
+      "level": 3,
+      "ground_truth": "-256",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "-256"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "-256",
+        "generated_tokens": 258,
+        "time_seconds": 51.88
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "-256",
+        "generated_tokens": 258,
+        "time_seconds": 55.79
+      }
+    },
+    {
+      "index": 63,
+      "unique_id": "test/precalculus/675.json",
+      "subject": "Precalculus",
+      "level": 5,
+      "ground_truth": "4",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "4"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "4",
+        "generated_tokens": 265,
+        "time_seconds": 49.47
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "4",
+        "generated_tokens": 265,
+        "time_seconds": 57.55
+      }
+    },
+    {
+      "index": 64,
+      "unique_id": "test/intermediate_algebra/279.json",
+      "subject": "Intermediate Algebra",
+      "level": 5,
+      "ground_truth": "10",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "10"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "10",
+        "generated_tokens": 464,
+        "time_seconds": 92.66
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "10",
+        "generated_tokens": 464,
+        "time_seconds": 102.93
+      }
+    },
+    {
+      "index": 65,
+      "unique_id": "test/precalculus/1146.json",
+      "subject": "Precalculus",
+      "level": 4,
+      "ground_truth": "\\frac{35}{64}",
+      "baseline_sft": {
+        "verdict": "FAIL",
+        "predicted": "\\frac{35}{128}"
+      },
+      "grpo_long": {
+        "verdict": "FAIL",
+        "predicted": "\\frac{35}{128}",
+        "generated_tokens": 186,
+        "time_seconds": 39.1
+      },
+      "pondering_ode": {
+        "verdict": "FAIL",
+        "predicted": "\\frac{35}{128}",
+        "generated_tokens": 186,
+        "time_seconds": 44.25
+      }
+    },
+    {
+      "index": 66,
+      "unique_id": "test/prealgebra/1747.json",
+      "subject": "Prealgebra",
+      "level": 1,
+      "ground_truth": "1",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "1"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "1",
+        "generated_tokens": 69,
+        "time_seconds": 13.83
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "1",
+        "generated_tokens": 69,
+        "time_seconds": 16.04
+      }
+    },
+    {
+      "index": 67,
+      "unique_id": "test/algebra/2046.json",
+      "subject": "Algebra",
+      "level": 3,
+      "ground_truth": "x^3+3x-6",
+      "baseline_sft": {
+        "verdict": "FAIL",
+        "predicted": "x^3 + 3x"
+      },
+      "grpo_long": {
+        "verdict": "FAIL",
+        "predicted": "x^3 + 3x",
+        "generated_tokens": 161,
+        "time_seconds": 32.84
+      },
+      "pondering_ode": {
+        "verdict": "FAIL",
+        "predicted": "x^3 + 3x",
+        "generated_tokens": 161,
+        "time_seconds": 35.2
+      }
+    },
+    {
+      "index": 68,
+      "unique_id": "test/prealgebra/1233.json",
+      "subject": "Prealgebra",
+      "level": 4,
+      "ground_truth": "10",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "10"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "10",
+        "generated_tokens": 169,
+        "time_seconds": 32.35
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "10",
+        "generated_tokens": 169,
+        "time_seconds": 36.55
+      }
+    },
+    {
+      "index": 69,
+      "unique_id": "test/precalculus/1313.json",
+      "subject": "Precalculus",
+      "level": 4,
+      "ground_truth": "46",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "46"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "46",
+        "generated_tokens": 158,
+        "time_seconds": 32.36
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "46",
+        "generated_tokens": 158,
+        "time_seconds": 34.87
+      }
+    },
+    {
+      "index": 70,
+      "unique_id": "test/intermediate_algebra/207.json",
+      "subject": "Intermediate Algebra",
+      "level": 4,
+      "ground_truth": "-1",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "-1"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "-1",
+        "generated_tokens": 135,
+        "time_seconds": 26.68
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "-1",
+        "generated_tokens": 135,
+        "time_seconds": 29.84
+      }
+    },
+    {
+      "index": 71,
+      "unique_id": "test/number_theory/46.json",
+      "subject": "Number Theory",
+      "level": 2,
+      "ground_truth": "40_9",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "40_9"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "40_9",
+        "generated_tokens": 225,
+        "time_seconds": 44.1
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "40_9",
+        "generated_tokens": 225,
+        "time_seconds": 49.34
+      }
+    },
+    {
+      "index": 72,
+      "unique_id": "test/number_theory/516.json",
+      "subject": "Number Theory",
+      "level": 4,
+      "ground_truth": "2516_8",
+      "baseline_sft": {
+        "verdict": "FAIL",
+        "predicted": "1246"
+      },
+      "grpo_long": {
+        "verdict": "FAIL",
+        "predicted": "1246",
+        "generated_tokens": 127,
+        "time_seconds": 24.99
+      },
+      "pondering_ode": {
+        "verdict": "FAIL",
+        "predicted": "1246",
+        "generated_tokens": 127,
+        "time_seconds": 27.55
+      }
+    },
+    {
+      "index": 73,
+      "unique_id": "test/geometry/456.json",
+      "subject": "Geometry",
+      "level": 2,
+      "ground_truth": "3",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "3"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "3",
+        "generated_tokens": 159,
+        "time_seconds": 33.78
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "3",
+        "generated_tokens": 159,
+        "time_seconds": 34.72
+      }
+    },
+    {
+      "index": 74,
+      "unique_id": "test/algebra/2253.json",
+      "subject": "Algebra",
+      "level": 4,
+      "ground_truth": "\\frac{3\\sqrt{3}}{4}",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "\\frac{3\\sqrt{3}}{4}"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "\\frac{3\\sqrt{3}}{4}",
+        "generated_tokens": 106,
+        "time_seconds": 23.64
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "\\frac{3\\sqrt{3}}{4}",
+        "generated_tokens": 106,
+        "time_seconds": 21.42
+      }
+    },
+    {
+      "index": 75,
+      "unique_id": "test/precalculus/24313.json",
+      "subject": "Precalculus",
+      "level": 2,
+      "ground_truth": "\\cot x",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "\\cot x"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "\\cot x",
+        "generated_tokens": 294,
+        "time_seconds": 63.28
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "\\cot x",
+        "generated_tokens": 294,
+        "time_seconds": 57.03
+      }
+    },
+    {
+      "index": 76,
+      "unique_id": "test/counting_and_probability/1114.json",
+      "subject": "Counting & Probability",
+      "level": 4,
+      "ground_truth": "\\frac{11}{36}",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "11/36"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "11/36",
+        "generated_tokens": 200,
+        "time_seconds": 41.48
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "11/36",
+        "generated_tokens": 200,
+        "time_seconds": 47.85
+      }
+    },
+    {
+      "index": 77,
+      "unique_id": "test/intermediate_algebra/623.json",
+      "subject": "Intermediate Algebra",
+      "level": 2,
+      "ground_truth": "0",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "0"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "0",
+        "generated_tokens": 126,
+        "time_seconds": 25.93
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "0",
+        "generated_tokens": 126,
+        "time_seconds": 26.17
+      }
+    },
+    {
+      "index": 78,
+      "unique_id": "test/algebra/1004.json",
+      "subject": "Algebra",
+      "level": 1,
+      "ground_truth": "4",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "4"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "4",
+        "generated_tokens": 127,
+        "time_seconds": 24.2
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "4",
+        "generated_tokens": 127,
+        "time_seconds": 26.51
+      }
+    },
+    {
+      "index": 79,
+      "unique_id": "test/intermediate_algebra/47.json",
+      "subject": "Intermediate Algebra",
+      "level": 4,
+      "ground_truth": "(-2,1)",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "(-2, 1)"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "(-2, 1)",
+        "generated_tokens": 754,
+        "time_seconds": 149.7
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "(-2, 1)",
+        "generated_tokens": 754,
+        "time_seconds": 150.1
+      }
+    },
+    {
+      "index": 80,
+      "unique_id": "test/prealgebra/192.json",
+      "subject": "Prealgebra",
+      "level": 1,
+      "ground_truth": "2",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "2"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "2",
+        "generated_tokens": 119,
+        "time_seconds": 24.87
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "2",
+        "generated_tokens": 119,
+        "time_seconds": 23.57
+      }
+    },
+    {
+      "index": 81,
+      "unique_id": "test/intermediate_algebra/1849.json",
+      "subject": "Intermediate Algebra",
+      "level": 5,
+      "ground_truth": "501",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "501"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "501",
+        "generated_tokens": 661,
+        "time_seconds": 132.15
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "501",
+        "generated_tokens": 661,
+        "time_seconds": 120.77
+      }
+    },
+    {
+      "index": 82,
+      "unique_id": "test/algebra/1035.json",
+      "subject": "Algebra",
+      "level": 3,
+      "ground_truth": "3",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "3"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "3",
+        "generated_tokens": 171,
+        "time_seconds": 32.92
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "3",
+        "generated_tokens": 171,
+        "time_seconds": 31.34
+      }
+    },
+    {
+      "index": 83,
+      "unique_id": "test/algebra/2700.json",
+      "subject": "Algebra",
+      "level": 5,
+      "ground_truth": "\\frac{3}{2}",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "3/2"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "3/2",
+        "generated_tokens": 813,
+        "time_seconds": 159.24
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "3/2",
+        "generated_tokens": 813,
+        "time_seconds": 149.92
+      }
+    },
+    {
+      "index": 84,
+      "unique_id": "test/intermediate_algebra/2046.json",
+      "subject": "Intermediate Algebra",
+      "level": 2,
+      "ground_truth": "2",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "2"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "2",
+        "generated_tokens": 222,
+        "time_seconds": 43.18
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "2",
+        "generated_tokens": 222,
+        "time_seconds": 43.1
+      }
+    },
+    {
+      "index": 85,
+      "unique_id": "test/algebra/893.json",
+      "subject": "Algebra",
+      "level": 4,
+      "ground_truth": "-1",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "-1"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "-1",
+        "generated_tokens": 458,
+        "time_seconds": 88.16
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "-1",
+        "generated_tokens": 458,
+        "time_seconds": 88.01
+      }
+    },
+    {
+      "index": 86,
+      "unique_id": "test/geometry/353.json",
+      "subject": "Geometry",
+      "level": 4,
+      "ground_truth": "\\sqrt{5}",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "\\sqrt{5}"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "\\sqrt{5}",
+        "generated_tokens": 165,
+        "time_seconds": 33.69
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "\\sqrt{5}",
+        "generated_tokens": 165,
+        "time_seconds": 30.4
+      }
+    },
+    {
+      "index": 87,
+      "unique_id": "test/prealgebra/307.json",
+      "subject": "Prealgebra",
+      "level": 1,
+      "ground_truth": "240",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "240"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "240",
+        "generated_tokens": 106,
+        "time_seconds": 23.67
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "240",
+        "generated_tokens": 106,
+        "time_seconds": 20.43
+      }
+    },
+    {
+      "index": 88,
+      "unique_id": "test/algebra/567.json",
+      "subject": "Algebra",
+      "level": 1,
+      "ground_truth": "1",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "1"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "1",
+        "generated_tokens": 197,
+        "time_seconds": 40.37
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "1",
+        "generated_tokens": 197,
+        "time_seconds": 35.77
+      }
+    },
+    {
+      "index": 89,
+      "unique_id": "test/algebra/892.json",
+      "subject": "Algebra",
+      "level": 5,
+      "ground_truth": "2",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "2"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "2",
+        "generated_tokens": 458,
+        "time_seconds": 94.7
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "2",
+        "generated_tokens": 458,
+        "time_seconds": 79.93
+      }
+    },
+    {
+      "index": 90,
+      "unique_id": "test/number_theory/357.json",
+      "subject": "Number Theory",
+      "level": 4,
+      "ground_truth": "21",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "21"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "21",
+        "generated_tokens": 404,
+        "time_seconds": 81.86
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "21",
+        "generated_tokens": 404,
+        "time_seconds": 70.66
+      }
+    },
+    {
+      "index": 91,
+      "unique_id": "test/prealgebra/1761.json",
+      "subject": "Prealgebra",
+      "level": 3,
+      "ground_truth": "\\frac{3}{2}",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "\\frac{3}{2}"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "\\frac{3}{2}",
+        "generated_tokens": 76,
+        "time_seconds": 16.49
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "\\frac{3}{2}",
+        "generated_tokens": 76,
+        "time_seconds": 13.78
+      }
+    },
+    {
+      "index": 92,
+      "unique_id": "test/algebra/2023.json",
+      "subject": "Algebra",
+      "level": 3,
+      "ground_truth": "1",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "1"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "1",
+        "generated_tokens": 166,
+        "time_seconds": 34.2
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "1",
+        "generated_tokens": 166,
+        "time_seconds": 29.35
+      }
+    },
+    {
+      "index": 93,
+      "unique_id": "test/counting_and_probability/377.json",
+      "subject": "Counting & Probability",
+      "level": 4,
+      "ground_truth": "\\frac{448}{15625}",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "448/15625"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "448/15625",
+        "generated_tokens": 287,
+        "time_seconds": 58.59
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "448/15625",
+        "generated_tokens": 287,
+        "time_seconds": 50.12
+      }
+    },
+    {
+      "index": 94,
+      "unique_id": "test/algebra/873.json",
+      "subject": "Algebra",
+      "level": 4,
+      "ground_truth": "33",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "33"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "33",
+        "generated_tokens": 193,
+        "time_seconds": 39.42
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "33",
+        "generated_tokens": 193,
+        "time_seconds": 33.96
+      }
+    },
+    {
+      "index": 95,
+      "unique_id": "test/prealgebra/1646.json",
+      "subject": "Prealgebra",
+      "level": 5,
+      "ground_truth": "80",
+      "baseline_sft": {
+        "verdict": "FAIL",
+        "predicted": "110"
+      },
+      "grpo_long": {
+        "verdict": "FAIL",
+        "predicted": "110",
+        "generated_tokens": 349,
+        "time_seconds": 68.39
+      },
+      "pondering_ode": {
+        "verdict": "FAIL",
+        "predicted": "110",
+        "generated_tokens": 349,
+        "time_seconds": 60.4
+      }
+    },
+    {
+      "index": 96,
+      "unique_id": "test/precalculus/34.json",
+      "subject": "Precalculus",
+      "level": 2,
+      "ground_truth": "-4",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "-4"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "-4",
+        "generated_tokens": 373,
+        "time_seconds": 74.71
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "-4",
+        "generated_tokens": 373,
+        "time_seconds": 65.32
+      }
+    },
+    {
+      "index": 97,
+      "unique_id": "test/intermediate_algebra/662.json",
+      "subject": "Intermediate Algebra",
+      "level": 5,
+      "ground_truth": "1 \\pm \\sqrt{19}",
+      "baseline_sft": {
+        "verdict": "FAIL",
+        "predicted": "1, -1"
+      },
+      "grpo_long": {
+        "verdict": "FAIL",
+        "predicted": "x \\in \\mathbb{R} \\setminus \\{-5, -3, -1, 3, 5, 7\\}",
+        "generated_tokens": 1311,
+        "time_seconds": 265.71
+      },
+      "pondering_ode": {
+        "verdict": "FAIL",
+        "predicted": "x \\in \\mathbb{R} \\setminus \\{-5, -3, -1, 3, 5, 7\\}",
+        "generated_tokens": 1311,
+        "time_seconds": 227.15
+      }
+    },
+    {
+      "index": 98,
+      "unique_id": "test/prealgebra/105.json",
+      "subject": "Prealgebra",
+      "level": 1,
+      "ground_truth": "\\text{east}",
+      "baseline_sft": {
+        "verdict": "FAIL",
+        "predicted": "East"
+      },
+      "grpo_long": {
+        "verdict": "FAIL",
+        "predicted": "East",
+        "generated_tokens": 131,
+        "time_seconds": 27.87
+      },
+      "pondering_ode": {
+        "verdict": "FAIL",
+        "predicted": "East",
+        "generated_tokens": 131,
+        "time_seconds": 22.96
+      }
+    },
+    {
+      "index": 99,
+      "unique_id": "test/prealgebra/1924.json",
+      "subject": "Prealgebra",
+      "level": 2,
+      "ground_truth": "2k+2",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "2k + 2"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "2k + 2",
+        "generated_tokens": 99,
+        "time_seconds": 20.91
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "2k + 2",
+        "generated_tokens": 99,
+        "time_seconds": 17.48
+      }
+    },
+    {
+      "index": 100,
+      "unique_id": "test/precalculus/1300.json",
+      "subject": "Precalculus",
+      "level": 3,
+      "ground_truth": "\\begin{pmatrix} -1/3 \\\\ 2/3 \\\\ 5/3 \\end{pmatrix}",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "\\begin{pmatrix} -1/3 \\\\ 2/3 \\\\ 5/3 \\end{pmatrix}"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "\\begin{pmatrix} -1/3 \\\\ 2/3 \\\\ 5/3 \\end{pmatrix}",
+        "generated_tokens": 349,
+        "time_seconds": 71.59
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "\\begin{pmatrix} -1/3 \\\\ 2/3 \\\\ 5/3 \\end{pmatrix}",
+        "generated_tokens": 349,
+        "time_seconds": 61.0
+      }
+    },
+    {
+      "index": 101,
+      "unique_id": "test/geometry/183.json",
+      "subject": "Geometry",
+      "level": 5,
+      "ground_truth": "145^\\circ",
+      "baseline_sft": {
+        "verdict": "FAIL",
+        "predicted": "115"
+      },
+      "grpo_long": {
+        "verdict": "FAIL",
+        "predicted": "115",
+        "generated_tokens": 319,
+        "time_seconds": 64.15
+      },
+      "pondering_ode": {
+        "verdict": "FAIL",
+        "predicted": "115",
+        "generated_tokens": 319,
+        "time_seconds": 56.94
+      }
+    },
+    {
+      "index": 102,
+      "unique_id": "test/intermediate_algebra/582.json",
+      "subject": "Intermediate Algebra",
+      "level": 5,
+      "ground_truth": "850",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "850"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "850",
+        "generated_tokens": 488,
+        "time_seconds": 92.05
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "850",
+        "generated_tokens": 488,
+        "time_seconds": 87.42
+      }
+    },
+    {
+      "index": 103,
+      "unique_id": "test/intermediate_algebra/431.json",
+      "subject": "Intermediate Algebra",
+      "level": 1,
+      "ground_truth": "(a+5)(b+2)",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "(a + 5)(b + 2)"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "(a + 5)(b + 2)",
+        "generated_tokens": 130,
+        "time_seconds": 24.71
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "(a + 5)(b + 2)",
+        "generated_tokens": 130,
+        "time_seconds": 22.69
+      }
+    },
+    {
+      "index": 104,
+      "unique_id": "test/intermediate_algebra/558.json",
+      "subject": "Intermediate Algebra",
+      "level": 5,
+      "ground_truth": "(3,4]",
+      "baseline_sft": {
+        "verdict": "FAIL",
+        "predicted": "(1, 3]"
+      },
+      "grpo_long": {
+        "verdict": "FAIL",
+        "predicted": "(1, 3]",
+        "generated_tokens": 477,
+        "time_seconds": 95.83
+      },
+      "pondering_ode": {
+        "verdict": "FAIL",
+        "predicted": "(1, 3]",
+        "generated_tokens": 477,
+        "time_seconds": 84.19
+      }
+    },
+    {
+      "index": 105,
+      "unique_id": "test/intermediate_algebra/362.json",
+      "subject": "Intermediate Algebra",
+      "level": 4,
+      "ground_truth": "40",
+      "baseline_sft": {
+        "verdict": "FAIL",
+        "predicted": "18"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "40",
+        "generated_tokens": 1023,
+        "time_seconds": 228.66
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "40",
+        "generated_tokens": 1023,
+        "time_seconds": 204.38
+      }
+    },
+    {
+      "index": 106,
+      "unique_id": "test/prealgebra/1804.json",
+      "subject": "Prealgebra",
+      "level": 3,
+      "ground_truth": "29",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "29"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "29",
+        "generated_tokens": 221,
+        "time_seconds": 46.13
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "29",
+        "generated_tokens": 221,
+        "time_seconds": 59.43
+      }
+    },
+    {
+      "index": 107,
+      "unique_id": "test/intermediate_algebra/515.json",
+      "subject": "Intermediate Algebra",
+      "level": 2,
+      "ground_truth": "\\frac43",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "4/3"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "4/3",
+        "generated_tokens": 139,
+        "time_seconds": 28.96
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "4/3",
+        "generated_tokens": 139,
+        "time_seconds": 80.32
+      }
+    },
+    {
+      "index": 108,
+      "unique_id": "test/number_theory/914.json",
+      "subject": "Number Theory",
+      "level": 2,
+      "ground_truth": "9",
+      "baseline_sft": {
+        "verdict": "FAIL",
+        "predicted": "14"
+      },
+      "grpo_long": {
+        "verdict": "FAIL",
+        "predicted": "14",
+        "generated_tokens": 62,
+        "time_seconds": 12.52
+      },
+      "pondering_ode": {
+        "verdict": "FAIL",
+        "predicted": "14",
+        "generated_tokens": 62,
+        "time_seconds": 37.03
+      }
+    },
+    {
+      "index": 109,
+      "unique_id": "test/intermediate_algebra/894.json",
+      "subject": "Intermediate Algebra",
+      "level": 3,
+      "ground_truth": "2",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "2"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "2",
+        "generated_tokens": 837,
+        "time_seconds": 165.59
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "2",
+        "generated_tokens": 837,
+        "time_seconds": 182.88
+      }
+    },
+    {
+      "index": 110,
+      "unique_id": "test/precalculus/44.json",
+      "subject": "Precalculus",
+      "level": 5,
+      "ground_truth": "120^\\circ",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "120"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "120^\\circ",
+        "generated_tokens": 661,
+        "time_seconds": 131.44
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "120^\\circ",
+        "generated_tokens": 661,
+        "time_seconds": 142.79
+      }
+    },
+    {
+      "index": 111,
+      "unique_id": "test/intermediate_algebra/345.json",
+      "subject": "Intermediate Algebra",
+      "level": 4,
+      "ground_truth": "504",
+      "baseline_sft": {
+        "verdict": "FAIL",
+        "predicted": "7"
+      },
+      "grpo_long": {
+        "verdict": "FAIL",
+        "predicted": "1",
+        "generated_tokens": 1367,
+        "time_seconds": 264.62
+      },
+      "pondering_ode": {
+        "verdict": "FAIL",
+        "predicted": "1",
+        "generated_tokens": 1367,
+        "time_seconds": 291.27
+      }
+    },
+    {
+      "index": 112,
+      "unique_id": "test/counting_and_probability/23957.json",
+      "subject": "Counting & Probability",
+      "level": 3,
+      "ground_truth": "210",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "210"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "210",
+        "generated_tokens": 155,
+        "time_seconds": 30.89
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "210",
+        "generated_tokens": 155,
+        "time_seconds": 33.06
+      }
+    },
+    {
+      "index": 113,
+      "unique_id": "test/algebra/2058.json",
+      "subject": "Algebra",
+      "level": 4,
+      "ground_truth": "13",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "13"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "13",
+        "generated_tokens": 325,
+        "time_seconds": 71.21
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "13",
+        "generated_tokens": 325,
+        "time_seconds": 68.62
+      }
+    },
+    {
+      "index": 114,
+      "unique_id": "test/algebra/2593.json",
+      "subject": "Algebra",
+      "level": 2,
+      "ground_truth": "8000",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "8000"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "8000",
+        "generated_tokens": 151,
+        "time_seconds": 33.43
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "8000",
+        "generated_tokens": 151,
+        "time_seconds": 32.79
+      }
+    },
+    {
+      "index": 115,
+      "unique_id": "test/intermediate_algebra/1898.json",
+      "subject": "Intermediate Algebra",
+      "level": 3,
+      "ground_truth": "-5",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "-5"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "-5",
+        "generated_tokens": 217,
+        "time_seconds": 39.95
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "-5",
+        "generated_tokens": 217,
+        "time_seconds": 46.95
+      }
+    },
+    {
+      "index": 116,
+      "unique_id": "test/counting_and_probability/1060.json",
+      "subject": "Counting & Probability",
+      "level": 2,
+      "ground_truth": "1260",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "1260"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "1260",
+        "generated_tokens": 190,
+        "time_seconds": 33.28
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "1260",
+        "generated_tokens": 190,
+        "time_seconds": 40.14
+      }
+    },
+    {
+      "index": 117,
+      "unique_id": "test/algebra/2157.json",
+      "subject": "Algebra",
+      "level": 2,
+      "ground_truth": "2",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "2"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "2",
+        "generated_tokens": 153,
+        "time_seconds": 26.96
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "2",
+        "generated_tokens": 153,
+        "time_seconds": 32.76
+      }
+    },
+    {
+      "index": 118,
+      "unique_id": "test/algebra/2251.json",
+      "subject": "Algebra",
+      "level": 2,
+      "ground_truth": "3",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "3"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "3",
+        "generated_tokens": 123,
+        "time_seconds": 22.17
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "3",
+        "generated_tokens": 123,
+        "time_seconds": 26.7
+      }
+    },
+    {
+      "index": 119,
+      "unique_id": "test/intermediate_algebra/232.json",
+      "subject": "Intermediate Algebra",
+      "level": 5,
+      "ground_truth": "81",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "81"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "81",
+        "generated_tokens": 484,
+        "time_seconds": 90.71
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "81",
+        "generated_tokens": 484,
+        "time_seconds": 108.38
+      }
+    },
+    {
+      "index": 120,
+      "unique_id": "test/prealgebra/1733.json",
+      "subject": "Prealgebra",
+      "level": 3,
+      "ground_truth": "-9",
+      "baseline_sft": {
+        "verdict": "FAIL",
+        "predicted": "4"
+      },
+      "grpo_long": {
+        "verdict": "FAIL",
+        "predicted": "2",
+        "generated_tokens": 2048,
+        "time_seconds": 384.15
+      },
+      "pondering_ode": {
+        "verdict": "FAIL",
+        "predicted": "2",
+        "generated_tokens": 2048,
+        "time_seconds": 423.27
+      }
+    },
+    {
+      "index": 121,
+      "unique_id": "test/intermediate_algebra/128.json",
+      "subject": "Intermediate Algebra",
+      "level": 2,
+      "ground_truth": "\\text{even}",
+      "baseline_sft": {
+        "verdict": "FAIL",
+        "predicted": "odd"
+      },
+      "grpo_long": {
+        "verdict": "FAIL",
+        "predicted": "odd",
+        "generated_tokens": 453,
+        "time_seconds": 86.97
+      },
+      "pondering_ode": {
+        "verdict": "FAIL",
+        "predicted": "odd",
+        "generated_tokens": 453,
+        "time_seconds": 93.87
+      }
+    },
+    {
+      "index": 122,
+      "unique_id": "test/prealgebra/505.json",
+      "subject": "Prealgebra",
+      "level": 2,
+      "ground_truth": "6",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "6"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "6",
+        "generated_tokens": 161,
+        "time_seconds": 31.17
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "6",
+        "generated_tokens": 161,
+        "time_seconds": 34.8
+      }
+    },
+    {
+      "index": 123,
+      "unique_id": "test/algebra/1332.json",
+      "subject": "Algebra",
+      "level": 3,
+      "ground_truth": "9",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "9"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "9",
+        "generated_tokens": 131,
+        "time_seconds": 25.42
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "9",
+        "generated_tokens": 131,
+        "time_seconds": 28.42
+      }
+    },
+    {
+      "index": 124,
+      "unique_id": "test/geometry/283.json",
+      "subject": "Geometry",
+      "level": 4,
+      "ground_truth": "8",
+      "baseline_sft": {
+        "verdict": "FAIL",
+        "predicted": "10"
+      },
+      "grpo_long": {
+        "verdict": "FAIL",
+        "predicted": "10",
+        "generated_tokens": 939,
+        "time_seconds": 176.07
+      },
+      "pondering_ode": {
+        "verdict": "FAIL",
+        "predicted": "10",
+        "generated_tokens": 939,
+        "time_seconds": 195.02
+      }
+    },
+    {
+      "index": 125,
+      "unique_id": "test/algebra/972.json",
+      "subject": "Algebra",
+      "level": 4,
+      "ground_truth": "\\frac{11}{2}",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "11/2"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "11/2",
+        "generated_tokens": 302,
+        "time_seconds": 58.83
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "11/2",
+        "generated_tokens": 302,
+        "time_seconds": 61.92
+      }
+    },
+    {
+      "index": 126,
+      "unique_id": "test/algebra/2232.json",
+      "subject": "Algebra",
+      "level": 4,
+      "ground_truth": "-3",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "-3"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "-3",
+        "generated_tokens": 160,
+        "time_seconds": 29.38
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "-3",
+        "generated_tokens": 160,
+        "time_seconds": 34.98
+      }
+    },
+    {
+      "index": 127,
+      "unique_id": "test/intermediate_algebra/1063.json",
+      "subject": "Intermediate Algebra",
+      "level": 4,
+      "ground_truth": "1+274i",
+      "baseline_sft": {
+        "verdict": "FAIL",
+        "predicted": "2"
+      },
+      "grpo_long": {
+        "verdict": "FAIL",
+        "predicted": "2",
+        "generated_tokens": 2048,
+        "time_seconds": 369.21
+      },
+      "pondering_ode": {
+        "verdict": "FAIL",
+        "predicted": "2",
+        "generated_tokens": 2048,
+        "time_seconds": 419.44
+      }
+    },
+    {
+      "index": 128,
+      "unique_id": "test/number_theory/847.json",
+      "subject": "Number Theory",
+      "level": 3,
+      "ground_truth": "4210_{5}",
+      "baseline_sft": {
+        "verdict": "FAIL",
+        "predicted": "4210_5"
+      },
+      "grpo_long": {
+        "verdict": "FAIL",
+        "predicted": "4210_5",
+        "generated_tokens": 142,
+        "time_seconds": 25.4
+      },
+      "pondering_ode": {
+        "verdict": "FAIL",
+        "predicted": "4210_5",
+        "generated_tokens": 142,
+        "time_seconds": 29.96
+      }
+    },
+    {
+      "index": 129,
+      "unique_id": "test/algebra/661.json",
+      "subject": "Algebra",
+      "level": 3,
+      "ground_truth": "36",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "36"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "36",
+        "generated_tokens": 189,
+        "time_seconds": 34.92
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "36",
+        "generated_tokens": 189,
+        "time_seconds": 39.94
+      }
+    },
+    {
+      "index": 130,
+      "unique_id": "test/geometry/1140.json",
+      "subject": "Geometry",
+      "level": 5,
+      "ground_truth": "\\frac{3840}{289}",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "3840/289"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "3840/289",
+        "generated_tokens": 392,
+        "time_seconds": 74.86
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "3840/289",
+        "generated_tokens": 392,
+        "time_seconds": 82.13
+      }
+    },
+    {
+      "index": 131,
+      "unique_id": "test/number_theory/753.json",
+      "subject": "Number Theory",
+      "level": 4,
+      "ground_truth": "13",
+      "baseline_sft": {
+        "verdict": "FAIL",
+        "predicted": "5"
+      },
+      "grpo_long": {
+        "verdict": "FAIL",
+        "predicted": "5",
+        "generated_tokens": 286,
+        "time_seconds": 52.75
+      },
+      "pondering_ode": {
+        "verdict": "FAIL",
+        "predicted": "5",
+        "generated_tokens": 286,
+        "time_seconds": 59.35
+      }
+    },
+    {
+      "index": 132,
+      "unique_id": "test/algebra/246.json",
+      "subject": "Algebra",
+      "level": 4,
+      "ground_truth": "8",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "8"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "8",
+        "generated_tokens": 244,
+        "time_seconds": 48.16
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "8",
+        "generated_tokens": 244,
+        "time_seconds": 51.35
+      }
+    },
+    {
+      "index": 133,
+      "unique_id": "test/prealgebra/1686.json",
+      "subject": "Prealgebra",
+      "level": 3,
+      "ground_truth": "4",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "4"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "4",
+        "generated_tokens": 120,
+        "time_seconds": 24.51
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "4",
+        "generated_tokens": 120,
+        "time_seconds": 25.18
+      }
+    },
+    {
+      "index": 134,
+      "unique_id": "test/prealgebra/1807.json",
+      "subject": "Prealgebra",
+      "level": 3,
+      "ground_truth": "120",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "120"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "120",
+        "generated_tokens": 232,
+        "time_seconds": 44.28
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "120",
+        "generated_tokens": 232,
+        "time_seconds": 48.3
+      }
+    },
+    {
+      "index": 135,
+      "unique_id": "test/intermediate_algebra/1126.json",
+      "subject": "Intermediate Algebra",
+      "level": 4,
+      "ground_truth": "16",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "16"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "16",
+        "generated_tokens": 364,
+        "time_seconds": 68.38
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "16",
+        "generated_tokens": 364,
+        "time_seconds": 74.18
+      }
+    },
+    {
+      "index": 136,
+      "unique_id": "test/prealgebra/1297.json",
+      "subject": "Prealgebra",
+      "level": 5,
+      "ground_truth": "9",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "9"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "9",
+        "generated_tokens": 251,
+        "time_seconds": 47.39
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "9",
+        "generated_tokens": 251,
+        "time_seconds": 51.64
+      }
+    },
+    {
+      "index": 137,
+      "unique_id": "test/intermediate_algebra/2022.json",
+      "subject": "Intermediate Algebra",
+      "level": 5,
+      "ground_truth": "64",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "64"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "64",
+        "generated_tokens": 1780,
+        "time_seconds": 564.56
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "64",
+        "generated_tokens": 1780,
+        "time_seconds": 371.38
+      }
+    },
+    {
+      "index": 138,
+      "unique_id": "test/number_theory/1257.json",
+      "subject": "Number Theory",
+      "level": 4,
+      "ground_truth": "204_5",
+      "baseline_sft": {
+        "verdict": "FAIL",
+        "predicted": "224_5"
+      },
+      "grpo_long": {
+        "verdict": "FAIL",
+        "predicted": "224_5",
+        "generated_tokens": 210,
+        "time_seconds": 128.44
+      },
+      "pondering_ode": {
+        "verdict": "FAIL",
+        "predicted": "224_5",
+        "generated_tokens": 210,
+        "time_seconds": 8868.47
+      }
+    },
+    {
+      "index": 139,
+      "unique_id": "test/counting_and_probability/430.json",
+      "subject": "Counting & Probability",
+      "level": 4,
+      "ground_truth": "\\frac{1}{3}",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "1/3"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "1/3",
+        "generated_tokens": 380,
+        "time_seconds": 230.22
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "1/3",
+        "generated_tokens": 380,
+        "time_seconds": 72.09
+      }
+    },
+    {
+      "index": 140,
+      "unique_id": "test/intermediate_algebra/1151.json",
+      "subject": "Intermediate Algebra",
+      "level": 3,
+      "ground_truth": "1",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "1"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "1",
+        "generated_tokens": 279,
+        "time_seconds": 169.31
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "1",
+        "generated_tokens": 279,
+        "time_seconds": 87.58
+      }
+    },
+    {
+      "index": 141,
+      "unique_id": "test/number_theory/156.json",
+      "subject": "Number Theory",
+      "level": 4,
+      "ground_truth": "13",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "13"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "13",
+        "generated_tokens": 250,
+        "time_seconds": 66.52
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "13",
+        "generated_tokens": 250,
+        "time_seconds": 50.56
+      }
+    },
+    {
+      "index": 142,
+      "unique_id": "test/number_theory/612.json",
+      "subject": "Number Theory",
+      "level": 1,
+      "ground_truth": "2",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "2"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "2",
+        "generated_tokens": 171,
+        "time_seconds": 33.83
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "2",
+        "generated_tokens": 171,
+        "time_seconds": 37.65
+      }
+    },
+    {
+      "index": 143,
+      "unique_id": "test/counting_and_probability/159.json",
+      "subject": "Counting & Probability",
+      "level": 5,
+      "ground_truth": "28800",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "28800"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "28800",
+        "generated_tokens": 161,
+        "time_seconds": 28.15
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "28800",
+        "generated_tokens": 161,
+        "time_seconds": 31.05
+      }
+    },
+    {
+      "index": 144,
+      "unique_id": "test/precalculus/477.json",
+      "subject": "Precalculus",
+      "level": 3,
+      "ground_truth": "3 \\sqrt{5}",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "3\\sqrt{5}"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "3\\sqrt{5}",
+        "generated_tokens": 315,
+        "time_seconds": 69.05
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "3\\sqrt{5}",
+        "generated_tokens": 315,
+        "time_seconds": 61.54
+      }
+    },
+    {
+      "index": 145,
+      "unique_id": "test/precalculus/43.json",
+      "subject": "Precalculus",
+      "level": 1,
+      "ground_truth": "(15,-29)",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "(15, -29)"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "(15, -29)",
+        "generated_tokens": 125,
+        "time_seconds": 27.59
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "(15, -29)",
+        "generated_tokens": 125,
+        "time_seconds": 25.49
+      }
+    },
+    {
+      "index": 146,
+      "unique_id": "test/intermediate_algebra/1408.json",
+      "subject": "Intermediate Algebra",
+      "level": 5,
+      "ground_truth": "-2",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "-2"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "-2",
+        "generated_tokens": 398,
+        "time_seconds": 82.34
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "-2",
+        "generated_tokens": 398,
+        "time_seconds": 79.03
+      }
+    },
+    {
+      "index": 147,
+      "unique_id": "test/algebra/1519.json",
+      "subject": "Algebra",
+      "level": 3,
+      "ground_truth": "\\frac{\\sqrt{3}}{3}",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "\\frac{\\sqrt{3}}{3}"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "\\frac{\\sqrt{3}}{3}",
+        "generated_tokens": 213,
+        "time_seconds": 43.81
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "\\frac{\\sqrt{3}}{3}",
+        "generated_tokens": 213,
+        "time_seconds": 42.7
+      }
+    },
+    {
+      "index": 148,
+      "unique_id": "test/intermediate_algebra/966.json",
+      "subject": "Intermediate Algebra",
+      "level": 5,
+      "ground_truth": "16",
+      "baseline_sft": {
+        "verdict": "FAIL",
+        "predicted": "24"
+      },
+      "grpo_long": {
+        "verdict": "FAIL",
+        "predicted": "24",
+        "generated_tokens": 967,
+        "time_seconds": 194.57
+      },
+      "pondering_ode": {
+        "verdict": "FAIL",
+        "predicted": "24",
+        "generated_tokens": 967,
+        "time_seconds": 185.43
+      }
+    },
+    {
+      "index": 149,
+      "unique_id": "test/algebra/988.json",
+      "subject": "Algebra",
+      "level": 1,
+      "ground_truth": "11",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "11"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "11",
+        "generated_tokens": 118,
+        "time_seconds": 25.58
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "11",
+        "generated_tokens": 118,
+        "time_seconds": 22.57
+      }
+    },
+    {
+      "index": 150,
+      "unique_id": "test/number_theory/931.json",
+      "subject": "Number Theory",
+      "level": 2,
+      "ground_truth": "49",
+      "baseline_sft": {
+        "verdict": "PASS",
+        "predicted": "49"
+      },
+      "grpo_long": {
+        "verdict": "PASS",
+        "predicted": "49",
+        "generated_tokens": 467,
+        "time_seconds": 96.72
+      },
+      "pondering_ode": {
+        "verdict": "PASS",
+        "predicted": "49",
+        "generated_tokens": 467,
+        "time_seconds": 90.06
+      }
+    }
+  ]
+}

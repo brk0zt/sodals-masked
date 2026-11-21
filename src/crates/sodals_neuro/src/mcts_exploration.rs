@@ -297,7 +297,7 @@ impl<'a, E: ArcEnvironment> MctsSearch<'a, E> {
                 let adapter = crate::arc_environment::GenericEnvironmentAdapter::new();
                 adapter.embed_observation(&obs_text, &mut net_child);
                 
-                let (h_phase, _) = pipeline.bridge.project(net_f, &net_child, 1.0);
+                let (h_phase, _, _) = pipeline.bridge.project(net_f, &net_child, 1.0);
                 let bridge_p = (std::f64::consts::PI - h_phase.abs()).max(0.0) / std::f64::consts::PI;
                 
                 let u = self.c_puct * bridge_p * (parent_visits.sqrt() / (1.0 + child.visits as f64));
@@ -550,7 +550,7 @@ impl<'a, E: ArcEnvironment> BeamSearch<'a, E> {
                     }
                     
                     // Heuristic score calculation: CliffordBridge h_phase
-                    let (h_phase, _) = pipeline.bridge.project(net_f, &net_child, 1.0);
+                    let (h_phase, _, _) = pipeline.bridge.project(net_f, &net_child, 1.0);
                     let heuristic = (std::f64::consts::PI - h_phase.abs()).max(0.0) / std::f64::consts::PI;
                     
                     // Tabular Q component

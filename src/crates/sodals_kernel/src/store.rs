@@ -16,7 +16,11 @@ impl VectorStoreActor {
         let path = std::path::Path::new("sodals.vault");
         
         println!("[STORE] Vault yükleniyor...");
-        let vault = Vault::unlock(path, "dev-password", &logger)
+        let vault_pass = std::env::var("SODALS_VAULT_PASSWORD").unwrap_or_else(|_| {
+            eprintln!("[STORE] UYARI: SODALS_VAULT_PASSWORD tanımlı değil; geçici rastgele oturum anahtarı üretiliyor.");
+            format!("{:016x}{:016x}", rand::random::<u64>(), rand::random::<u64>())
+        });
+        let vault = Vault::unlock(path, &vault_pass, &logger)
             .expect("Vault açılamadı! (Yetki veya disk hatası)");
         println!("[STORE] Vault başarıyla yüklendi.");
 
@@ -48,17 +52,15 @@ impl VectorStoreActor {
                     // 1. Log: İstek geldi
                     println!("[STORE] 🔍 Arama Başlıyor (ReqID: {} - User: {})", request_id, user_id);
                     
-                    // 2. İşlem: Vault Araması (Burada takılıyor olabilir)
-                    let matches = self.vault.search(&query_vector, top_k);
+                    // 2. İşlem: Vault Araması (tenant izolasyonu: yalnızca user_id'nin anıları!)
+                    let matches = self.vault.search_for_user(&user_id, &query_vector, top_k);
                     
                     // 3. Log: Arama bitti
                     println!("[STORE] 🔍 Arama Tamamlandı. {} eşleşme bulundu.", matches.len());
 
                     let mut results = Vec::new();
                     for (id, _score) in matches {
-                        if let Ok(text) = self.vault.retrieve_content(id) {
-                            // Skor bilgisini de loglayalım (Debug için)
-                            // println!("[STORE] Bulunan: {} (Skor: {:.4})", id, score);
+                        if let Ok(text) = self.vault.retrieve_content_for_user(id, &user_id) {
                             results.push(text);
                         }
                     }

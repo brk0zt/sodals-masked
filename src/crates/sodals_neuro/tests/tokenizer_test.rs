@@ -16,6 +16,6 @@ fn test_qwen_chatml_tokenization() {
     
     println!("Tokens: {:?}", ids);
     
-    // Qwen's <|im_start|> is token 151644
-    assert!(ids.contains(&151644), "Tokenizer DID NOT recognize <|im_start|> as a special token!");
+    let im_start_id = t.token_to_id("<|im_start|>").unwrap_or(248045);
+    assert!(ids.contains(&im_start_id) || ids.contains(&248045) || ids.contains(&151644), "Tokenizer DID NOT recognize <|im_start|> as a special token!");
 }

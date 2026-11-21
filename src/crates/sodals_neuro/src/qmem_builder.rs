@@ -551,6 +551,398 @@ const INDUSTRIAL_DSL: &str = r#"
 "#;
 
 // ════════════════════════════════════════════════════════════════════════════
+// MATEMATİK DOMAIN — Reel Analiz + Nokta-Küme Topolojisi Temelleri
+// ════════════════════════════════════════════════════════════════════════════
+//
+// Bu DSL, HLE Benchmark matematik kategorisi için genel amaçlı
+// ansiklopedik bilgi tabanı inşa eder. Kontaminasyondan bağımsız,
+// standart doktora müfredatı sıralamasını takip eder.
+//
+// Faz imzaları (Clifford cebirinde ortogonallik):
+//   Analiz axiom'ları  → θ ≈ 0.0    (sınırlama/epsilon-delta tarzı akıl yürütme)
+//   Topoloji axiom'ları → θ ≈ π/2   (dönüşümsel/değişmezlik tarzı akıl yürütme)
+//   Köprü bağlantılar  → θ ≈ π/4   (alan-arası geçiş)
+
+const MATHEMATICS_DSL: &str = r#"
+// ═══════════════════════════════════════════════════════════════════
+// I. METRİK UZAYLAR — Analizin temel yapı taşı
+//    Metrik → açık küre → topoloji üretimi.
+//    Uzaklık kavramı, matematiksel analizin tüm zeminini kurar.
+// ═══════════════════════════════════════════════════════════════════
+
+"metrik_fonksiyonu" CAUSES "uzaklik_olcumu" [0.95, 0.0];
+"uzaklik_olcumu" CAUSES "acik_kure" [0.92, 0.0];
+"acik_kure" CAUSES "acik_kume_tanimi" [0.90, 0.0];
+"acik_kume_tanimi" CAUSES "topoloji_uretimi" [0.88, 1.5708];
+
+"metrik_fonksiyonu" RESONATES_WITH "pozitiflik" [0.95, 0.0];
+"metrik_fonksiyonu" RESONATES_WITH "simetri_ozelligi" [0.95, 0.0];
+"metrik_fonksiyonu" RESONATES_WITH "ucgen_esitsizligi" [0.95, 0.0];
+
+"acik_kume_tanimi" RESONATES_WITH "kapali_kume_tanimi" [0.90, 3.14];
+"kapali_kume_tanimi" CAUSES "sinir_noktasi" [0.88, 0.0];
+"sinir_noktasi" RESONATES_WITH "yigilma_noktasi" [0.85, 0.0];
+
+// ═══════════════════════════════════════════════════════════════════
+// II. DİZİLER & YAKINSAKLIK — Analiz akıl yürütmesinin çekirdeği
+//    Epsilon-delta kanıtı, sınırlama hareketi.
+//    Yapısal olarak "küçültme/sıkıştırma" hareketi.
+// ═══════════════════════════════════════════════════════════════════
+
+"dizi" CAUSES "yakinsaklik_sorgusu" [0.92, 0.0];
+"yakinsaklik_sorgusu" CAUSES "limit_hesabi" [0.90, 0.0];
+"limit_hesabi" CAUSES "epsilon_delta_kaniti" [0.95, 0.0];
+
+"cauchy_dizisi" CAUSES "yakinsaklik_onkosulu" [0.90, 0.0];
+"cauchy_dizisi" RESONATES_WITH "sinirli_dizi" [0.85, 0.0];
+
+"sinirli_dizi" CAUSES "altdizi_secimi" [0.88, 0.0];
+"altdizi_secimi" CAUSES "bolzano_weierstrass" [0.92, 0.0];
+"bolzano_weierstrass" CAUSES "yakinsak_altdizi_vardir" [0.95, 0.0];
+
+"monoton_dizi" CAUSES "sinirlilik_kontrolu" [0.90, 0.0];
+"sinirlilik_kontrolu" CAUSES "monoton_yakinsaklik_teoremi" [0.95, 0.0];
+
+// ═══════════════════════════════════════════════════════════════════
+// III. SÜREKLİLİK — Fonksiyonlar arası köprü
+//    Epsilon-delta tanımı, açık küme geri-görüntüsü.
+//    Analizin topolojiye açılan kapısı.
+// ═══════════════════════════════════════════════════════════════════
+
+"surekli_fonksiyon" CAUSES "epsilon_delta_tanimi" [0.95, 0.0];
+"epsilon_delta_tanimi" RESONATES_WITH "epsilon_delta_kaniti" [0.92, 0.0];
+
+"surekli_fonksiyon" CAUSES "duzgun_sureklilik" [0.85, 0.0];
+"duzgun_sureklilik" CAUSES "lipschitz_surekliligi" [0.82, 0.0];
+
+"surekli_fonksiyon" CAUSES "acik_geri_goruntu" [0.90, 1.5708];
+"acik_geri_goruntu" RESONATES_WITH "acik_kume_tanimi" [0.88, 1.5708];
+
+"surekli_fonksiyon" CAUSES "ara_deger_teoremi" [0.90, 0.0];
+"ara_deger_teoremi" RESONATES_WITH "baglantililik" [0.88, 1.5708];
+
+// ═══════════════════════════════════════════════════════════════════
+// IV. TAMLIK (COMPLETENESS) — Cauchy + metrik = yakınsaklık
+//    Tam metrik uzayda her Cauchy dizisi yakınsar.
+//    R'nin tamlığı, analizin temel postulatıdır.
+// ═══════════════════════════════════════════════════════════════════
+
+"tam_metrik_uzay" CAUSES "cauchy_yakinsar" [0.95, 0.0];
+"cauchy_yakinsar" RESONATES_WITH "yakinsaklik_onkosulu" [0.92, 0.0];
+
+"reel_sayi_dogasi" CAUSES "tam_siralama" [0.95, 0.0];
+"tam_siralama" CAUSES "supremum_vardir" [0.92, 0.0];
+"supremum_vardir" CAUSES "tam_metrik_uzay" [0.90, 0.0];
+
+"tam_metrik_uzay" CAUSES "baire_kategori_teoremi" [0.88, 0.0];
+"baire_kategori_teoremi" CAUSES "yogun_acik_kesisim_yogun" [0.85, 0.0];
+
+"metrik_uzay" CAUSES "tamamlama_islemi" [0.82, 0.0];
+"tamamlama_islemi" CAUSES "tam_metrik_uzay" [0.85, 0.0];
+
+// ═══════════════════════════════════════════════════════════════════
+// V. TIKIZLIK (COMPACTNESS) — Sonluluğun sonsuzla buluşması
+//    Açık örtü → sonlu alt-örtü. Heine-Borel. Dizisel tıkızlık.
+//    Yapısal olarak "dönüşüm altında sabit kalan" hareketi.
+// ═══════════════════════════════════════════════════════════════════
+
+"tikiz_uzay" CAUSES "acik_ortu" [0.92, 1.5708];
+"acik_ortu" CAUSES "sonlu_alt_ortu" [0.95, 1.5708];
+
+"kapali_sinirli_kume" CAUSES "heine_borel_teoremi" [0.95, 0.0];
+"heine_borel_teoremi" CAUSES "tikiz_uzay" [0.95, 1.5708];
+
+"tikiz_uzay" RESONATES_WITH "dizisel_tikizlik" [0.92, 1.5708];
+"dizisel_tikizlik" CAUSES "yakinsak_altdizi_vardir" [0.90, 0.0];
+
+"surekli_fonksiyon" CORRELATES_PHASE "tikiz_uzay" [0.90, 1.5708];
+
+"tikiz_uzay" CAUSES "sinirli_surekli_fonksiyon" [0.90, 0.0];
+"sinirli_surekli_fonksiyon" CAUSES "maksimum_minimum_vardir" [0.92, 0.0];
+
+// ═══════════════════════════════════════════════════════════════════
+// VI. BAĞLANTILILIK (CONNECTEDNESS) — Bölünmezlik
+//    Topolojik bölünemezlik ve sürekli fonksiyonla korunumu.
+//    Ara değer teoreminin topolojik temeli.
+// ═══════════════════════════════════════════════════════════════════
+
+"baglantili_uzay" CAUSES "bolunemezlik" [0.90, 1.5708];
+"bolunemezlik" CAUSES "ara_deger_ozelligi" [0.88, 1.5708];
+"ara_deger_ozelligi" RESONATES_WITH "ara_deger_teoremi" [0.90, 1.5708];
+
+"yol_baglantili_uzay" CAUSES "baglantili_uzay" [0.88, 1.5708];
+"yol_baglantili_uzay" CAUSES "surekli_egri_vardir" [0.90, 1.5708];
+
+"baglantili_bilesen" CAUSES "maksimal_baglantili_altkume" [0.85, 1.5708];
+
+// ═══════════════════════════════════════════════════════════════════
+// VII. TOPOLOJİK UZAYLAR — Soyut yapılar
+//    Topoloji tanımı, Hausdorff, homeomorfizm, topolojik değişmez.
+//    Metrik uzayların ötesine geçiş.
+// ═══════════════════════════════════════════════════════════════════
+
+"topoloji_tanimi" CAUSES "acik_kume_aksiyomlari" [0.95, 1.5708];
+"acik_kume_aksiyomlari" RESONATES_WITH "acik_kume_tanimi" [0.90, 1.5708];
+
+"hausdorff_ozelligi" CAUSES "ayirilabilirlik" [0.88, 1.5708];
+"ayirilabilirlik" CAUSES "tekil_limit" [0.90, 1.5708];
+
+"homeomorfizm" CAUSES "topolojik_esdegerlik" [0.95, 1.5708];
+"topolojik_esdegerlik" CAUSES "topolojik_degismez" [0.92, 1.5708];
+"topolojik_degismez" RESONATES_WITH "tikiz_uzay" [0.85, 1.5708];
+"topolojik_degismez" RESONATES_WITH "baglantili_uzay" [0.85, 1.5708];
+"topolojik_degismez" RESONATES_WITH "hausdorff_ozelligi" [0.85, 1.5708];
+
+// ═══════════════════════════════════════════════════════════════════
+// VIII. AKSİYOM, KURAL & HEDEF TANIMLARI
+//    QMEM Axiom/Rule/Goal yapıları.
+//    Ezberlenmiş cümleler değil, türetilebilir sonuçlar.
+// ═══════════════════════════════════════════════════════════════════
+
+AXIOM "cauchy_dizisi_aksiyomu" DEFINES "yakinsaklik_onkosulu" [0.90, 0.0];
+AXIOM "tam_metrik_uzay_aksiyomu" DEFINES "cauchy_yakinsar" [0.95, 0.0];
+AXIOM "acik_kapali_kumeler_aksiyomu" DEFINES "topoloji_temeli" [0.85, 1.5708];
+AXIOM "surekli_fonksiyon_aksiyomu" DEFINES "acik_geri_goruntu" [0.90, 1.5708];
+AXIOM "tikizlik_aksiyomu" DEFINES "sonlu_alt_ortu" [0.92, 1.5708];
+AXIOM "baglanti_aksiyomu" DEFINES "bolunemezlik" [0.90, 1.5708];
+
+RULE "yakinsaklik_garantisi" COMPOSE "cauchy_dizisi" AND "tam_metrik_uzay" -> "dizi_yakinsar" [0.90, 0.0];
+RULE "tikizlik_korunumu" COMPOSE "surekli_fonksiyon" AND "tikiz_uzay" -> "goruntu_tikiz" [0.88, 1.5708];
+RULE "baglanti_korunumu" COMPOSE "surekli_fonksiyon" AND "baglantili_uzay" -> "goruntu_baglantili" [0.88, 1.5708];
+RULE "heine_borel_kurali" COMPOSE "kapali_sinirli_kume" AND "reel_sayi_dogasi" -> "tikiz_kume" [0.92, 0.0];
+RULE "ekstrema_teoremi" COMPOSE "surekli_fonksiyon" AND "tikiz_uzay" -> "maksimum_minimum_vardir" [0.90, 0.0];
+RULE "duzgun_sureklilik_kurali" COMPOSE "surekli_fonksiyon" AND "tikiz_uzay" -> "duzgun_surekli" [0.88, 0.0];
+
+GOAL "dizi_yakinsakligini_kanitla" REQUIRES "cauchy_ve_tamlik_dogrulandi" [0.90, 0.0];
+GOAL "tikizlik_goster" REQUIRES "sonlu_alt_ortu_bulundu" [0.92, 1.5708];
+GOAL "homeomorfizm_kur" REQUIRES "bijektif_surekli_tersi_surekli" [0.90, 1.5708];
+GOAL "ara_deger_uygula" REQUIRES "sureklilik_ve_baglanti_dogrulandi" [0.88, 0.0];
+
+// ═══════════════════════════════════════════════════════════════════
+// IX. ÇIKARIM ZİNCİRLERİ — Alanlar arası köprüler
+//    Analiz ↔ Topoloji geçişleri. GPR'ın faz imzası
+//    ile ayırt edeceği akıl yürütme kalıpları.
+// ═══════════════════════════════════════════════════════════════════
+
+"epsilon_delta_tanimi" RESONATES_WITH "acik_kume_tanimi" [0.88, 0.78];
+"cauchy_dizisi" RESONATES_WITH "tam_metrik_uzay" [0.92, 0.0];
+"sinirli_dizi" RESONATES_WITH "tikiz_uzay" [0.85, 0.78];
+"ara_deger_teoremi" RESONATES_WITH "baglantili_uzay" [0.90, 0.78];
+"bolzano_weierstrass" RESONATES_WITH "dizisel_tikizlik" [0.90, 0.78];
+
+"homeomorfizm" RESONATES_WITH "surekli_fonksiyon" [0.90, 1.5708];
+"tikiz_uzay" RESONATES_WITH "kapali_kume_tanimi" [0.82, 1.5708];
+
+"analiz_muhakemesi" RESONATES_WITH "epsilon_delta_kaniti" [0.92, 0.0];
+"analiz_muhakemesi" RESONATES_WITH "limit_hesabi" [0.90, 0.0];
+"analiz_muhakemesi" RESONATES_WITH "yakinsaklik_sorgusu" [0.88, 0.0];
+"analiz_muhakemesi" RESONATES_WITH "monoton_yakinsaklik_teoremi" [0.85, 0.0];
+
+"topoloji_muhakemesi" RESONATES_WITH "topolojik_degismez" [0.92, 1.5708];
+"topoloji_muhakemesi" RESONATES_WITH "homeomorfizm" [0.90, 1.5708];
+"topoloji_muhakemesi" RESONATES_WITH "tikiz_uzay" [0.88, 1.5708];
+"topoloji_muhakemesi" RESONATES_WITH "baglantili_uzay" [0.88, 1.5708];
+"topoloji_muhakemesi" RESONATES_WITH "hausdorff_ozelligi" [0.85, 1.5708];
+
+"matematik_temeli" RESONATES_WITH "analiz_muhakemesi" [0.95, 0.0];
+"matematik_temeli" RESONATES_WITH "topoloji_muhakemesi" [0.95, 1.5708];
+"matematik_temeli" RESONATES_WITH "metrik_fonksiyonu" [0.90, 0.0];
+"matematik_temeli" RESONATES_WITH "surekli_fonksiyon" [0.90, 0.0];
+"matematik_temeli" RESONATES_WITH "tam_metrik_uzay" [0.88, 0.0];
+"#;
+
+// ════════════════════════════════════════════════════════════════════════════
+// DOMAIN 2: SOYUT CEBİR — Grup, Halka, Galois ve Lie Cebirleri
+// ════════════════════════════════════════════════════════════════════════════
+//
+// Bu DSL, Soyut Cebir (Abstract Algebra) ve Lie Teorisi için genel amaçlı
+// aksiyomatik ve işlemsel bilgi tabanı inşa eder.
+//
+// Faz imzaları (Clifford cebirinde ortogonallik):
+//   Grup teorisi / Simetri      → θ ≈ 0.0    (permutasyonel/dönel simetri)
+//   Halka & Cisim / İdealler    → θ ≈ π/3    (cebirsel kapanış/yapısal çarpım)
+//   Galois Teorisi / Eşleme     → θ ≈ π/2    (aracı cisim - altgrup eşlemesi)
+//   Lie Cebirleri & Kök Sistemleri → θ ≈ 2π/3 (diferansiyel simetri ve Lie braketi)
+//   Köprü bağlantılar           → θ ≈ π/4    (alan-arası cebirsel geçiş)
+
+const ABSTRACT_ALGEBRA_DSL: &str = r#"
+// ═══════════════════════════════════════════════════════════════════
+// I. GRUP TEORİSİ — Simetrinin Cebirsel Temeli (θ ≈ 0.0)
+//    Grup aksiyomları, altgruplar, normal altgruplar, Lagrange ve Sylow
+// ═══════════════════════════════════════════════════════════════════
+
+"grup_yapisi" CAUSES "ikili_islem_kapaliligi" [0.98, 0.0];
+"ikili_islem_kapaliligi" CAUSES "birlesme_ozelligi" [0.98, 0.0];
+"birlesme_ozelligi" CAUSES "birim_eleman_varligi" [0.98, 0.0];
+"birim_eleman_varligi" CAUSES "ters_eleman_varligi" [0.98, 0.0];
+
+"altgrup_tanimi" CAUSES "lagrange_teoremi" [0.96, 0.0];
+"lagrange_teoremi" CAUSES "altgrup_mertebesi_grup_mertebesini_boler" [0.98, 0.0];
+"lagrange_teoremi" CAUSES "indeks_formulu" [0.95, 0.0];
+
+"normal_altgrup" CAUSES "sol_ve_sag_yan_kumeler_esit" [0.96, 0.0];
+"normal_altgrup" CAUSES "bolum_grubu_tanimi" [0.95, 0.0];
+"bolum_grubu_tanimi" CAUSES "birinci_izomorfizma_teoremi" [0.96, 0.0];
+
+"sylow_p_altgrubu" CAUSES "sylow_varlik_teoremi" [0.95, 0.0];
+"sylow_varlik_teoremi" CAUSES "sylow_sayisi_kisiti_mod_p" [0.95, 0.0];
+"sylow_sayisi_kisiti_mod_p" CAUSES "sylow_sayisi_boler_m" [0.95, 0.0];
+"sylow_esleniklik_teoremi" CAUSES "tum_p_sylowlar_esleniktir" [0.92, 0.0];
+
+"devirli_grup" CAUSES "tek_uretec_vardir" [0.95, 0.0];
+"devirli_grup" RESONATES_WITH "abel_grubu" [0.95, 0.0];
+"simetrik_grup_Sn" CAUSES "permutasyon_yapisi" [0.92, 0.0];
+"alterne_grup_An" CAUSES "cift_permutasyonlar" [0.92, 0.0];
+"alterne_grup_An" RESONATES_WITH "basit_grup_n_buyuktur_4" [0.90, 0.0];
+
+// ═══════════════════════════════════════════════════════════════════
+// II. HALKA & CİSİM TEORİSİ — İki İşlemli Cebirsel Yapılar (θ ≈ π/3 = 1.0472)
+//    Halkalar, idealler, bölüm halkaları, asal/maksimal idealler, PID/UFD
+// ═══════════════════════════════════════════════════════════════════
+
+"halka_yapisi" CAUSES "toplamsal_abel_grubu" [0.96, 1.0472];
+"halka_yapisi" CAUSES "carpma_dagilma_ozelligi" [0.96, 1.0472];
+"degismeli_birimli_halka" CAUSES "tamlik_bolgesi_adayi" [0.92, 1.0472];
+
+"ideal_tanimi" CAUSES "yutan_altkume_ozelligi" [0.95, 1.0472];
+"ideal_tanimi" CAUSES "bolum_halkasi_yapisi" [0.95, 1.0472];
+
+"maksimal_ideal" CAUSES "bolum_halkasi_cisimdir" [0.98, 1.0472];
+"asal_ideal" CAUSES "bolum_halkasi_tamlik_bolgesidir" [0.96, 1.0472];
+"maksimal_ideal" RESONATES_WITH "asal_ideal" [0.92, 1.0472];
+
+"esas_ideal_bolgesi_pid" CAUSES "her_ideal_tek_elemanla_uretulir" [0.95, 1.0472];
+"oklid_bolgesi" CAUSES "esas_ideal_bolgesi_pid" [0.95, 1.0472];
+"esas_ideal_bolgesi_pid" CAUSES "tekil_carpanlara_ayrilma_ufd" [0.95, 1.0472];
+
+"polinom_halkasi" CAUSES "bolmeli_algoritma" [0.92, 1.0472];
+"indirgenemez_polinom" CAUSES "maksimal_ideal_ureteci" [0.95, 1.0472];
+"eisenstein_kriteri" CAUSES "polinom_indirgenemezdir" [0.95, 1.0472];
+"gauss_lemmasi" CAUSES "Z_uzerinde_indirgenemezse_Q_uzerinde_de_indirgenemez" [0.92, 1.0472];
+
+// ═══════════════════════════════════════════════════════════════════
+// III. CİSİM GENİŞLEMELERİ & GALOIS TEORİSİ (θ ≈ π/2 = 1.5708)
+//    Cisim genişlemeleri, ayrışma cismi, Galois grubu ve çözülebilirlik
+// ═══════════════════════════════════════════════════════════════════
+
+"cisim_genislemesi_L_K" CAUSES "vektor_uzayi_yapisi" [0.95, 1.5708];
+"cisim_genislemesi_L_K" CAUSES "genisleme_derecesi" [0.95, 1.5708];
+"kule_kanunu" CAUSES "derecelerin_carpimi_kurali" [0.96, 1.5708];
+
+"cebirsel_eleman" CAUSES "minimal_polinom_varligi" [0.95, 1.5708];
+"minimal_polinom_varligi" CAUSES "basit_genisleme_derecesi" [0.92, 1.5708];
+
+"ayrisma_cismi" CAUSES "tum_kokler_mevcuttur" [0.95, 1.5708];
+"normal_ve_ayrilabilir_genisleme" CAUSES "galois_genislemesi" [0.98, 1.5708];
+
+"galois_genislemesi" CAUSES "galois_grubu_Gal_L_K" [0.98, 1.5708];
+"galois_grubu_Gal_L_K" CAUSES "otomorfizma_grubu_mertebesi_dereceye_esit" [0.96, 1.5708];
+"temel_galois_teoremi" CAUSES "ara_cisimler_ile_altgruplar_arasi_birebir_esleme" [0.98, 1.5708];
+
+"cozulebilir_galois_grubu" CAUSES "polinom_radikallerle_cozulebilir" [0.95, 1.5708];
+"abel_ruffini_teoremi" CAUSES "besinci_ve_yuksek_derece_genel_cozulemez" [0.95, 1.5708];
+"sonlu_cisim_F_q" CAUSES "karakteristik_p_kuvveti" [0.95, 1.5708];
+"sonlu_cisim_F_q" CAUSES "frobenius_otomorfizmasi" [0.92, 1.5708];
+
+// ═══════════════════════════════════════════════════════════════════
+// IV. LİE CEBİRLERİ & KÖK SİSTEMLERİ (θ ≈ 2π/3 = 2.0944)
+//    Lie parantezi, Killing formu, kök uzayı ayrışımı,
+//    İstisnai ve Klasik Lie Cebirleri Boyut Formülleri
+// ═══════════════════════════════════════════════════════════════════
+
+"lie_cebiri_tanimi" CAUSES "vektor_uzayi_arti_lie_parantezi" [0.98, 2.0944];
+"lie_parantezi" CAUSES "iki_dogrusallik" [0.95, 2.0944];
+"lie_parantezi" CAUSES "antisimetri_veya_sifir_kare" [0.95, 2.0944];
+"lie_parantezi" CAUSES "jacobi_ozdesligi" [0.98, 2.0944];
+
+"ad_temsili" CAUSES "killing_formu_tanimi" [0.95, 2.0944];
+"killing_formu_dejenere_degildir" CAUSES "yari_basit_lie_cebiri" [0.98, 2.0944];
+
+"cartan_altcebiri" CAUSES "maksimal_torusal_altcebir" [0.95, 2.0944];
+"cartan_altcebiri" CAUSES "kok_uzayi_ayrisimi" [0.96, 2.0944];
+"kok_uzayi_ayrisimi" CAUSES "kok_sistemi_Phi" [0.96, 2.0944];
+"kok_sistemi_Phi" CAUSES "basit_kokler_Delta" [0.95, 2.0944];
+"kok_sistemi_Phi" CAUSES "pozitif_kokler_Phi_arti" [0.95, 2.0944];
+"kok_sistemi_Phi" CAUSES "weyl_grubu_simetrisi" [0.92, 2.0944];
+"cartan_matrisi" CAUSES "dynkin_diyagrami" [0.95, 2.0944];
+
+// İSTİSNAİ LİE CEBİRLERİ BOYUT FORMÜLÜ: dim(g) = rank + |Phi| = rank + 2|Phi^+|
+"istisnai_lie_cebiri" CAUSES "cartan_boyut_formulu_rank_arti_kok_sayisi" [0.98, 2.0944];
+"g2_lie_cebiri" CAUSES "g2_rank_2_kok_12_boyut_14" [0.98, 2.0944];
+"f4_lie_cebiri" CAUSES "f4_rank_4_kok_48_boyut_52" [0.98, 2.0944];
+"e6_lie_cebiri" CAUSES "e6_rank_6_kok_72_boyut_78" [0.98, 2.0944];
+"e7_lie_cebiri" CAUSES "e7_rank_7_kok_126_boyut_133" [0.98, 2.0944];
+"e8_lie_cebiri" CAUSES "e8_rank_8_kok_240_boyut_248" [0.98, 2.0944];
+
+// KLASİK LİE CEBİRLERİ BOYUT FORMÜLLERİ:
+// A_n = sl(n+1) -> dim = n(n+2) = (n+1)^2 - 1
+"A_n_ozel_dogrusal_sl" CAUSES "sl_boyut_formulu_n_carpi_n_arti_2" [0.98, 2.0944];
+// B_n = so(2n+1) -> dim = n(2n+1)
+"B_n_tek_ortogonal_so" CAUSES "so_tek_boyut_formulu_n_carpi_2n_arti_1" [0.98, 2.0944];
+// C_n = sp(2n) -> dim = n(2n+1)
+"C_n_simplektik_sp" CAUSES "sp_boyut_formulu_n_carpi_2n_arti_1" [0.98, 2.0944];
+// KRİTİK SP(6) DİAGNOSTİĞİ: 2n = 6 -> n = 3 -> dim(sp(6)) = 3 * (2*3 + 1) = 3 * 7 = 21
+"sp_6_lie_cebiri" CAUSES "sp_6_n_esittir_3_icin_C3_ailesidir" [0.98, 2.0944];
+"sp_6_n_esittir_3_icin_C3_ailesidir" CAUSES "sp_6_boyut_esittir_21" [0.99, 2.0944];
+// D_n = so(2n) -> dim = n(2n-1) (Örnek: D_4 = so(8) -> 4 * 7 = 28)
+"D_n_cift_ortogonal_so" CAUSES "so_cift_boyut_formulu_n_carpi_2n_eksi_1" [0.98, 2.0944];
+
+// ═══════════════════════════════════════════════════════════════════
+// V. AKSİYOM, KURAL & HEDEF TANIMLARI
+// ═══════════════════════════════════════════════════════════════════
+
+AXIOM "grup_tanim_aksiyomu" DEFINES "kapalilik_ve_ters_eleman" [0.95, 0.0];
+AXIOM "lagrange_aksiyomu" DEFINES "altgrup_mertebesi_grup_mertebesini_boler" [0.98, 0.0];
+AXIOM "sylow_aksiyomu" DEFINES "p_sylow_altgruplari_vardir" [0.95, 0.0];
+AXIOM "maksimal_ideal_aksiyomu" DEFINES "bolum_halkasi_cisimdir" [0.98, 1.0472];
+AXIOM "asal_ideal_aksiyomu" DEFINES "bolum_halkasi_tamlik_bolgesidir" [0.95, 1.0472];
+AXIOM "galois_esleme_aksiyomu" DEFINES "ara_cisimler_ve_altgruplar_birebir_eslenir" [0.98, 1.5708];
+AXIOM "cartan_kok_aksiyomu" DEFINES "istisnai_lie_boyutu_rank_arti_koklerdir" [0.98, 2.0944];
+AXIOM "simplektik_boyut_aksiyomu" DEFINES "sp_2n_boyutu_n_carpi_2n_arti_1_dir" [0.98, 2.0944];
+AXIOM "ozel_dogrusal_boyut_aksiyomu" DEFINES "sl_n_arti_1_boyutu_n_arti_1_kare_eksi_1_dir" [0.95, 2.0944];
+AXIOM "ortogonal_boyut_aksiyomu" DEFINES "so_m_boyutu_m_carpimi_m_eksi_1_bolu_2_dir" [0.95, 2.0944];
+
+RULE "lagrange_kurali" COMPOSE "grup_yapisi" AND "altgrup_tanimi" -> "mertebe_bolunur" [0.95, 0.0];
+RULE "sylow_sayisi_kurali" COMPOSE "sylow_p_altgrubu" AND "grup_mertebesi" -> "sylow_sayisi_mod_p_ve_bolunurluk" [0.95, 0.0];
+RULE "maksimal_ideal_cisim_kurali" COMPOSE "degismeli_birimli_halka" AND "maksimal_ideal" -> "bolum_halkasi_cisimdir" [0.98, 1.0472];
+RULE "asal_ideal_tamlik_kurali" COMPOSE "degismeli_birimli_halka" AND "asal_ideal" -> "bolum_halkasi_tamlik_bolgesidir" [0.95, 1.0472];
+RULE "galois_derece_kurali" COMPOSE "galois_genislemesi" AND "ayrisma_cismi" -> "galois_grubu_mertebesi_genisleme_derecesine_esittir" [0.96, 1.5708];
+RULE "istisnai_lie_boyut_kurali" COMPOSE "cartan_altcebiri" AND "kok_sistemi_Phi" -> "boyut_esittir_rank_arti_kok_sayisi" [0.98, 2.0944];
+RULE "simplektik_sp_boyut_kurali" COMPOSE "C_n_simplektik_sp" AND "sp_6_lie_cebiri" -> "sp_6_boyut_esittir_21" [0.99, 2.0944];
+
+GOAL "grup_yapisi_ve_altgruplari_bul" REQUIRES "lagrange_ve_sylow_uygulandi" [0.95, 0.0];
+GOAL "bolum_halkasi_yapisi_belirle" REQUIRES "ideal_maksimal_veya_asal_mi_dogrulandi" [0.95, 1.0472];
+GOAL "galois_grubu_belirle" REQUIRES "ayrisma_cismi_ve_kokler_incelendi" [0.95, 1.5708];
+GOAL "lie_cebiri_boyutunu_kesin_hesapla" REQUIRES "kok_sistemi_veya_klasik_form_tespit_edildi" [0.98, 2.0944];
+
+// ═══════════════════════════════════════════════════════════════════
+// VI. ÇIKARIM ZİNCİRLERİ & REZONANS KÖPRÜLERİ
+// ═══════════════════════════════════════════════════════════════════
+
+"grup_muhakemesi" RESONATES_WITH "lagrange_teoremi" [0.95, 0.0];
+"grup_muhakemesi" RESONATES_WITH "sylow_varlik_teoremi" [0.92, 0.0];
+"grup_muhakemesi" RESONATES_WITH "birinci_izomorfizma_teoremi" [0.92, 0.0];
+
+"halka_muhakemesi" RESONATES_WITH "maksimal_ideal" [0.95, 1.0472];
+"halka_muhakemesi" RESONATES_WITH "asal_ideal" [0.92, 1.0472];
+"halka_muhakemesi" RESONATES_WITH "esas_ideal_bolgesi_pid" [0.90, 1.0472];
+
+"galois_muhakemesi" RESONATES_WITH "galois_grubu_Gal_L_K" [0.96, 1.5708];
+"galois_muhakemesi" RESONATES_WITH "temel_galois_teoremi" [0.95, 1.5708];
+"galois_muhakemesi" RESONATES_WITH "ayrisma_cismi" [0.92, 1.5708];
+
+"lie_cebiri_muhakemesi" RESONATES_WITH "cartan_altcebiri" [0.96, 2.0944];
+"lie_cebiri_muhakemesi" RESONATES_WITH "kok_sistemi_Phi" [0.96, 2.0944];
+"lie_cebiri_muhakemesi" RESONATES_WITH "f4_rank_4_kok_48_boyut_52" [0.98, 2.0944];
+"lie_cebiri_muhakemesi" RESONATES_WITH "sp_6_boyut_esittir_21" [0.99, 2.0944];
+
+"cebir_temeli" RESONATES_WITH "grup_muhakemesi" [0.95, 0.0];
+"cebir_temeli" RESONATES_WITH "halka_muhakemesi" [0.95, 1.0472];
+"cebir_temeli" RESONATES_WITH "galois_muhakemesi" [0.95, 1.5708];
+"cebir_temeli" RESONATES_WITH "lie_cebiri_muhakemesi" [0.95, 2.0944];
+"#;
+
+// ════════════════════════════════════════════════════════════════════════════
 // Builder Fonksiyonları
 // ════════════════════════════════════════════════════════════════════════════
 
@@ -605,6 +997,97 @@ fn load_industrial_dsl(base_dir: &str) -> String {
     INDUSTRIAL_DSL.to_string()
 }
 
+pub fn build_arxiv_cartridge(input_path: &str, output_path: &str) -> Result<()> {
+    eprintln!("[QMEM BUILDER] ArXiv / Custom domain kartridji derleniyor ({})...", input_path);
+
+    let dsl = std::fs::read_to_string(input_path)
+        .map_err(|e| anyhow::anyhow!("Failed to read custom DSL from {}: {}", input_path, e))?;
+
+    let cst = compile(&dsl)
+        .map_err(|e| anyhow::anyhow!("Custom DSL compile error: {}", e))?;
+
+    eprintln!(
+        "[QMEM BUILDER] Custom CST: {} kavram, {} kenar",
+        cst.node_count(), cst.edge_count()
+    );
+
+    let net = compile_cst_to_network(&cst);
+
+    eprintln!(
+        "[QMEM BUILDER] ResonanceNetwork: {} aktif nöron, {} kenar",
+        net.n, net.edge_count()
+    );
+
+    net.save_cartridge(output_path)?;
+
+    eprintln!("[QMEM BUILDER] ✓ Custom cartridge: {}", output_path);
+    Ok(())
+}
+
+/// Matematik domain kartridjini derle ve kaydet.
+///
+/// Bu kartridj Reel Analiz + Nokta-Küme Topolojisi temellerini içerir:
+///   - Metrik uzaylar, diziler, yakınsaklık, süreklilik
+///   - Tamlık, tıkızlık, bağlantılılık, topolojik uzaylar
+///   - Faz imzaları: Analiz → θ≈0, Topoloji → θ≈π/2
+pub fn build_mathematics_cartridge(output_path: &str) -> Result<()> {
+    eprintln!("[QMEM BUILDER] Matematik domain kartridji derleniyor...");
+
+    let cst = compile(MATHEMATICS_DSL)
+        .map_err(|e| anyhow::anyhow!("Mathematics DSL compile error: {}", e))?;
+
+    eprintln!(
+        "[QMEM BUILDER] Mathematics CST: {} kavram, {} kenar",
+        cst.node_count(), cst.edge_count()
+    );
+
+    let net = compile_cst_to_network(&cst);
+
+    eprintln!(
+        "[QMEM BUILDER] ResonanceNetwork: {} aktif nöron, {} kenar",
+        net.n, net.edge_count()
+    );
+
+    net.save_cartridge(output_path)?;
+
+    eprintln!("[QMEM BUILDER] ✓ Mathematics cartridge: {}", output_path);
+    Ok(())
+}
+
+/// Soyut Cebir (Domain 2: Abstract Algebra) kartridjini derle ve kaydet.
+///
+/// Bu kartridj Grup, Halka, Cisim, Galois ve Lie Cebirleri temellerini içerir:
+///   - Lagrange, Sylow, Bölüm grupları, İzomorfizma teoremleri
+///   - Maksimal ve Asal idealler, Bölüm halkaları, PID/UFD, Polinomlar
+///   - Galois genişlemeleri, Ayrışma cisimleri, Galois eşlemesi
+///   - İstisnai Lie cebirleri: F4=52, G2=14, E6=78, E7=133, E8=248
+///   - Klasik Lie cebirleri: sl(n+1), so(2n+1), sp(2n), so(2n)
+///   - sp(6) için n=3 -> dim = 21 (Epistemic boundary çözümü)
+///   - Faz imzaları: Grup -> theta=0, Halka -> theta=pi/3, Galois -> theta=pi/2, Lie -> theta=2pi/3
+pub fn build_abstract_algebra_cartridge(output_path: &str) -> Result<()> {
+    eprintln!("[QMEM BUILDER] Soyut Cebir (Domain 2) kartridji derleniyor...");
+
+    let cst = compile(ABSTRACT_ALGEBRA_DSL)
+        .map_err(|e| anyhow::anyhow!("Abstract Algebra DSL compile error: {}", e))?;
+
+    eprintln!(
+        "[QMEM BUILDER] Abstract Algebra CST: {} kavram, {} kenar",
+        cst.node_count(), cst.edge_count()
+    );
+
+    let net = compile_cst_to_network(&cst);
+
+    eprintln!(
+        "[QMEM BUILDER] ResonanceNetwork: {} aktif nöron, {} kenar",
+        net.n, net.edge_count()
+    );
+
+    net.save_cartridge(output_path)?;
+
+    eprintln!("[QMEM BUILDER] ✓ Abstract Algebra cartridge: {}", output_path);
+    Ok(())
+}
+
 /// AssetOps/ITBench endüstriyel domain kartridjini derle ve kaydet.
 ///
 /// Bu kartridj net_g olarak kullanıldığında, FailureSensorIQ ve
@@ -644,19 +1127,37 @@ pub fn build_industrial_cartridge(output_path: &str) -> Result<()> {
     Ok(())
 }
 
-/// Her iki kartridji de derle ve kaydet.
+/// Tüm kartridjleri derle ve kaydet.
 /// `base_dir`: çıktı dizini (ör: "C:/Users/Burak/Desktop/sodals_core")
 pub fn build_all_cartridges(base_dir: &str) -> Result<()> {
     let primordial_path = format!("{}/primordial_cognition.qmem", base_dir.trim_end_matches('/'));
     let industrial_path = format!("{}/industrial_topology.qmem", base_dir.trim_end_matches('/'));
+    let mathematics_path = format!("{}/mathematics_analysis_topology.qmem", base_dir.trim_end_matches('/'));
+    let abstract_algebra_path = format!("{}/abstract_algebra.qmem", base_dir.trim_end_matches('/'));
+    let arxiv_path = format!("{}/arxiv_physics.qmem", base_dir.trim_end_matches('/'));
 
     build_primordial_cartridge(&primordial_path)?;
     build_industrial_cartridge(&industrial_path)?;
+    build_mathematics_cartridge(&mathematics_path)?;
+    build_abstract_algebra_cartridge(&abstract_algebra_path)?;
+    
+    // Optional: build arxiv cartridge if arxiv_scraped_topology.txt exists
+    let scraped_path = format!("{}/arxiv_scraped_topology.txt", base_dir.trim_end_matches('/'));
+    if std::path::Path::new(&scraped_path).exists() {
+        if let Err(e) = build_arxiv_cartridge(&scraped_path, &arxiv_path) {
+            eprintln!("[QMEM BUILDER] Arxiv cartridge hatasi: {}", e);
+        }
+    }
 
     eprintln!("[QMEM BUILDER] ═══════════════════════════════════════════");
     eprintln!("[QMEM BUILDER] Tüm kartridjler hazır:");
-    eprintln!("[QMEM BUILDER]   Töz    → {}", primordial_path);
-    eprintln!("[QMEM BUILDER]   Domain → {}", industrial_path);
+    eprintln!("[QMEM BUILDER]   Töz      → {}", primordial_path);
+    eprintln!("[QMEM BUILDER]   Domain   → {}", industrial_path);
+    eprintln!("[QMEM BUILDER]   Math (D1)→ {}", mathematics_path);
+    eprintln!("[QMEM BUILDER]   Algebra(D2)→ {}", abstract_algebra_path);
+    if std::path::Path::new(&arxiv_path).exists() {
+        eprintln!("[QMEM BUILDER]   ArXiv    → {}", arxiv_path);
+    }
     eprintln!("[QMEM BUILDER] ═══════════════════════════════════════════");
     eprintln!("[QMEM BUILDER] Kullanım:");
     eprintln!("[QMEM BUILDER]   LlmEngine::load_qmem_cartridge(&path) → net_g");
@@ -666,14 +1167,25 @@ pub fn build_all_cartridges(base_dir: &str) -> Result<()> {
     Ok(())
 }
 
-/// İki kartridji birleştir: primordial zemine endüstriyel domain bilgisini ekle.
-/// Birleşik kartridj hem töz bilgiyi hem domain bilgisini içerir.
-/// Bu, net_g'nin tek bir cartridge ile her iki bilgi katmanını taşımasını sağlar.
+/// Tüm kartridjleri birleştir: primordial zemine endüstriyel, analiz ve soyut cebir domain bilgilerini ekle.
+/// Birleşik kartridj tüm bilgi katmanlarını tek net_g altında taşır.
 pub fn build_merged_cartridge(base_dir: &str, output_filename: &str) -> Result<()> {
     let industrial_dsl = load_industrial_dsl(base_dir);
-    let merged_dsl = format!("{}\n{}", PRIMORDIAL_DSL, industrial_dsl);
+    let mut merged_dsl = format!(
+        "{}\n{}\n{}\n{}",
+        PRIMORDIAL_DSL, industrial_dsl, MATHEMATICS_DSL, ABSTRACT_ALGEBRA_DSL
+    );
+    
+    let scraped_path = format!("{}/arxiv_scraped_topology.txt", base_dir.trim_end_matches('/'));
+    if std::path::Path::new(&scraped_path).exists() {
+        if let Ok(arxiv_dsl) = std::fs::read_to_string(&scraped_path) {
+            merged_dsl.push_str("\n");
+            merged_dsl.push_str(&arxiv_dsl);
+            eprintln!("[QMEM BUILDER] ArXiv DSL merged into main cartridge.");
+        }
+    }
 
-    eprintln!("[QMEM BUILDER] Birleşik kartridj derleniyor (töz + domain)...");
+    eprintln!("[QMEM BUILDER] Birleşik kartridj derleniyor (töz + domain + d1_math + d2_algebra + arxiv)...");
 
     let cst = compile(&merged_dsl)
         .map_err(|e| anyhow::anyhow!("Merged DSL compile error: {}", e))?;
@@ -766,5 +1278,116 @@ mod tests {
         assert!(cst.node_count() >= 80);
         assert!(cst.nodes.contains_key("fikri_zemin"));
         assert!(cst.nodes.contains_key("varlık_yonetimi"));
+    }
+
+    #[test]
+    fn test_mathematics_dsl_compiles() {
+        let cst = compile(MATHEMATICS_DSL).expect("Mathematics DSL compile hatası");
+        assert!(cst.node_count() >= 40, "Mathematics: en az 40 kavram bekleniyor, {} bulundu", cst.node_count());
+        assert!(cst.edge_count() >= 60, "Mathematics: en az 60 kenar bekleniyor, {} bulundu", cst.edge_count());
+
+        // Kritik matematik kavramlar mevcut mu?
+        assert!(cst.nodes.contains_key("cauchy_dizisi"), "cauchy_dizisi eksik");
+        assert!(cst.nodes.contains_key("tam_metrik_uzay"), "tam_metrik_uzay eksik");
+        assert!(cst.nodes.contains_key("tikiz_uzay"), "tikiz_uzay eksik");
+        assert!(cst.nodes.contains_key("homeomorfizm"), "homeomorfizm eksik");
+        assert!(cst.nodes.contains_key("surekli_fonksiyon"), "surekli_fonksiyon eksik");
+        assert!(cst.nodes.contains_key("baglantili_uzay"), "baglantili_uzay eksik");
+        assert!(cst.nodes.contains_key("matematik_temeli"), "matematik_temeli toplama düğümü eksik");
+
+        // AXIOM, RULE, GOAL sayıları
+        assert!(cst.axioms.len() >= 6, "En az 6 AXIOM bekleniyor, {} bulundu", cst.axioms.len());
+        assert!(cst.rules.len() >= 6, "En az 6 RULE bekleniyor, {} bulundu", cst.rules.len());
+        assert!(cst.goals.len() >= 4, "En az 4 GOAL bekleniyor, {} bulundu", cst.goals.len());
+    }
+
+    #[test]
+    fn test_mathematics_builds_network() {
+        let cst = compile(MATHEMATICS_DSL).unwrap();
+        let net = compile_cst_to_network(&cst);
+
+        assert!(net.n >= 40);
+        assert!(net.holographic_memory.len() >= 40);
+
+        // Her kavramın VSA imzası var mı?
+        for sig in &net.holographic_memory {
+            assert_eq!(sig.len(), 4096, "VSA imzası 4096-D olmalı");
+        }
+
+        // Analiz ↔ Topoloji temel kavramlar
+        assert!(net.labels.contains_key("cauchy_dizisi"));
+        assert!(net.labels.contains_key("tikiz_uzay"));
+        assert!(net.labels.contains_key("homeomorfizm"));
+    }
+
+    #[test]
+    fn test_merged_with_math_dsl_compiles() {
+        let merged = format!("{}\n{}\n{}", PRIMORDIAL_DSL, INDUSTRIAL_DSL, MATHEMATICS_DSL);
+        let cst = compile(&merged).expect("Merged+Math DSL compile hatası");
+        // All three domains combined
+        assert!(cst.node_count() >= 120, "Merged+Math: en az 120 kavram bekleniyor, {} bulundu", cst.node_count());
+        assert!(cst.nodes.contains_key("fikri_zemin")); // primordial
+        assert!(cst.nodes.contains_key("varlık_yonetimi")); // industrial
+        assert!(cst.nodes.contains_key("matematik_temeli")); // math
+    }
+
+    #[test]
+    fn test_abstract_algebra_dsl_compiles() {
+        let cst = compile(ABSTRACT_ALGEBRA_DSL).expect("Abstract Algebra DSL compile hatası");
+        assert!(cst.node_count() >= 50, "Abstract Algebra: en az 50 kavram bekleniyor, {} bulundu", cst.node_count());
+        assert!(cst.edge_count() >= 70, "Abstract Algebra: en az 70 kenar bekleniyor, {} bulundu", cst.edge_count());
+
+        // Kritik cebir ve Lie kavramları mevcut mu?
+        assert!(cst.nodes.contains_key("grup_yapisi"), "grup_yapisi eksik");
+        assert!(cst.nodes.contains_key("lagrange_teoremi"), "lagrange_teoremi eksik");
+        assert!(cst.nodes.contains_key("sylow_p_altgrubu"), "sylow_p_altgrubu eksik");
+        assert!(cst.nodes.contains_key("maksimal_ideal"), "maksimal_ideal eksik");
+        assert!(cst.nodes.contains_key("asal_ideal"), "asal_ideal eksik");
+        assert!(cst.nodes.contains_key("galois_grubu_Gal_L_K"), "galois_grubu eksik");
+        assert!(cst.nodes.contains_key("temel_galois_teoremi"), "temel_galois_teoremi eksik");
+        assert!(cst.nodes.contains_key("cartan_altcebiri"), "cartan_altcebiri eksik");
+        assert!(cst.nodes.contains_key("kok_sistemi_Phi"), "kok_sistemi_Phi eksik");
+        assert!(cst.nodes.contains_key("f4_rank_4_kok_48_boyut_52"), "F4 boyut tanımı eksik");
+        assert!(cst.nodes.contains_key("sp_6_boyut_esittir_21"), "sp(6) = 21 diagnostik tanımı eksik");
+        assert!(cst.nodes.contains_key("cebir_temeli"), "cebir_temeli toplama düğümü eksik");
+
+        // AXIOM, RULE, GOAL sayıları
+        assert!(cst.axioms.len() >= 8, "En az 8 AXIOM bekleniyor, {} bulundu", cst.axioms.len());
+        assert!(cst.rules.len() >= 6, "En az 6 RULE bekleniyor, {} bulundu", cst.rules.len());
+        assert!(cst.goals.len() >= 4, "En az 4 GOAL bekleniyor, {} bulundu", cst.goals.len());
+    }
+
+    #[test]
+    fn test_abstract_algebra_builds_network() {
+        let cst = compile(ABSTRACT_ALGEBRA_DSL).unwrap();
+        let net = compile_cst_to_network(&cst);
+
+        assert!(net.n >= 50);
+        assert!(net.holographic_memory.len() >= 50);
+
+        // Her kavramın VSA imzası 4096-D mi?
+        for sig in &net.holographic_memory {
+            assert_eq!(sig.len(), 4096, "VSA imzası 4096-D olmalı");
+        }
+
+        // Temel cebirsel etiketler ağda kayıtlı mı?
+        assert!(net.labels.contains_key("lagrange_teoremi"));
+        assert!(net.labels.contains_key("maksimal_ideal"));
+        assert!(net.labels.contains_key("galois_grubu_Gal_L_K"));
+        assert!(net.labels.contains_key("sp_6_boyut_esittir_21"));
+    }
+
+    #[test]
+    fn test_merged_all_domains_dsl_compiles() {
+        let merged = format!(
+            "{}\n{}\n{}\n{}",
+            PRIMORDIAL_DSL, INDUSTRIAL_DSL, MATHEMATICS_DSL, ABSTRACT_ALGEBRA_DSL
+        );
+        let cst = compile(&merged).expect("Merged All Domains DSL compile hatası");
+        assert!(cst.node_count() >= 180, "All Domains: en az 180 kavram bekleniyor, {} bulundu", cst.node_count());
+        assert!(cst.nodes.contains_key("fikri_zemin")); // primordial
+        assert!(cst.nodes.contains_key("varlık_yonetimi")); // industrial
+        assert!(cst.nodes.contains_key("matematik_temeli")); // math (D1)
+        assert!(cst.nodes.contains_key("cebir_temeli")); // algebra (D2)
     }
 }

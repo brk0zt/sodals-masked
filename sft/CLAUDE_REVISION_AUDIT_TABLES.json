@@ -1,0 +1,76 @@
+{
+  "runtime_metadata": {
+    "timestamp_utc": "2026-11-18T09:57:50.767391+00:00",
+    "sys_executable": "C:\\Python\\Python313\\python.exe",
+    "interpreter_in_windows_old": false,
+    "python_version": "3.13.7",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "packages": {
+      "torch": "2.8.0+cu126",
+      "transformers": "5.23.0",
+      "peft": "0.21.3",
+      "bitsandbytes": "0.50.2",
+      "sympy": "1.13.3",
+      "numpy": "2.1.2"
+    },
+    "cuda_available": true,
+    "cuda_version": "12.6",
+    "gpu_name": "NVIDIA GeForce RTX 4060 Laptop GPU"
+  },
+  "blind_discordant_audit_count": 13,
+  "blind_discordant_md_path": "C:\\Users\\Burak\\AppData\\Local\\Temp\\BLIND_HUMAN_DISCORDANT_AUDIT.md",
+  "arm_x_grader_matrix": {
+    "note": "Primary headline results MUST come exclusively from `frozen_normalized_math_matcher_current`.",
+    "frozen_grader_sha256": "ab421629b7d5838d574be3992ea8ee2a4c5139f0cce14104bdce15d8728af422",
+    "clean125_q026_q150": {
+      "n": 125,
+      "Baseline_SFT": {
+        "legacy_sympy_v1": 99,
+        "full500_stored_verdict": 100,
+        "early_norm_sym_v2": 103,
+        "frozen_normalized_math_matcher_current": 104
+      },
+      "GRPO_MathTrain100_Old_Uninformative": {
+        "strict_string": 94,
+        "legacy_sympy_v1": 99,
+        "early_norm_sym_v2": 103,
+        "frozen_normalized_math_matcher_current": 103
+      },
+      "Primary_Ponder_G1": {
+        "stored_verdict": 100,
+        "frozen_normalized_math_matcher_current": 104
+      },
+      "Arkhe_Forced_Current": {
+        "frozen_normalized_math_matcher_current": 107
+      }
+    },
+    "pristine50_q151_q200": {
+      "n": 50,
+      "Baseline_SFT": {
+        "full500_stored_verdict": 36,
+        "frozen_normalized_math_matcher_current": 37
+      },
+      "Pass1_Greedy_Pristine": {
+        "frozen_normalized_math_matcher_current": 39
+      },
+      "Arkhe_Forced_Current": {
+        "frozen_normalized_math_matcher_current": 40
+      }
+    },
+    "confirmatory_reserve_q201_q500_count_only": {
+      "n": 300,
+      "Baseline_SFT": {
+        "full500_stored_verdict": 232,
+        "frozen_normalized_math_matcher_current": 235
+      }
+    }
+  },
+  "epistemic_floor_reclassification": {
+    "total_prompts": 100,
+    "pass_at_4_solvability_floor_count": 5,
+    "pass_at_4_solvability_floor_pct": 5.0,
+    "majority_at_4_plurality_failure_floor_min_count": 7,
+    "majority_at_4_plurality_failure_floor_min_pct": 7.0,
+    "clarification": "Steps 31 & 64 contain 1/4 correct rollout (so Pass@4 succeeds and 0/4 floor is 5%), but 3/4 rollouts agree on the same wrong answer, so Majority@4 still fails them (Majority@4 floor >= 7%)."
+  }
+}

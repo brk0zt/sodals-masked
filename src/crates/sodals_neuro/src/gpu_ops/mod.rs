@@ -14,8 +14,13 @@ pub use diagnostics::TensorTracer;
 pub mod spectral_ffi;
 pub use spectral_ffi::apply_fused_resonance_gemm;
 
-pub mod physics_mask;
+pub mod atan2_ops;
+pub use atan2_ops::apply_atan2_cuda;
 
+pub mod complex_gemm_ffi;
+
+pub mod physics_mask;
+pub mod gnn_mask;
 
 
 

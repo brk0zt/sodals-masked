@@ -8,10 +8,10 @@ build = "build.rs"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-# Candle Ecosystem (Modernize Edildi - 0.8.2 ile uyumlu)
-candle-core = { version = "0.8.2", features = ["cuda"] }
-candle-nn = { version = "0.8.2", features = ["cuda"] }
-candle-transformers = { version = "0.8.2", features = ["cuda"] }
+# Candle Ecosystem (Modernize Edildi - 0.8.2 ile uyumlu; CUDA feature-gated for CPU/CI builds)
+candle-core = { version = "0.8.2" }
+candle-nn = { version = "0.8.2" }
+candle-transformers = { version = "0.8.2" }
 tokenizers = "0.21.0" # Updated to support modern HuggingFace JSON schemas (Qwen BPE fields)
 safetensors = "0.4"
 
@@ -70,12 +70,15 @@ byteorder = "1.5.0"
 
 # Kardeş Paketler
 sodals_crypto = { path = "../sodals_crypto" }
-pyo3 = { version = "0.23.3", features = ["extension-module", "abi3-py38"] }
+pyo3 = { version = "0.23.3", features = ["extension-module", "abi3-py38"], optional = true }
 
 [features]
-
+default = ["cuda", "python"]
+experimental = []
 cuda = ["candle-core/cuda", "candle-nn/cuda", "candle-transformers/cuda"]
+python = ["dep:pyo3"]
 brainflow = []  # Enable BrainFlow hardware integration
+jemalloc = []
 
 [build-dependencies]
 anyhow = "1.0" # build.rs için gerekli olabilir
@@ -86,3 +89,15 @@ sodals_kernel = { path = "../sodals_kernel" }
 [[bin]]
 name = "qyptos_compiler"
 path = "src/bin/qyptos_compiler.rs"
+
+[[bin]]
+name = "dump_qk_norm"
+path = "src/bin/dump_qk_norm.rs"
+
+[[bin]]
+name = "dump_trace"
+path = "src/bin/dump_trace.rs"
+
+[[bin]]
+name = "dump_logits"
+path = "src/bin/dump_logits.rs"

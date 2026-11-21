@@ -15,4 +15,12 @@ pub mod academic_rigor;
 #[cfg(feature = "brainflow")]
 pub mod biosignal_processor;
 
+// Experimental/Ghost Modules
+#[cfg(feature = "experimental")]
+pub mod dashboard;
+#[cfg(feature = "experimental")]
+pub mod monitor;
+#[cfg(feature = "experimental")]
+pub mod tui_actor;
+
 // Gerekli ortak importları buraya ekleyebilirsin

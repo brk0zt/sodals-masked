@@ -1196,16 +1196,18 @@ impl SemanticRegisterFile {
             flags.push(node.neuro_flag);
         }
 
-        // Write directly to zero-copy mapped memory
-        // Because it's mapped, GPU sees this immediately - no sync needed
+        // Write to pinned memory
         if let Some(ref mut poles) = *poles_cartridge {
             poles.write_poles(&frequencies, &decays)?;
+            poles.sync_to_vram()?;
         }
         if let Some(ref mut imp) = *impedance_cartridge {
             imp.write_impedance(&impedances)?;
+            imp.sync_to_vram()?;
         }
         if let Some(ref mut fl) = *flags_cartridge {
             fl.write_flags(&flags)?;
+            fl.sync_to_vram()?;
         }
 
         Ok(n)
@@ -1893,6 +1895,127 @@ impl EbnfLogitMask {
 impl Default for EbnfLogitMask {
     fn default() -> Self {
         Self::new(64) // Default: check top 64 candidates
+    }
+}
+
+// ============================================================================
+// STRICT XML FORMAT LOGIT MASK
+// ============================================================================
+pub struct StrictXmlLogitMask {
+    allowed_letters: Vec<char>,
+    eos_token_ids: Vec<u32>,
+}
+
+impl StrictXmlLogitMask {
+    pub fn new(allowed_letters: Vec<char>) -> Self {
+        Self {
+            allowed_letters,
+            eos_token_ids: vec![151643, 151644, 151645], // Qwen2.5 EOS variants
+        }
+    }
+
+    pub fn default_abcd() -> Self {
+        Self::new(vec!['A', 'B', 'C', 'D'])
+    }
+
+    pub fn is_valid_prefix(text: &str, letters: &[char]) -> bool {
+        let expected = "<answer>";
+        let close_tag = "</answer>";
+        
+        let trimmed = text.trim_start();
+        if trimmed.is_empty() { return true; }
+        
+        if trimmed.len() <= expected.len() {
+            return expected.starts_with(trimmed);
+        }
+        
+        if !trimmed.starts_with(expected) {
+            return false;
+        }
+        
+        let after_open = &trimmed[expected.len()..];
+        if after_open.is_empty() { return true; }
+        
+        let letter = after_open.chars().next().unwrap();
+        if !letters.contains(&letter.to_ascii_uppercase()) {
+            return false;
+        }
+        
+        let after_letter = &after_open[1..];
+        if after_letter.is_empty() { return true; }
+        
+        if close_tag.starts_with(after_letter) {
+            return true;
+        }
+        
+        if after_letter.starts_with(close_tag) {
+            let after_close = &after_letter[close_tag.len()..];
+            return after_close.chars().all(|c| c.is_whitespace());
+        }
+        
+        false
+    }
+
+    pub fn is_complete_answer(text: &str) -> bool {
+        let trimmed = text.trim_start();
+        if !trimmed.starts_with("<answer>") { return false; }
+        let after_open = &trimmed["<answer>".len()..];
+        if after_open.is_empty() { return false; }
+        let after_letter = &after_open[1..];
+        after_letter.starts_with("</answer>")
+    }
+
+    pub fn apply_mask(
+        &self,
+        logits: &candle_core::Tensor,
+        current_sequence: &[u32],
+        tokenizer: &tokenizers::Tokenizer,
+        prompt_text: &str,
+    ) -> candle_core::Result<candle_core::Tensor> {
+        let vocab_size = logits.dims().last().copied().unwrap_or(0);
+        if vocab_size == 0 { return Ok(logits.clone()); }
+
+        let current_text = tokenizer.decode(current_sequence, false).unwrap_or_default();
+        
+        let target_text = if current_text.starts_with(prompt_text) {
+            &current_text[prompt_text.len()..]
+        } else {
+            &current_text
+        };
+
+        let logits_vec = logits.to_vec1::<f32>()?;
+        let mut masked_logits = vec![f32::NEG_INFINITY; vocab_size];
+
+        if Self::is_complete_answer(target_text) {
+            for &eos_id in &self.eos_token_ids {
+                let idx = eos_id as usize;
+                if idx < vocab_size {
+                    masked_logits[idx] = logits_vec[idx];
+                }
+            }
+            // Also allow whitespace to gracefully pad out
+            for token_id in 0..vocab_size {
+                let piece = tokenizer.decode(&[token_id as u32], false).unwrap_or_default();
+                if piece.chars().all(|c| c.is_whitespace()) {
+                    masked_logits[token_id] = logits_vec[token_id];
+                }
+            }
+            let device = logits.device();
+            return candle_core::Tensor::from_vec(masked_logits, logits.shape().clone(), device);
+        }
+
+        // Extremely strict validation: Check all tokens
+        for token_id in 0..vocab_size {
+            let piece = tokenizer.decode(&[token_id as u32], false).unwrap_or_default();
+            if piece.is_empty() { continue; }
+            let tentative = format!("{}{}", target_text, piece);
+            if Self::is_valid_prefix(&tentative, &self.allowed_letters) {
+                masked_logits[token_id] = logits_vec[token_id];
+            }
+        }
+
+        let device = logits.device();
+        candle_core::Tensor::from_vec(masked_logits, logits.shape().clone(), device)
     }
 }
 

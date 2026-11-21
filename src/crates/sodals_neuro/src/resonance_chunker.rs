@@ -20,8 +20,8 @@ pub struct ResonanceChunker {
     network: ResonanceNetwork,
     phase_drop_threshold: f64,
     impedance_mismatch_threshold: f64,
-    min_chunk_size: usize,
-    max_chunk_size: usize,
+    pub min_chunk_size: usize,
+    pub max_chunk_size: usize,
 }
 
 /// Semantic chunk with resonance-aware metadata
@@ -35,14 +35,14 @@ pub struct Chunk {
 }
 
 /// Chunk boundary detected by resonance metrics
-struct ChunkBoundary {
-    position: usize,
-    boundary_type: BoundaryType,
-    confidence: f64,
+pub struct ChunkBoundary {
+    pub position: usize,
+    pub boundary_type: BoundaryType,
+    pub confidence: f64,
 }
 
 #[derive(Debug, Clone, Copy)]
-enum BoundaryType {
+pub enum BoundaryType {
     PhaseDrop,
     ImpedanceMismatch,
     SpectralCluster,
@@ -337,6 +337,10 @@ impl ResonanceChunker {
             if id < self.network.n {
                 node_sequence.push(id);
             }
+        }
+
+        if node_sequence.is_empty() {
+            node_sequence = (0..self.network.n).collect();
         }
         
         node_sequence

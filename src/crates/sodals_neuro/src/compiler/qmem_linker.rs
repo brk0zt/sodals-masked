@@ -33,7 +33,7 @@ use std::collections::HashMap;
 ///   amplitude is rotated by `edge.phase_theta` relative to the source,
 ///   embedding the phase correlation directly into the quantum state.
 pub fn compile_cst_to_network(cst: &ContinuousSemanticTopology) -> ResonanceNetwork {
-    let capacity = (cst.node_count() + cst.axioms.len() + cst.rules.len() * 2).max(16); // slots with headroom
+    let capacity = (cst.node_count() * 2 + cst.axioms.len() * 2 + cst.rules.len() * 4 + cst.goals.len() * 2 + 128).max(64);
     let mut net = ResonanceNetwork::new(capacity);
     let mut id_map: HashMap<String, usize> = HashMap::new();
 
@@ -79,15 +79,10 @@ pub fn compile_cst_to_network(cst: &ContinuousSemanticTopology) -> ResonanceNetw
             }
         };
 
-        // Holographic Signature Composition via element-wise complex product
+        // Holographic Signature Composition via element-wise complex product (vsa_bind)
         let sig_a = &net.holographic_memory[id_a];
         let sig_b = &net.holographic_memory[id_b];
-        let mut composed_sig = Vec::with_capacity(4096);
-        for k in 0..4096 {
-            let a_val = sig_a.get(k).copied().unwrap_or(Complex64::new(1.0, 0.0));
-            let b_val = sig_b.get(k).copied().unwrap_or(Complex64::new(1.0, 0.0));
-            composed_sig.push(a_val * b_val);
-        }
+        let composed_sig = ResonanceNetwork::vsa_bind(sig_a, sig_b);
 
         let id_target = if let Some(&existing_id) = net.labels.get(&rule.target_concept) {
             let mut write_sig = true;
@@ -616,5 +611,25 @@ mod tests {
                 assert!((target_sig[k] - sig_cd[k]).norm() < 1e-9);
             }
         }
+    }
+
+    #[test]
+    fn test_compose_rule_produces_novel_signature() {
+        use crate::compiler::qmem_compiler::compile;
+        let cst = compile(r#"
+            AXIOM "newton_second_law" DEFINES "force_mass_accel" [1.0, 0.0];
+            AXIOM "wavelength_field" DEFINES "color_frequency_coupling" [1.0, 0.0];
+            RULE "generalization" COMPOSE "force_mass_accel" AND "color_frequency_coupling"
+                -> "generalized_force_law" [0.9, 0.7854];
+        "#).unwrap();
+        let net = super::compile_cst_to_network(&cst);
+
+        let target_sig = &net.holographic_memory[net.labels["generalized_force_law"]];
+        let sig_a = &net.holographic_memory[net.labels["force_mass_accel"]];
+        let sig_b = &net.holographic_memory[net.labels["color_frequency_coupling"]];
+
+        // Türetilmiş imza ne A ne B ile özdeş olmalı (gerçek kompozisyon, kopyalama değil)
+        assert!(ResonanceNetwork::holographic_similarity(target_sig, sig_a) < 0.7);
+        assert!(ResonanceNetwork::holographic_similarity(target_sig, sig_b) < 0.7);
     }
 }

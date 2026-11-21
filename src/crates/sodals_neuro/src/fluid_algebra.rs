@@ -6,6 +6,10 @@
 // Replaces O(N³) matrix multiplications with O(N) phasor operations.
 
 use num_complex::Complex64;
+use candle_core::{Tensor, Result as CandleResult};
+use crate::complex_tensor::ComplexState;
+use crate::gpu_ops::NeuroAdapter;
+use crate::gpu_ops::memory_utils::SodalsCudaAccess;
 
 /// PHASE 60.3: Holographic Binding (Clifford Geometric Product)
 /// Binds two 4096-D semantic concepts into a single superimposed hypervector.
@@ -65,6 +69,62 @@ pub fn apply_viscosity(phasor: &mut [Complex64], impedance: f64) {
     for val in phasor.iter_mut() {
         *val = Complex64::new(val.re * decay, val.im * decay);
     }
+}
+
+// ════════════════════════════════════════════════════════════════════════════════
+// GPU TENSOR OPERATIONS (Phase 4)
+// ════════════════════════════════════════════════════════════════════════════════
+
+/// GPU-accelerated Holographic Binding
+pub fn bind_phasors_tensor(a: &ComplexState, b: &ComplexState, adapter: &NeuroAdapter) -> CandleResult<ComplexState> {
+    let out_r = Tensor::zeros_like(&a.real)?;
+    let out_i = Tensor::zeros_like(&a.imag)?;
+
+    if let (Ok(ar), Ok(ai), Ok(br), Ok(bi), Ok(or), Ok(oi)) = (
+        a.real.get_physical_address(),
+        a.imag.get_physical_address(),
+        b.real.get_physical_address(),
+        b.imag.get_physical_address(),
+        out_r.get_physical_address(),
+        out_i.get_physical_address()
+    ) {
+        let size = a.real.elem_count();
+        let _ = adapter.bind_phasors_raw(ar, ai, br, bi, or, oi, size);
+    }
+    
+    Ok(ComplexState { real: out_r, imag: out_i })
+}
+
+/// GPU-accelerated Holographic Unbinding
+pub fn unbind_phasors_tensor(bound_state: &ComplexState, key: &ComplexState, adapter: &NeuroAdapter) -> CandleResult<ComplexState> {
+    let out_r = Tensor::zeros_like(&bound_state.real)?;
+    let out_i = Tensor::zeros_like(&bound_state.imag)?;
+
+    if let (Ok(cr), Ok(ci), Ok(kr), Ok(ki), Ok(or), Ok(oi)) = (
+        bound_state.real.get_physical_address(),
+        bound_state.imag.get_physical_address(),
+        key.real.get_physical_address(),
+        key.imag.get_physical_address(),
+        out_r.get_physical_address(),
+        out_i.get_physical_address()
+    ) {
+        let size = bound_state.real.elem_count();
+        let _ = adapter.unbind_phasors_raw(cr, ci, kr, ki, or, oi, size);
+    }
+    
+    Ok(ComplexState { real: out_r, imag: out_i })
+}
+
+/// GPU-accelerated Topological Viscosity
+pub fn apply_viscosity_tensor(phasor: &mut ComplexState, impedance: f32, adapter: &NeuroAdapter) -> CandleResult<()> {
+    if let (Ok(pr), Ok(pi)) = (
+        phasor.real.get_physical_address(),
+        phasor.imag.get_physical_address()
+    ) {
+        let size = phasor.real.elem_count();
+        let _ = adapter.apply_viscosity_raw(pr, pi, impedance, size);
+    }
+    Ok(())
 }
 
 // ════════════════════════════════════════════════════════════════════════════════

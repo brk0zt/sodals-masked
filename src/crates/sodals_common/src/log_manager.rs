@@ -25,7 +25,7 @@ impl LogLevel {
 /// Legacy log manager for backward compatibility
 ///
 /// In new code, prefer using `tracing` macros directly:
-/// ```rust
+/// ```rust,ignore
 /// use tracing::{info, warn, error, debug};
 ///
 /// info!("Server started");

@@ -1,0 +1,337 @@
+{
+  "runtime_metadata": {
+    "timestamp_utc": "2026-11-13T14:46:51.312569+00:00",
+    "sys_executable": "C:\\Windows.old\\Users\\Burak\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+    "interpreter_in_windows_old": true,
+    "python_version": "3.10.11",
+    "platform": "Windows-10-10.0.26300-SP0",
+    "packages": {
+      "torch": "2.5.1+cu121",
+      "transformers": "5.16.0.dev0",
+      "peft": "0.14.0",
+      "bitsandbytes": "0.50.1",
+      "sympy": "1.14.0",
+      "numpy": "2.2.6"
+    },
+    "cuda_available": true,
+    "cuda_version": "12.1",
+    "gpu_name": "NVIDIA GeForce RTX 4060 Laptop GPU"
+  },
+  "weight_and_trajectory_audit": {
+    "global_rel_frobenius_drift": 0.002891,
+    "global_rel_frobenius_pct": 0.2891,
+    "max_layer_rel_drift_pct": 0.9258,
+    "max_layer_name": "base_model.model.model.layers.15.self_attn.k_proj.lora_B.weight",
+    "clean125_total": 125,
+    "clean125_pred_changed_count": 7,
+    "clean125_pred_changed_indices": [
+      27,
+      44,
+      89,
+      97,
+      105,
+      111,
+      124
+    ],
+    "clean125_token_len_changed_count": 16,
+    "clean125_mean_abs_token_delta": 13.23
+  },
+  "rollouts_400_and_reliability_audit": {
+    "total_prompts": 100,
+    "total_rollouts": 400,
+    "avg_at_1_correct": 225,
+    "avg_at_1_acc_pct": 56.25,
+    "majority_at_4_correct": 63,
+    "majority_at_4_acc_pct": 63.0,
+    "pass_at_4_correct": 74,
+    "pass_at_4_acc_pct": 74.0,
+    "reliability_table_4_bins": [
+      {
+        "agreement_bin": "4/4",
+        "bin_prompts": 42,
+        "bin_majority_correct": 38,
+        "bin_accuracy_pct": 90.48,
+        "cumulative_threshold": ">=4/4",
+        "cumulative_coverage_pct": 42.0,
+        "cumulative_selective_accuracy_pct": 90.48
+      },
+      {
+        "agreement_bin": "3/4",
+        "bin_prompts": 16,
+        "bin_majority_correct": 11,
+        "bin_accuracy_pct": 68.75,
+        "cumulative_threshold": ">=3/4",
+        "cumulative_coverage_pct": 58.0,
+        "cumulative_selective_accuracy_pct": 84.48
+      },
+      {
+        "agreement_bin": "2/4",
+        "bin_prompts": 22,
+        "bin_majority_correct": 11,
+        "bin_accuracy_pct": 50.0,
+        "cumulative_threshold": ">=2/4",
+        "cumulative_coverage_pct": 80.0,
+        "cumulative_selective_accuracy_pct": 75.0
+      },
+      {
+        "agreement_bin": "1/4",
+        "bin_prompts": 20,
+        "bin_majority_correct": 3,
+        "bin_accuracy_pct": 15.0,
+        "cumulative_threshold": ">=1/4",
+        "cumulative_coverage_pct": 100.0,
+        "cumulative_selective_accuracy_pct": 63.0
+      }
+    ],
+    "consistent_wrongs_total": 9,
+    "consistent_wrongs_breakdown": {
+      "suspected_decimal_extractor_truncation": 2,
+      "solvable_1_of_4_correct": 2,
+      "true_0_of_4_errors": 5
+    },
+    "consistent_wrongs_details": [
+      {
+        "step": 27,
+        "subject": "Intermediate Algebra",
+        "ground_truth": "\\frac{4}{3}",
+        "rollout_preds": [
+          "1",
+          "1",
+          "1",
+          "1"
+        ],
+        "rollout_tokens": [
+          361,
+          353,
+          1019,
+          413
+        ],
+        "solved_count": 0,
+        "max_cluster_size": 4,
+        "forensic_category": "TRUE_CONSISTENT_ERROR (0/4 correct)"
+      },
+      {
+        "step": 31,
+        "subject": "Intermediate Algebra",
+        "ground_truth": "10",
+        "rollout_preds": [
+          "10",
+          "5",
+          "5",
+          "5"
+        ],
+        "rollout_tokens": [
+          506,
+          685,
+          580,
+          634
+        ],
+        "solved_count": 1,
+        "max_cluster_size": 3,
+        "forensic_category": "SOLVABLE_IN_POOL_PARTIAL_MISS (1/4 correct)"
+      },
+      {
+        "step": 33,
+        "subject": "Geometry",
+        "ground_truth": "42.1875",
+        "rollout_preds": [
+          "42",
+          "42",
+          "42",
+          "42"
+        ],
+        "rollout_tokens": [
+          211,
+          274,
+          273,
+          274
+        ],
+        "solved_count": 0,
+        "max_cluster_size": 4,
+        "forensic_category": "SUSPECTED_EXTRACTOR_DECIMAL_TRUNCATION"
+      },
+      {
+        "step": 35,
+        "subject": "Counting & Probability",
+        "ground_truth": "0.411",
+        "rollout_preds": [
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        "rollout_tokens": [
+          303,
+          418,
+          353,
+          355
+        ],
+        "solved_count": 0,
+        "max_cluster_size": 4,
+        "forensic_category": "SUSPECTED_EXTRACTOR_DECIMAL_TRUNCATION"
+      },
+      {
+        "step": 59,
+        "subject": "Intermediate Algebra",
+        "ground_truth": "1850",
+        "rollout_preds": [
+          "1225",
+          "725",
+          "1225",
+          "1225"
+        ],
+        "rollout_tokens": [
+          500,
+          456,
+          400,
+          795
+        ],
+        "solved_count": 0,
+        "max_cluster_size": 3,
+        "forensic_category": "TRUE_CONSISTENT_ERROR (0/4 correct)"
+      },
+      {
+        "step": 64,
+        "subject": "Prealgebra",
+        "ground_truth": "15",
+        "rollout_preds": [
+          "11",
+          "11",
+          "11",
+          "15"
+        ],
+        "rollout_tokens": [
+          494,
+          514,
+          503,
+          504
+        ],
+        "solved_count": 1,
+        "max_cluster_size": 3,
+        "forensic_category": "SOLVABLE_IN_POOL_PARTIAL_MISS (1/4 correct)"
+      },
+      {
+        "step": 82,
+        "subject": "Precalculus",
+        "ground_truth": "8",
+        "rollout_preds": [
+          "6",
+          "4",
+          "4",
+          "4"
+        ],
+        "rollout_tokens": [
+          390,
+          259,
+          259,
+          445
+        ],
+        "solved_count": 0,
+        "max_cluster_size": 3,
+        "forensic_category": "TRUE_CONSISTENT_ERROR (0/4 correct)"
+      },
+      {
+        "step": 86,
+        "subject": "Counting & Probability",
+        "ground_truth": "\\frac{9}{25}",
+        "rollout_preds": [
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        "rollout_tokens": [
+          416,
+          356,
+          293,
+          374
+        ],
+        "solved_count": 0,
+        "max_cluster_size": 4,
+        "forensic_category": "TRUE_CONSISTENT_ERROR (0/4 correct)"
+      },
+      {
+        "step": 97,
+        "subject": "Intermediate Algebra",
+        "ground_truth": "10100",
+        "rollout_preds": [
+          "often derived from the structure of the modular arithmetic, leading to a finite count or a specific property",
+          "1",
+          "1",
+          "1"
+        ],
+        "rollout_tokens": [
+          340,
+          830,
+          254,
+          1536
+        ],
+        "solved_count": 0,
+        "max_cluster_size": 3,
+        "forensic_category": "TRUE_CONSISTENT_ERROR (0/4 correct)"
+      }
+    ]
+  },
+  "heldout_pools_mcnemar_summary": {
+    "clean_125": {
+      "pool": "Clean-125 (Q026..Q150)",
+      "n": 125,
+      "sft_baseline_correct": 103,
+      "sft_baseline_acc_pct": 82.4,
+      "arkhe_forced_correct": 106,
+      "arkhe_forced_acc_pct": 84.8,
+      "net_gain_forced": 3,
+      "discordant_gains_n01": 3,
+      "discordant_losses_n10": 0,
+      "mcnemar_two_sided_p": 0.25,
+      "selective_answered": 120,
+      "selective_correct": 107,
+      "selective_coverage_pct": 96.0,
+      "selective_acc_pct": 89.17
+    },
+    "pristine_50_unseen": {
+      "pool": "Pristine-50 Unseen (Q151..Q200)",
+      "n": 50,
+      "sft_baseline_correct": 37,
+      "sft_baseline_acc_pct": 74.0,
+      "arkhe_forced_correct": 40,
+      "arkhe_forced_acc_pct": 80.0,
+      "net_gain_forced": 3,
+      "discordant_gains_n01": 5,
+      "discordant_losses_n10": 2,
+      "mcnemar_two_sided_p": 0.453125,
+      "selective_answered": 49,
+      "selective_correct": 40,
+      "selective_coverage_pct": 98.0,
+      "selective_acc_pct": 81.63
+    },
+    "clean_175_combined": {
+      "pool": "Clean-175 Combined (Q026..Q200)",
+      "n": 175,
+      "sft_baseline_correct": 140,
+      "sft_baseline_acc_pct": 80.0,
+      "arkhe_forced_correct": 146,
+      "arkhe_forced_acc_pct": 83.43,
+      "net_gain_forced": 6,
+      "discordant_gains_n01": 8,
+      "discordant_losses_n10": 2,
+      "mcnemar_two_sided_p": 0.109375,
+      "selective_answered": 169,
+      "selective_correct": 147,
+      "selective_coverage_pct": 96.57,
+      "selective_acc_pct": 86.98
+    }
+  },
+  "epistemic_floor_reclassification": {
+    "total_prompts": 100,
+    "pass_at_4_solvability_floor_count": 5,
+    "pass_at_4_solvability_floor_pct": 5.0,
+    "majority_at_4_plurality_failure_floor_min_count": 7,
+    "majority_at_4_plurality_failure_floor_min_pct": 7.0,
+    "clarification": "Steps 31 & 64 contain 1/4 correct rollout (so Pass@4 succeeds and 0/4 floor is 5%), but 3/4 rollouts agree on the same wrong answer, so Majority@4 still fails them (Majority@4 floor >= 7%)."
+  },
+  "legacy_grpo_interpretation": {
+    "status": "EFFECT_UNMEASURED_POLICY_DID_NOT_MOVE",
+    "revised_statement": "Legacy 100-step GRPO produced ||dW||_F / ||W_0||_F = 0.2891% and 109/125 (87.2%) token-identical greedy trajectories on Clean-125. Therefore the prior Clean-125 outcome cannot be framed as '0 regression / p=1.0' or attributed to RL; the policy did not move (including single-question anecdotes such as Q105)."
+  }
+}

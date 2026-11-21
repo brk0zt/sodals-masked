@@ -1,0 +1,355 @@
+\documentclass[journal]{IEEEtran}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{cite}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=blue,
+    urlcolor=blue,
+    pdftitle={EdgeSSM: A Deterministic, Zero-Allocation State Space Model Inference Engine for Industrial Cyber-Physical Systems},
+    pdfauthor={Burak Ozturk}
+}
+
+\lstset{
+    basicstyle=\ttfamily\scriptsize,
+    breaklines=true,
+    frame=single,
+    columns=fullflexible
+}
+
+\begin{document}
+
+\title{EdgeSSM: A Deterministic, Zero-Allocation State Space Model Inference Engine for Industrial Cyber-Physical Systems}
+
+\author{Burak~\"Ozt\"urk%
+\thanks{Manuscript received October 2026.}%
+\thanks{B. \"Ozt\"urk is with the EdgeSSM / SODALS Research Project (e-mail: burak.ozturk@sodals-research.org). Code and reproduction artifacts: \url{https://github.com/brk0zt/sodals-masked}.}}
+
+\markboth{IEEE TRANSACTIONS ON INDUSTRIAL INFORMATICS, VOL.~XX, NO.~X, OCTOBER 2026}%
+{\"Ozt\"urk: EdgeSSM: Deterministic Zero-Allocation SSM Inference Engine for Industrial CPS}
+
+\maketitle
+
+\begin{abstract}
+Deploying 9B-parameter State Space Models (SSMs) on edge cyber-physical systems (CPS) introduces severe systems engineering challenges: non-deterministic garbage collection (GC) latency spikes, excessive memory footprints, numerical divergence in quantized recurrent state updates, and state desynchronization during backtracking search. We present \textbf{EdgeSSM}, a deterministic, zero-heap-allocation inference engine written in bare-metal Rust and CUDA for industrial telemetry diagnostics and predictive maintenance. EdgeSSM introduces five core systems innovations: (1) a stack-allocated, lock-free runtime (\texttt{RtRingBuffer}) that eliminates dynamic heap allocations during the token generation hot loop, confining application orchestrator memory to a strict 100~MB RAM ceiling alongside 5.5~GB GPU VRAM; (2) the identification and resolution of a critical GGUF head-expansion memory layout bug (\texttt{tile} vs.\ \texttt{repeat\_interleave}) in selective DeltaNet SSM kernels, elevating Layer-0 cosine similarity from 0.0300 to 0.9996 and reducing Layer-0 softmax projection Kullback-Leibler (KL) divergence from 7.22 to $3.83 \times 10^{-8}$ (while maintaining a global cosine similarity of 0.9655 at the final Layer-32 logits across full autoregressive rollouts); (3) a CUDA-accelerated Compressed Sparse Row (CSR) Graph Neural Network (GNN) attention bias injector with $O(N \log \text{deg}_{\max})$ per-query row complexity (where $\text{deg}_{\max} \ll N$ is the maximum equipment node degree, decoupled from head dimension $d_k=128$) and thread-local accumulation; (4) a conflict-directed backtracking and cache synchronization protocol with nogood recording that resets recurrent SSM states in 0.22~ms of host orchestration time followed by a parallel GPU prefix re-prefill ($12.7\text{--}46.2\text{ ms}$ total end-to-end rollback latency, triggered in 7.5\% of diagnostic cases); and (5) continuous inference-time Soft LoRA Blending governed by a Layer-32 Gaussian Phase Router (GPR) with 1.3~ms routing overhead. Evaluated across 223 industrial diagnostic scenarios---comprising an AssetOpsBench-Derived Diagnostic Subset ($N=120$), Site Reliability Engineering (SRE, $N=38$), FinOps ($N=15$), and EdgeTelemetry-50 ($N=50$)---EdgeSSM achieves 80.0\% diagnostic exact-match accuracy (+21.7 percentage points over the unsteered local baseline, Fisher exact $p=0.0004$) and matches commercial cloud frontier models (GPT-4o, 78.3\%, Fisher exact $p=0.87$) while operating completely offline at 28.5~ms/token decode latency.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Cyber-physical systems (CPS), deterministic inference, edge computing, Graph Neural Networks (GNNs), industrial telemetry, predictive maintenance, Rust runtime, State Space Models (SSMs).
+\end{IEEEkeywords}
+
+\section{Introduction}
+
+\IEEEPARstart{M}{odern} industrial cyber-physical systems (CPS), supervisory control and data acquisition (SCADA) networks, and smart manufacturing plants generate high-velocity multi-sensor telemetry streams~\cite{lee2015cps,iso13374}. Automating root-cause analysis (RCA), fault isolation, and maintenance triage in these environments requires models capable of synthesizing unstructured operator logs, physical equipment topologies, and continuous vibration/thermal telemetry. While cloud-hosted frontier Large Language Models (LLMs) such as GPT-4o exhibit strong diagnostic reasoning, deploying them in safety-critical industrial facilities is frequently precluded by three operational barriers: (1) strict data sovereignty and air-gapped network isolation mandates, (2) unpredictable wide-area network round-trip latencies (120--500~ms), and (3) lack of deterministic safety interlocks against hallucinated maintenance actions.
+
+Transitioning 9B-parameter foundation models to on-premise industrial edge hardware (e.g., embedded workstations equipped with 8~GB consumer/industrial GPUs) via selective State Space Models (SSMs)~\cite{gu2023mamba,yang2024gateddelta} offers linear $O(L)$ sequence scaling and constant $O(1)$ per-step recurrent memory. However, standard Python/PyTorch inference stacks suffer from garbage collection (GC) pauses, unbounded heap fragmentation, and dynamic memory allocation spikes that violate real-time supervisory predictability~\cite{kopetz2011realtime}. Furthermore, combining recurrent SSM layers with standard Transformer attention layers introduces three subtle systems failure modes on quantized edge hardware:
+\begin{enumerate}
+    \item \textbf{GGUF Head-Expansion Layout Divergence:} Naive tensor head expansion (\texttt{repeat\_interleave}) scrambles key-query group alignments against tiled GGUF quantization blocks~\cite{gerganov2023llamacpp}, causing immediate numerical collapse at Layer 0.
+    \item \textbf{Recurrent State Desynchronization on Rollback:} Unlike standard Transformer KV caches that can be rewound via pointer truncation, the compressed recurrent state $\mathbf{S}_t$ in selective DeltaNet layers is updated via an affine rank-1 transformation. While algebraically invertible in exact arithmetic whenever $(1 - \beta_t \|\mathbf{k}_t\|^2) \neq 0$, backward inversion in finite floating-point precision (FP16/BF16) is severely ill-conditioned, causing exponential round-off explosion during constraint backtracking.
+    \item \textbf{Cross-Subspace Adapter Interference:} Jointly fine-tuning multiple low-rank adapters (LoRA)~\cite{hu2022lora} across distinct plant competencies induces cross-subspace covariance perturbations ($\mathbf{A}_1 \mathbf{A}_2^T \neq 0$), degrading specialized diagnostic invariants.
+\end{enumerate}
+
+To address these challenges, we present \textbf{EdgeSSM}, a bare-metal Rust and CUDA inference engine engineered for deterministic edge CPS diagnostics. Our primary contributions are:
+\begin{enumerate}
+    \item \textbf{Bounded-Memory Deterministic Runtime:} A zero-heap-allocation Rust hot loop (\texttt{RtRingBuffer}) delivering predictable 28.5~ms per-token single-stream decode latency ($\sim 35\text{ tok/s}$) and 1.0--1.3~ms auxiliary routing cycles within a fixed 100~MB application orchestrator RAM budget and 5.5~GB GPU VRAM.
+    \item \textbf{GGUF Head Expansion Correction:} Resolving the tiled head expansion mismatch in Qwen 3.5 SSM kernels, increasing Layer-0 cosine similarity from 0.0300 to 0.9996 and reducing Layer-0 softmax projection KL divergence from 7.22 to $3.83 \times 10^{-8}$ (retaining 0.9655 global cosine similarity at final Layer-32 logits under 4-bit Q4\_K\_M quantization).
+    \item \textbf{DeltaNet Recurrent State Cache Synchronization:} A conflict-directed backtracking protocol with a nogood conflict cache that resets host cache pointers in 0.22~ms ($T_{\text{host}}$) and executes a parallel GPU chunk re-prefill ($T_{\text{GPU}} = 12.5\text{--}46.0\text{ ms}$, total rollback $12.7\text{--}46.2\text{ ms}$), guaranteeing exact state synchronization without storing 25.2~MB per-step state snapshots.
+    \item \textbf{Thread-Local CUDA CSR Graph Attention \& Rule Gating:} Injecting physical plant connectivity via Compressed Sparse Row (CSR) binary search in $O(N \log \text{deg}_{\max})$ per-query row complexity without non-deterministic atomic reductions, coupled with EBNF grammar priors.
+    \item \textbf{Empirical Competence on Industrial Telemetry Benchmarks:} Comprehensive evaluation across 223 cases (AssetOpsBench-Derived Diagnostic Subset $N=120$~\cite{patel2025assetops}, SRE $N=38$, FinOps $N=15$, EdgeTelemetry-50 $N=50$), demonstrating 80.0\% diagnostic exact-match accuracy and statistical parity with cloud-hosted GPT-4o (78.3\%, $p=0.87$).
+\end{enumerate}
+
+\section{Related Work}
+
+\subsection{State Space Models \& Hybrid Sequence Architectures}
+Selective State Space Models such as Mamba~\cite{gu2023mamba}, RWKV~\cite{peng2023rwkv}, S4~\cite{gu2021s4}, Hyena~\cite{poli2023hyena}, and Liquid Time-Constant Networks~\cite{hasani2021liquid} achieve linear $O(L)$ scaling in sequence length. Gated Delta Networks (DeltaNet)~\cite{yang2024gateddelta} refine recurrent memory compression using gated delta-rule updates complemented by IO-aware FlashAttention~\cite{dao2022flashattention}. EdgeSSM builds upon hybrid 3:1 DeltaNet-Attention architectures, resolving critical quantized tensor layout mismatches on edge GPUs.
+
+\subsection{Edge AI \& Industrial Condition Monitoring}
+Industrial predictive maintenance relies on multi-sensor anomaly detection~\cite{zhao2019dl,malhotra2016lstm} governed by condition monitoring standards such as ISO 13374-1~\cite{iso13374} and IEEE Std 1451.4~\cite{ieee1451}, within CPS frameworks~\cite{schwabacher2005prognostics,jardine2006cbm,lee2015cps}. Relational Graph Neural Networks (GCNs~\cite{kipf2017gcn}, GATs~\cite{velickovic2018gat}, GraphSAGE~\cite{hamilton2017graphsage}, R-GCNs~\cite{schlichtkrull2018rgcn}) capture topological sensor dependencies, while neuro-symbolic architectures~\cite{kautz2022thirdwave,trinh2024alphageometry} integrate formal rules. Real-time embedded systems require bounded execution without GC jitter~\cite{kopetz2011realtime}, which Rust enforces via compile-time ownership and zero-cost abstractions~\cite{klabnik2019rust}.
+
+\subsection{Constrained Decoding, Backtracking \& Adapter Routing}
+Conflict-directed backtracking and nogood recording~\cite{marquessilva1999grasp,biere2009sat} prune invalid search branches in automated reasoning, while grammar-constrained decoding (Outlines~\cite{willard2023outlines}, PICARD~\cite{scholak2021picard}) enforces syntactic validity. Parameter-efficient adaptation via LoRA~\cite{hu2022lora}, QLoRA~\cite{dettmers2023qlora}, and GPTQ~\cite{frantar2022gptq}, alongside intermediate layer probing via Tuned Lens~\cite{belrose2023tunedlens}, enables modular specialization. EdgeSSM unifies conflict-directed nogood caching with recurrent SSM prefix re-prefilling and continuous Layer-32 soft adapter blending.
+
+\section{System Architecture \& Methodology}
+
+EdgeSSM is implemented in native Rust (\texttt{sodals\_neuro}, \texttt{qwen\_custom.rs}) with custom CUDA FFI kernels, executing a 32-layer hybrid backbone (24 recurrent DeltaNet SSM layers and 8 full attention layers at indices 3, 7, 11, 15, 19, 23, 27, 31).
+
+\subsection{Bounded-Allocation Rust Runtime (\texttt{RtRingBuffer})}
+To eliminate dynamic heap allocations (\texttt{malloc}/\texttt{free}) and garbage collection pauses during autoregressive decoding, EdgeSSM pre-allocates a fixed 100~MB application orchestrator arena at initialization using Rust \texttt{const generics} and lock-free circular ring buffers (\texttt{RtRingBuffer<T, N>}). While total host process Resident Set Size (RSS) including the initialized CUDA driver context spans 600--900~MB, application-level orchestrator heap growth is strictly zero ($0\text{ B}$ allocated during the token generation hot loop).
+
+\subsection{Selective SSM Core \& GGUF Head-Expansion Alignment}
+Within each recurrent DeltaNet layer, the state matrix $\mathbf{S}_t \in \mathbb{R}^{d_{\text{state}} \times d_{\text{head}}}$ ($d_{\text{state}} = 128$) updates via the gated delta rule:
+\begin{align}
+\mathbf{g}_t &= \mathrm{softplus}(\mathbf{x}_t) \odot \mathbf{a}_{\text{ssm}}, \quad \mathbf{S}_{\text{dec}} = \mathbf{S}_{t-1} \odot \exp(\mathbf{g}_t) \\
+\mathbf{e}_t &= \mathbf{v}_t - \mathbf{k}_t^T \mathbf{S}_{\text{dec}}, \quad \mathbf{\Delta}_t = \mathbf{e}_t \odot \mathbf{\beta}_t \\
+\mathbf{S}_t &= \mathbf{S}_{\text{dec}} + \mathbf{k}_t \otimes \mathbf{\Delta}_t, \quad \mathbf{o}_t = \frac{1}{\sqrt{d_{\text{state}}}} \mathbf{q}_t \cdot \mathbf{S}_t
+\end{align}
+
+In Qwen 3.5 SSM layers, 16 key/query head groups expand to 32 groups. Reference GGUF weights~\cite{gerganov2023llamacpp} serialize head groups in tiled order:
+\begin{equation}
+\mathbf{k}_{\text{tiled}} = [h_0, h_1, \dots, h_{15}, h_0, h_1, \dots, h_{15}]
+\end{equation}
+whereas naive \texttt{repeat\_interleave(2, dim=head)} produces interleaved pairs $[h_0, h_0, \dots, h_{15}, h_{15}]$, scrambling projections across all 24 SSM layers (collapsing Layer-0 cosine similarity to $0.0300$ and surging KL divergence to $7.22$). EdgeSSM enforces explicit tiled concatenation $\mathrm{Concat}(\mathbf{k}_{\text{heads}}, \mathbf{k}_{\text{heads}}, \text{dim}=\text{head})$, restoring Layer-0 cosine similarity to \textbf{0.9996} and Layer-0 softmax projection KL divergence to $\mathbf{3.83 \times 10^{-8}}$.
+
+\subsection{Deterministic EBNF Rule Priors \& CUDA CSR Graph Attention}
+Industrial operating envelopes are compiled into Extended Backus-Naur Form (EBNF) domain cartridges. Candidate tokens matching valid safety rules receive a deterministic checksum prior:
+\begin{equation}
+\text{bias}_{\text{rule}} = \left( \sum_{b \in \mathrm{bytes}(R)} b \pmod{1024} \right) \times 10^{-4} \in [0, 0.1024)
+\end{equation}
+acting strictly as a reproducible tie-breaker among valid tokens without distorting model probabilities.
+
+Physical plant topology is encoded as a Compressed Sparse Row (CSR) adjacency matrix $\mathbf{A}_{\text{csr}} = (\text{indptr}, \text{indices}, \text{data})$. During Transformer attention layers, our custom CUDA kernel \texttt{apply\_gnn\_bias\_kernel} maps each thread to a unique query-key coordinate $(q_{\text{idx}}, k_{\text{idx}})$ and executes a binary search over the CSR edge list:
+\begin{lstlisting}[language=C++]
+size_t row_start = indptr[q_nodes[q_idx]];
+size_t row_end   = indptr[q_nodes[q_idx] + 1];
+int low = row_start, high = row_end - 1;
+while (low <= high) {
+    int mid = low + (high - low) / 2;
+    if (indices[mid] == k_nodes[k_idx]) {
+        scores[idx] += gnn_weight * data[mid];
+        break;
+    } else if (indices[mid] < k_nodes[k_idx]) low = mid + 1;
+    else high = mid - 1;
+}
+\end{lstlisting}
+This bounds relational lookup complexity to $O(N \log \text{deg}_{\max})$ per query row (total $O(N^2 \log \text{deg}_{\max})$ across sequence length $N$, where $\text{deg}_{\max} \ll N$ is the maximum equipment node degree, completely decoupled from head dimension $d_k=128$) and uses direct thread-local writes rather than non-deterministic \texttt{atomicAdd} reductions.
+
+\subsection{Five-Phase Stabilization \& Conflict-Directed Backtracking}
+To prevent reasoning collapse under 4-bit quantization, EdgeSSM enforces a five-phase runtime protocol: (1) a minimum thinking token floor ($M=1024$) suppressing premature \texttt{</think>} emission; (2) dynamic post-softmax \texttt{min\_p} filtering ($\text{min\_p}=0.05$); (3) structural-token-safe Skew-G repetition braking ($\text{logits} \leftarrow \text{logits} \cdot 0.85$ on cyclic high-skew tokens while exempting structural delimiters); (4) Tuned Lens~\cite{belrose2023tunedlens} observational entropy monitoring; and (5) conflict-directed backtracking.
+
+\paragraph{Numerical Conditioning \& Cache Synchronization:}
+The delta-rule update is an affine transformation:
+\begin{equation}
+\mathbf{S}_t = \mathbf{S}_{t-1} \mathrm{diag}(\exp(\mathbf{g}_t)) (\mathbf{I} - \beta_t \mathbf{k}_t \mathbf{k}_t^T) + \beta_t \mathbf{v}_t \mathbf{k}_t^T
+\end{equation}
+While formally invertible in exact arithmetic via the Sherman-Morrison formula whenever $(1 - \beta_t \|\mathbf{k}_t\|^2) \neq 0$, backward inversion in FP16/BF16 is severely ill-conditioned, amplifying round-off errors exponentially. Furthermore, saving explicit state checkpoints across 24 SSM layers requires $25.2\text{ MB}$ per node. Instead, when a diagnostic path violates a safety invariant, EdgeSSM records the conflict pattern in a hash-indexed \textbf{Nogood Cache} (\texttt{NogoodClauseCache}), truncates the token history to $L_{\text{prefix}}$, resets both attention KV and SSM caches in \textbf{0.22~ms} of host CPU orchestration time ($T_{\text{host}}$), and executes a single parallel GPU chunk re-prefill over the retained prefix ($L \le 512$), requiring \textbf{12.5--46.0~ms} on the GPU ($12.7\text{--}46.2\text{ ms}$ total end-to-end rollback latency).
+
+\subsection{Modular Cartridge Isolation \& Soft LoRA Blending}
+To prevent the Subspace Interference Effect ($\mathbf{A}_1 \mathbf{A}_2^T \neq 0$) observed during joint multi-adapter training~\cite{ozturk2026sodals}, domain cartridges are trained in strict isolation and blended continuously at inference time via a Layer-32 Gaussian Phase Router ($\tau = 0.004913$, Fisher separation $= 15.30$):
+\begin{equation}
+\Delta \mathbf{W} = (1 - \alpha) s_1 \mathbf{W}_1 + \alpha s_2 \mathbf{W}_2, \quad \alpha = \sigma(z_i / 0.03)
+\end{equation}
+Synthesized distillation trajectories are audited via Wronskian SVD residual norms ($\text{residual}(v) > 0.30$) and Jacobian step-consistency filters prior to offline QLoRA training~\cite{dettmers2023qlora,frantar2022gptq}.
+
+\section{Experimental Setup \& Benchmark Provenance}
+
+All evaluations were executed on the native bounded-allocation Rust runtime on an NVIDIA GeForce RTX 4060 Laptop GPU (8~GB VRAM, Ada Lovelace) and Intel Core i9-13900HX CPU (64~GB DDR5 RAM). Binomial accuracies are reported with \textbf{Wilson Score 95\% Confidence Intervals}~\cite{wilson1927ci}.
+
+\subsection{Industrial Benchmark Suites ($N=223$ Total)}
+\begin{enumerate}
+    \item \textbf{AssetOpsBench-Derived Diagnostic Subset ($N = 120$)}~\cite{patel2025assetops}: Adapted from IBM Research's public \textit{AssetOpsBench} corpus (over 140 operational scenarios across Gas Turbines, Centrifugal Pumps, Heat Exchangers, and Reciprocating Compressors). We explicitly distinguish \textit{AssetOpsBench}~\cite{patel2025assetops} from IBM's companion \textit{FailureSensorIQ} dataset~\cite{constantinides2025failuresensoriq} (which comprises 8,296 multiple-choice QA items across 10 assets). We extracted the $N=120$ operational instances featuring closed-form physical fault ground truths, evaluating standalone edge diagnostic exact match and workflow completion without external sandbox tool calls.
+    \item \textbf{SRE Troubleshooting Suite ($N = 38$)}: Microservice and edge topology root-cause isolation scenarios.
+    \item \textbf{FinOps Scenario Suite ($N = 15$)}: Compute and power budget anomaly detection under hardware constraints.
+    \item \textbf{EdgeTelemetry-50 ($N = 50$)}: Multi-channel temperature, pressure, acoustic, and vibration fault isolation scenarios following ISO 13374-1~\cite{iso13374} and IEEE 1451.4~\cite{ieee1451}.
+\end{enumerate}
+\textit{Disclosure of Internal Authorship:} While AssetOpsBench ($N=120$) is derived from an external IBM Research benchmark~\cite{patel2025assetops}, the remaining 103 scenarios (SRE, FinOps, EdgeTelemetry-50) are internally authored and open-sourced in the reproduction repository.
+
+\section{Empirical Results \& Systems Evaluation}
+
+\subsection{End-to-End Diagnostic Performance \& Frontier Parity}
+
+\begin{table*}[t]
+\centering
+\caption{Master Industrial Benchmark Evaluation Across 223 Cyber-Physical Scenarios (With 95\% Wilson Score Confidence Intervals).}
+\label{tab:master_industrial}
+\small
+\begin{tabular}{@{}llcccc@{}}
+\toprule
+\textbf{Benchmark Suite} & \textbf{Primary Metric} & \textbf{Unsteered Qwen 3.5-9B} & \textbf{GPT-4o (Cloud API)} & \textbf{EdgeSSM (Ours)} & \textbf{Delta vs.\ Local Base} \\
+\midrule
+\textbf{AssetOpsBench ($N=120$)}~\cite{patel2025assetops} & Workflow Completion & 71.7\% (86/120) & 92.5\% (111/120) & \textbf{94.2\% (113/120)} & \textbf{+22.5\%} \\
+ & {\scriptsize 95\% Wilson CI} & {\scriptsize [63.0\%, 79.0\%]} & {\scriptsize [86.4\%, 96.0\%]} & {\scriptsize \textbf{[88.5\%, 97.2\%]}} & {\scriptsize ($p < 0.0001$)} \\
+\addlinespace
+\textbf{AssetOpsBench ($N=120$)}~\cite{patel2025assetops} & Diagnostic Exact Match & 58.3\% (70/120) & 78.3\% (94/120) & \textbf{80.0\% (96/120)} & \textbf{+21.7\%} \\
+ & {\scriptsize 95\% Wilson CI} & {\scriptsize [49.3\%, 66.8\%]} & {\scriptsize [70.1\%, 84.8\%]} & {\scriptsize \textbf{[72.0\%, 86.2\%]}} & {\scriptsize ($p = 0.0004$)} \\
+\addlinespace
+\textbf{SRE Suite ($N=38$)} & RCA Localization & 68.4\% (26/38) & 86.8\% (33/38) & \textbf{89.5\% (34/38)} & \textbf{+21.1\%} \\
+ & {\scriptsize 95\% Wilson CI} & {\scriptsize [52.5\%, 80.9\%]} & {\scriptsize [72.7\%, 94.2\%]} & {\scriptsize \textbf{[75.9\%, 95.8\%]}} & {\scriptsize ($p = 0.0468$)} \\
+\addlinespace
+\textbf{FinOps Suite ($N=15$)} & Anomaly Precision & 73.3\% (11/15) & \textbf{93.3\% (14/15)} & \textbf{93.3\% (14/15)} & \textbf{+20.0\%} \\
+ & {\scriptsize 95\% Wilson CI} & {\scriptsize [48.0\%, 89.1\%]} & {\scriptsize [70.2\%, 98.8\%]} & {\scriptsize \textbf{[70.2\%, 98.8\%]}} & {\scriptsize (Exact Tie w/ Cloud)} \\
+\addlinespace
+\textbf{EdgeTelemetry-50 ($N=50$)} & Fault Isolation Prec. & 70.0\% (35/50) & 90.0\% (45/50) & \textbf{92.0\% (46/50)} & \textbf{+22.0\%} \\
+ & {\scriptsize 95\% Wilson CI} & {\scriptsize [56.2\%, 80.9\%]} & {\scriptsize [78.6\%, 95.7\%]} & {\scriptsize \textbf{[81.2\%, 96.8\%]}} & {\scriptsize ($p = 0.0098$)} \\
+\midrule
+\textbf{Runtime Systems Profile} & Decode Latency / Token & 31.2 ms/tok & 120--500 ms (Net RTT) & \textbf{28.5 ms/tok (Local)} & \textbf{Zero Cloud Dependency} \\
+\textbf{Memory Footprint} & Host App / GPU VRAM & 4.2 GB / 6.8 GB & Cloud Hosted & \textbf{100 MB / 5.5 GB} & \textbf{Zero Heap Churn} \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+Table~\ref{tab:master_industrial} summarizes end-to-end operational performance. Across all suites, EdgeSSM's 95\% Wilson confidence intervals overlap substantially with cloud-hosted GPT-4o (mean delta $+1.8$ percentage points; Fisher exact $p = 0.87$ on AssetOpsBench diagnostic accuracy, $96/120$ vs.\ $94/120$). Thus, we frame this result as \textbf{Diagnostic Competence at Edge Efficiency} rather than claiming general frontier superiority. Relative to the unsteered local Qwen 3.5-9B baseline, EdgeSSM achieves a statistically significant $+21.7$ percentage point improvement ($96/120$ vs.\ $70/120$, Fisher exact $p = 0.0004$, non-overlapping CIs).
+
+\subsection{SSM Kernel Fidelity \& Leave-One-Out Ablation}
+
+\begin{table}[htbp]
+\centering
+\caption{SSM Kernel Verification Before and After Head Expansion (\texttt{tile}) Fix Across 1,000 Tokens.}
+\label{tab:kernel}
+\footnotesize
+\begin{tabular}{@{}lcccl@{}}
+\toprule
+\textbf{Metric} & \textbf{Before (\texttt{interleave})} & \textbf{After (\texttt{tile})} & \textbf{Target} & \textbf{Evaluation Scope} \\
+\midrule
+Layer-0 Cosine Sim. & 0.0300 & \textbf{0.9996} & $>0.99$ & Layer-0 Output Proj. \\
+Layer-0 KL Div. & 7.22 & \textbf{3.83e-8} & $<1\text{e-}6$ & Layer-0 Softmax Act. \\
+Global Cosine Sim. & 0.6200 & \textbf{0.9655} & $>0.95$ & Layer-32 Final Logits \\
+Max Abs Logit Diff & 25.20 & \textbf{3.24} & $<5.0$ & Layer-32 Logits ($\pm 30$) \\
+Top-10 Logit Overlap & 2/10 & \textbf{9/10} & $>8/10$ & Final Rank Agreement \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:kernel} explicitly separates Layer-0 projection fidelity (Cosine 0.9996, KL $3.83 \times 10^{-8}$) from Layer-32 final logits (Cosine 0.9655), where minor drift stems from 32-layer Q4\_K\_M dequantization accumulation relative to PyTorch NF4. Table~\ref{tab:ablation} reports our leave-one-out ablation study on AssetOpsBench ($N=120$), showing that removing runtime stabilization ($-15.0\%$) or EBNF domain rule priors ($-11.7\%$) induces the largest accuracy drops.
+
+\begin{table}[htbp]
+\centering
+\caption{Leave-One-Out Ablation Study on AssetOpsBench-Derived Diagnostic Subset ($N=120$).}
+\label{tab:ablation}
+\footnotesize
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Condition / Subsystem Removed} & \textbf{Accuracy} & \textbf{Drop ($\Delta$)} & \textbf{95\% Wilson CI} \\
+\midrule
+\textbf{Full EdgeSSM Architecture} & \textbf{80.0\% (96/120)} & --- & \textbf{[72.0\%, 86.2\%]} \\
+w/o EBNF Domain Cartridge Priors & 68.3\% (82/120) & $-11.7\%$ & [59.4\%, 76.0\%] \\
+w/o Five-Phase Stabilization & 65.0\% (78/120) & $-15.0\%$ & [56.0\%, 73.0\%] \\
+w/o Specialized LoRA Cartridge & 73.3\% (88/120) & $-6.7\%$ & [64.8\%, 80.3\%] \\
+w/o Nogood Cache \& Re-Prefill & 74.2\% (89/120) & $-5.8\%$ & [65.7\%, 81.1\%] \\
+w/o CUDA CSR Graph Steering & 75.0\% (90/120) & $-5.0\%$ & [66.6\%, 81.8\%] \\
+\textbf{Minimal Unsteered SSM Baseline} & \textbf{58.3\% (70/120)} & \textbf{$-21.7\%$} & \textbf{[49.3\%, 66.8\%]} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Runtime Reliability \& Air-Gapped Supervisory Safety}
+Across 10,000 sequential inference steps under greedy decoding ($T=0$), EdgeSSM produced bit-exact identical diagnostic trajectories with zero drift and maintained its $<100\text{ MB}$ application orchestrator heap ceiling without OS reallocation. On the AssetOpsBench subset ($N=120$), conflict-directed backtracking was triggered in \textbf{9 out of 120 cases (7.5\%)}, resolving constraint violations via $12.7\text{--}46.2\text{ ms}$ prefix re-prefills.
+
+\section{Discussion \& Methodological Boundaries}
+
+EdgeSSM operates within documented boundaries: (1) with a 1,024-token reasoning floor at 28.5~ms/token ($\sim 29\text{ s}$ total response time), EdgeSSM serves as a SCADA-level supervisory diagnostic advisor rather than a sub-millisecond PLC actuator loop; (2) unsteered baselines were evaluated with zero-shot natural language prompts without in-context EBNF rule injection; (3) statistical parity with GPT-4o reflects overlapping Wilson CIs ($p=0.87$) rather than formal Two One-Sided Tests (TOST) equivalence; (4) single-stream decoding (35~tok/s) prioritizes zero-heap determinism over batched throughput; and (5) 103 of 223 scenarios were internally authored. Foundational analyses of self-distillation policy optimization and multi-adapter subspace interference on formal mathematical benchmarks are presented in our companion work~\cite{ozturk2026sodals}. As an engineering roadmap following Python \texttt{Dev-500} validation, we plan to port complex holomorphic phase rotation and 2-hop Sheaf-GNN diffusion operators serialized via \texttt{.qmem} directly into Rust (\texttt{qwen\_ssm.rs}, \texttt{qwen\_custom.rs}) with layer-level logit equivalence checks.
+
+\section{Conclusion}
+
+We presented EdgeSSM, a deterministic Rust/CUDA State Space Model inference engine for industrial cyber-physical systems. By combining GGUF \texttt{tile} layout alignment, $O(N \log \text{deg}_{\max})$ thread-local CSR graph attention, EBNF rule priors, conflict-directed nogood backtracking with prefix re-prefill, and continuous Soft LoRA Blending within a 100~MB orchestrator RAM budget and 5.5~GB GPU VRAM, EdgeSSM achieves 80.0\% diagnostic accuracy on AssetOpsBench ($+21.7\%$ over unsteered baseline), delivering cloud-comparable diagnostics completely offline on plant-floor edge hardware.
+
+\begin{thebibliography}{99}
+
+\bibitem{gu2023mamba}
+A.~Gu and T.~Dao, ``Mamba: Linear-time sequence modeling with selective state spaces,'' \textit{arXiv preprint arXiv:2312.00752}, 2023.
+
+\bibitem{peng2023rwkv}
+B.~Peng \textit{et al.}, ``RWKV: Reinventing RNNs for the Transformer era,'' \textit{arXiv preprint arXiv:2305.13048}, 2023.
+
+\bibitem{kautz2022thirdwave}
+H.~Kautz, ``The third wave of artificial intelligence: Neuro-symbolic AI,'' \textit{Commun. ACM}, vol.~65, no.~2, pp.~62--71, 2022.
+
+\bibitem{trinh2024alphageometry}
+T.~H. Trinh, Y.~Wu, Q.~V. Le, H.~He, and T.~Luong, ``Solving Olympiad geometry without human demonstrations,'' \textit{Nature}, vol.~625, no.~7995, pp.~476--482, 2024.
+
+\bibitem{yang2024gateddelta}
+S.~Yang, J.~Kautz, and A.~Hatamizadeh, ``Gated delta networks: Improving Mamba2 with delta rule,'' \textit{arXiv preprint arXiv:2412.06464}, 2024.
+
+\bibitem{gerganov2023llamacpp}
+G.~Gerganov, ``llama.cpp: Port of Facebook's LLaMA model in C/C++,'' GitHub repository, 2023. [Online]. Available: \url{https://github.com/ggerganov/llama.cpp}
+
+\bibitem{dettmers2023qlora}
+T.~Dettmers, A.~Pagnoni, A.~Holtzman, and L.~Zettlemoyer, ``QLoRA: Efficient finetuning of quantized LLMs,'' in \textit{Proc. NeurIPS}, vol.~36, 2023.
+
+\bibitem{frantar2022gptq}
+E.~Frantar, B.~Saleh, and D.~Alistarh, ``GPTQ: Accurate post-training quantization for generative pre-trained transformers,'' \textit{arXiv preprint arXiv:2210.17323}, 2022.
+
+\bibitem{dao2022flashattention}
+T.~Dao, D.~Fu, S.~Ermon, A.~Rudra, and C.~R\'e, ``FlashAttention: Fast and memory-efficient exact attention with IO-awareness,'' in \textit{Proc. NeurIPS}, vol.~35, 2022.
+
+\bibitem{gu2021s4}
+A.~Gu \textit{et al.}, ``Combining recurrent, convolutional, and continuous-time models with linear state space layers,'' in \textit{Proc. NeurIPS}, vol.~34, 2021.
+
+\bibitem{poli2023hyena}
+M.~Poli \textit{et al.}, ``Hyena hierarchy: Towards larger convolutional language models,'' in \textit{Proc. ICML}, 2023.
+
+\bibitem{hasani2021liquid}
+R.~Hasani, M.~Lechner, A.~Amini, D.~Rus, and R.~Grosu, ``Liquid time-constant networks,'' in \textit{Proc. AAAI}, vol.~35, no.~9, pp.~7657--7666, 2021.
+
+\bibitem{kipf2017gcn}
+T.~N. Kipf and M.~Welling, ``Semi-supervised classification with graph convolutional networks,'' in \textit{Proc. ICLR}, 2017.
+
+\bibitem{velickovic2018gat}
+P.~Veli\v{c}kovi\'c \textit{et al.}, ``Graph attention networks,'' in \textit{Proc. ICLR}, 2018.
+
+\bibitem{hamilton2017graphsage}
+W.~Hamilton, Z.~Ying, and J.~Leskovec, ``Inductive representation learning on large graphs,'' in \textit{Proc. NeurIPS}, vol.~30, 2017.
+
+\bibitem{schlichtkrull2018rgcn}
+M.~Schlichtkrull \textit{et al.}, ``Modeling relational data with graph convolutional networks,'' in \textit{Proc. ESWC}, 2018, pp.~593--607.
+
+\bibitem{marquessilva1999grasp}
+J.~P. Marques-Silva and K.~A. Sakallah, ``GRASP: A search algorithm for propositional satisfiability,'' \textit{IEEE Trans. Comput.}, vol.~48, no.~5, pp.~506--521, 1999.
+
+\bibitem{biere2009sat}
+A.~Biere, M.~Heule, H.~van Maaren, and T.~Walsh, Eds., \textit{Handbook of Satisfiability}. IOS Press, 2009.
+
+\bibitem{kopetz2011realtime}
+H.~Kopetz, \textit{Real-Time Systems: Design Principles for Distributed Embedded Applications}. Springer, 2011.
+
+\bibitem{klabnik2019rust}
+S.~Klabnik and C.~Nichols, \textit{The Rust Programming Language}. No Starch Press, 2019.
+
+\bibitem{zhao2019dl}
+R.~Zhao \textit{et al.}, ``Deep learning and its applications to machine health monitoring,'' \textit{Mech. Syst. Signal Process.}, vol.~115, pp.~213--237, 2019.
+
+\bibitem{malhotra2016lstm}
+P.~Malhotra \textit{et al.}, ``LSTM-based encoder-decoder for multi-sensor anomaly detection,'' \textit{arXiv preprint arXiv:1607.00148}, 2016.
+
+\bibitem{iso13374}
+\textit{Condition Monitoring and Diagnostics of Machines---Data Processing, Communication and Presentation}, ISO Standard 13374-1:2003, 2003.
+
+\bibitem{schwabacher2005prognostics}
+M.~Schwabacher, ``A survey of data-driven prognostics,'' in \textit{Proc. AIAA Infotech@Aerospace Conf.}, 2005, p.~7002.
+
+\bibitem{jardine2006cbm}
+A.~K. Jardine, D.~Lin, and D.~Banjevic, ``A review on machinery diagnostics and prognostics implementing condition-based maintenance,'' \textit{Mech. Syst. Signal Process.}, vol.~20, no.~7, pp.~1483--1510, 2006.
+
+\bibitem{lee2015cps}
+J.~Lee, B.~Bagheri, and H.~A. Kao, ``A cyber-physical systems architecture for Industry 4.0-based manufacturing systems,'' \textit{Manuf. Lett.}, vol.~3, pp.~18--23, 2015.
+
+\bibitem{ieee1451}
+\textit{IEEE Standard for a Smart Transducer Interface for Sensors and Actuators}, IEEE Std 1451.4-2004, 2004.
+
+\bibitem{wilson1927ci}
+E.~B. Wilson, ``Probabilistic inference, law of errors, and statistical precision,'' \textit{J. Amer. Statist. Assoc.}, vol.~22, no.~158, pp.~209--212, 1927.
+
+\bibitem{willard2023outlines}
+B.~T. Willard and R.~Louf, ``Efficient guided generation for large language models,'' \textit{arXiv preprint arXiv:2307.09702}, 2023.
+
+\bibitem{scholak2021picard}
+T.~Scholak, N.~Schucher, and D.~Bahdanau, ``PICARD: Parsing incrementally for constrained auto-regressive decoding from language models,'' in \textit{Proc. EMNLP}, 2021, pp.~9895--9901.
+
+\bibitem{belrose2023tunedlens}
+N.~Belrose \textit{et al.}, ``Eliciting latent predictions from transformers with the tuned lens,'' \textit{arXiv preprint arXiv:2303.08112}, 2023.
+
+\bibitem{hu2022lora}
+E.~J. Hu \textit{et al.}, ``LoRA: Low-rank adaptation of large language models,'' in \textit{Proc. ICLR}, 2022.
+
+\bibitem{patel2025assetops}
+D.~Patel, S.~Lin, J.~Rayfield, N.~Zhou, C.~Shyalika, S.~R. Yarrabothula, R.~Vaculin, N.~Martinez, F.~O'Donncha, and J.~Kalagnanam, ``AssetOpsBench: Benchmarking AI agents for task automation in industrial asset operations and maintenance,'' IBM Research, \textit{arXiv preprint arXiv:2506.03828} (Accepted at KDD 2026 Datasets \& Benchmarks Track), 2025.
+
+\bibitem{constantinides2025failuresensoriq}
+C.~Constantinides, D.~Patel, S.~Lin, C.~Guerrero, S.~D. Patil, and J.~Kalagnanam, ``FailureSensorIQ: A multi-choice QA dataset for understanding sensor relationships and failure modes,'' IBM Research, \textit{arXiv preprint arXiv:2506.03278} (NeurIPS 2025 Datasets and Benchmarks Track), 2025.
+
+\bibitem{ozturk2026sodals}
+B.~\"Ozt\"urk, ``SODALS v2.1: Self-distillation policy optimization (SDPO), long-context GRPO, and continuous manifold stabilization in frontier reasoning,'' \textit{arXiv preprint}, 2026.
+
+\end{thebibliography}
+
+\end{document}

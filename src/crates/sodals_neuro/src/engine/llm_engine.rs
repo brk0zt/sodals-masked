@@ -13,6 +13,7 @@ use std::process::Command;
 
 use crate::models::qwen_custom::{Qwen2ForCausalLM as QwenModel, PhaseSignal};
 use crate::semantic_network::ResonanceNetwork;
+use crate::agent_loop::CdclClauseDb;
 use crate::semantic_parser::{SemanticRegisterFile, CodeWeaver};
 use crate::engine::logits_fusion::{YieldedToken, RawToken};
 use crate::fast_math::SemanticWave;
@@ -83,6 +84,32 @@ impl CartridgeArm {
     }
 }
 
+impl CartridgeLibrary {
+    pub fn inherit_stats_from(&mut self, old_library: &CartridgeLibrary) {
+        for new_arm in self.arms.iter_mut() {
+            let mut best_match = None;
+            let mut max_overlap = 0;
+            
+            for old_arm in &old_library.arms {
+                let overlap = new_arm.domain_tags.iter().filter(|t| old_arm.domain_tags.contains(t)).count();
+                if overlap > max_overlap {
+                    max_overlap = overlap;
+                    best_match = Some(old_arm);
+                }
+            }
+            
+            if let Some(old_arm) = best_match {
+                // Inherit stats to avoid f64::INFINITY cold start when clustering changes
+                new_arm.pulls = old_arm.pulls;
+                new_arm.reward_sum = old_arm.reward_sum;
+                new_arm.recent_rewards = old_arm.recent_rewards.clone();
+                eprintln!("[MAB] Arm '{}' inherited stats from parent '{}' ({} pulls)", new_arm.path, old_arm.path, old_arm.pulls);
+            }
+        }
+        self.total_pulls = std::cmp::max(self.total_pulls, old_library.total_pulls);
+    }
+}
+
 pub struct CartridgeLibrary {
     pub arms: Vec<CartridgeArm>,
     pub total_pulls: u32,
@@ -128,7 +155,9 @@ impl CartridgeLibrary {
         candidates.into_iter().max_by(|&a, &b| {
             let score_a = self.arms[a].ucb1_score(self.total_pulls, self.exploration_c);
             let score_b = self.arms[b].ucb1_score(self.total_pulls, self.exploration_c);
-            score_a.partial_cmp(&score_b).unwrap_or(std::cmp::Ordering::Equal)
+            score_a.partial_cmp(&score_b)
+                .unwrap_or(std::cmp::Ordering::Equal)
+                .then_with(|| b.cmp(&a))
         })
     }
 
@@ -168,14 +197,16 @@ pub struct LlmEngine {
     pub srf: Arc<Mutex<SemanticRegisterFile>>,
     pub vision_encoder: Option<crate::vision::VisionEncoder>,
     /// Optional static KV-cache (per-layer) for prefix caching (e.g., QMEM cartridge prefixes)
-    /// Stored as (prefix_length, per-layer optional (K,V) pairs).
-    pub static_kv_cache: Arc<RwLock<Option<(usize, KVCache)>>>,
+    /// Stored as (prefix_hash, prefix_length, per-layer optional (K,V) pairs).
+    pub static_kv_cache: Arc<RwLock<Option<(u64, usize, KVCache)>>>,
     /// Optional lightweight draft model for speculative decoding (e.g., Qwen-3B)
     pub draft_model: Option<Arc<RwLock<QwenModel>>>,
     /// Optional hierarchical QMEM loader for RAM-first layer residency
     pub qmem_loader: Option<Arc<QmemLoader>>,
     /// Optional MAB cartridge library for QMEM selection and online reward shaping.
-    pub cartridge_library: Option<CartridgeLibrary>,
+    pub cartridge_library: Option<Arc<RwLock<CartridgeLibrary>>>,
+    /// CDCL Clause Database for Backtracking
+    pub cdcl_db: Option<Arc<RwLock<CdclClauseDb>>>,
 }
 
 impl LlmEngine {
@@ -231,7 +262,65 @@ impl LlmEngine {
         let file_size = abs_path.metadata().map(|m| m.len().to_string()).unwrap_or_else(|_| "?".to_string());
         logger.info("LlmCore", &format!("Tokenizer loaded: {} ({}B)", abs_path.display(), file_size));
 
-        let (model_weights, device) = Self::load_model(&model_path)?;
+        let (mut model_weights, device) = Self::load_model(&model_path)?;
+        // J-Lens Integration: Initialize Readout for workspace layers
+        let lm_head_arc = std::sync::Arc::new(model_weights.lm_head.clone());
+        let norm_arc = std::sync::Arc::new(model_weights.model.norm.clone());
+        
+        let dummy_prompt = "The quick brown fox jumps over the lazy dog. A quick test for J-Lens diagnostics.";
+        let dummy_tokens = tokenizer.encode(dummy_prompt, true)
+            .map(|enc| enc.get_ids().to_vec())
+            .unwrap_or_else(|_| vec![1, 2, 3, 4, 5, 6, 7, 8]);
+
+        // Adım 0 (validation gate): with SODALS_JLENS_VALIDATE=1, run the workspace
+        // diagnosis over known-easy completions before committing to training.
+        // Easy prompts must show a middle-layer output-alignment onset; if the
+        // diagnosis reports the entire net as workspace even for trivially
+        // predictable completions, the thresholds need calibration first.
+        if std::env::var("SODALS_JLENS_VALIDATE").is_ok() {
+            let easy_prompts: [&str; 5] = [
+                "The capital of France is",
+                "Two plus two equals",
+                "The chemical symbol for water is H",
+                "The capital of Japan is",
+                "The derivative of the function f(x) = x^2 is",
+            ];
+            crate::jlens_diagnostics::JLensDiagnostics::validate_workspace_diagnosis(
+                &mut model_weights,
+                &device,
+                &tokenizer,
+                &easy_prompts,
+            );
+        }
+
+        // J-Lens readout is OPT-IN (`SODALS_ENABLE_JLENS=1`): running 15 extra lm_head
+        // projections per token causes ~16x decode overhead and ~15 MB/token RAM growth.
+        if std::env::var_os("SODALS_ENABLE_JLENS").is_some() {
+            let diagnosed_workspace = crate::jlens_readout::JLensReadout::trained_layers(&device)
+                .map(|range| {
+                    eprintln!("[LlmEngine] Tuned-Lens weights detected: readout workspace = {:?}", range);
+                    range
+                })
+                .or_else(|| {
+                    crate::jlens_diagnostics::JLensDiagnostics::diagnose_workspace_layers(
+                        &mut model_weights,
+                        &device,
+                        &dummy_tokens,
+                    )
+                    .ok()
+                })
+                .unwrap_or(10..25);
+
+            model_weights.model.jlens_readout = Some(std::sync::Arc::new(crate::jlens_readout::JLensReadout::new(
+                diagnosed_workspace.clone(),
+                lm_head_arc,
+                norm_arc,
+                &device,
+            )));
+        } else {
+            model_weights.model.jlens_readout = None;
+        }
+        
         let model = Arc::new(RwLock::new(model_weights));
         let semantic_memory = Arc::new(RwLock::new(ResonanceNetwork::new(8192)));
         // net_f: backbone semantic network (capacity 512 — lightweight, seeded from prompt)
@@ -240,25 +329,40 @@ impl LlmEngine {
         let memory_pressure = Arc::new(AtomicBool::new(false));
 
         // PHASE 51.9: Initialize Vision Encoder with CLIP weights if available
-        let hidden_size = model.read().map(|m| m.hidden_size()).unwrap_or(4096);
-        let vision_encoder = if let Some(model_dir) = model_path.parent() {
-            let clip_path = model_dir.join("clip-vit-large-patch14.safetensors");
-            if clip_path.exists() {
-                match crate::vision::VisionEncoder::new(clip_path.to_str().unwrap_or(""), hidden_size, &device) {
-                    Ok(ve) => {
-                        eprintln!("[LlmEngine] Vision encoder loaded from {:?}", clip_path);
-                        Some(ve)
+        let mut hidden_size = model.read().map(|m| m.hidden_size()).unwrap_or(4096);
+        
+        // CRITICAL FIX: The downloaded CLIP model's projector is hardcoded to [3584, 1024].
+        // If we pass 4096 here, candle_nn::linear fails with shape mismatch.
+        if hidden_size == 4096 {
+            hidden_size = 3584; 
+        }
+        
+        // Vision encoder is disabled by default: clip-vit-large-patch14.safetensors is ~1.7GB
+        // and pushes the CUDA footprint past 8GB VRAM, causing an access violation during
+        // decode. Re-enable only when needed via SODALS_ENABLE_VISION=1.
+        let vision_encoder = if std::env::var_os("SODALS_ENABLE_VISION").is_some() {
+            if let Some(model_dir) = model_path.parent() {
+                let clip_path = model_dir.join("clip-vit-large-patch14.safetensors");
+                if clip_path.exists() {
+                    match crate::vision::VisionEncoder::new(clip_path.to_str().unwrap_or(""), 3584, &device) {
+                        Ok(ve) => {
+                            eprintln!("[LlmEngine] Vision encoder loaded from {:?}", clip_path);
+                            Some(ve)
+                        }
+                        Err(e) => {
+                            eprintln!("[LlmEngine] Warning: Failed to load vision encoder: {}", e);
+                            None
+                        }
                     }
-                    Err(e) => {
-                        eprintln!("[LlmEngine] Warning: Failed to load vision encoder: {}", e);
-                        None
-                    }
+                } else {
+                    eprintln!("[LlmEngine] No CLIP weights found at {:?}, using mock vision encoding", clip_path);
+                    None
                 }
             } else {
-                eprintln!("[LlmEngine] No CLIP weights found at {:?}, using mock vision encoding", clip_path);
                 None
             }
         } else {
+            eprintln!("[LlmEngine] Vision encoder disabled (SODALS_ENABLE_VISION not set). Using mock vision encoding.");
             None
         };
 
@@ -277,6 +381,14 @@ impl LlmEngine {
 
         logger.info("LlmCore", "Model loaded.");
 
+        #[cfg(feature = "cuda")]
+        if let Some(ref adapter) = oracle_adapter {
+            if let Ok(mut m) = model.write() {
+                m.set_adapter(adapter.clone());
+                eprintln!("[LlmEngine] Oracle Adapter successfully attached to model.");
+            }
+        }
+
         Ok(Self {
             model,
             tokenizer,
@@ -294,6 +406,7 @@ impl LlmEngine {
             draft_model: None,
             qmem_loader: None,
             cartridge_library: None,
+            cdcl_db: Some(Arc::new(RwLock::new(CdclClauseDb::new()))),
         })
     }
 
@@ -314,24 +427,42 @@ impl LlmEngine {
                 }
             }
         }
-        self.cartridge_library = Some(library);
-        eprintln!("[MAB] Cartridge library initialized with {} arms", self.cartridge_library.as_ref().map(|l| l.arms.len()).unwrap_or(0));
+        let count = library.arms.len();
+        self.cartridge_library = Some(Arc::new(RwLock::new(library)));
+        eprintln!("[MAB] Cartridge library initialized with {} arms", count);
     }
 
     /// Select the best cartridge by UCB1 and optionally load it.
-    pub fn load_best_cartridge(&mut self, domain_hint: Option<&str>) -> anyhow::Result<()> {
+    pub fn load_best_cartridge(&self, domain_hint: Option<&str>) -> anyhow::Result<()> {
         let (arm_idx, path) = {
-            let library = self.cartridge_library.as_ref()
+            let lib_arc = self.cartridge_library.as_ref()
                 .ok_or_else(|| anyhow::anyhow!("Cartridge library not initialized"))?;
+            let library = lib_arc.read().map_err(|_| anyhow::anyhow!("Library lock poisoned"))?;
             let idx = library.select_best(domain_hint)
                 .ok_or_else(|| anyhow::anyhow!("No cartridge available"))?;
             (idx, library.arms[idx].path.clone())
         };
 
-        self.load_qmem_cartridge(&path)?;
+        // Inline qmem cartridge loading to avoid requiring &mut self
+        let new_network = ResonanceNetwork::load_cartridge(&path)?;
+        let node_count = new_network.n;
+        let edge_count = new_network.edge_count();
+        
+        if let Ok(mut mem) = self.semantic_memory.write() {
+            *mem = new_network;
+        }
+        
+        if let Ok(mut srf) = self.srf.lock() {
+            srf.bx = 0.0;
+            srf.dx = 0.0;
+        }
+        
+        eprintln!("[MACRO-GPR] 💾 Cartridge Loaded: {} ({} concepts, {} topological edges)", path, node_count, edge_count);
 
-        if let Some(lib) = &mut self.cartridge_library {
-            lib.active_arm = Some(arm_idx);
+        if let Some(lib_arc) = &self.cartridge_library {
+            if let Ok(mut lib) = lib_arc.write() {
+                lib.active_arm = Some(arm_idx);
+            }
         }
 
         eprintln!("[MAB] Selected arm #{}: {}", arm_idx, path);
@@ -339,7 +470,7 @@ impl LlmEngine {
     }
 
     /// Observe reward for the currently loaded cartridge and update the MAB.
-    pub fn observe_cartridge_reward(&mut self) {
+    pub fn observe_cartridge_reward(&self) {
         let wronskian = if let Ok(mut mem) = self.semantic_memory.write() {
             mem.compute_determinant_lu()
         } else {
@@ -358,10 +489,12 @@ impl LlmEngine {
             0.0
         };
 
-        if let Some(lib) = &mut self.cartridge_library {
-            if let Some(arm_idx) = lib.active_arm {
-                lib.record_reward(arm_idx, reward);
-                eprintln!("[MAB] Arm #{} reward: {:.2} (det={:.4}, cx_w={:.3})", arm_idx, reward, wronskian, cx_w);
+        if let Some(lib_arc) = &self.cartridge_library {
+            if let Ok(mut lib) = lib_arc.write() {
+                if let Some(arm_idx) = lib.active_arm {
+                    lib.record_reward(arm_idx, reward);
+                    eprintln!("[MAB] Arm #{} reward: {:.2} (det={:.4}, cx_w={:.3})", arm_idx, reward, wronskian, cx_w);
+                }
             }
         }
     }
@@ -388,10 +521,12 @@ impl LlmEngine {
             crate::semantic_network::BifurcationRegime::Critical => {
                 // Be cautious → try alternative cartridge
                 eprintln!("[BIFURCATION] Critical regime detected (λ={:.4}). Trying alternative cartridge.", lyapunov);
-                if let Some(lib) = &mut self.cartridge_library {
+                if let Some(lib_arc) = &self.cartridge_library {
                     // Temporarily lower score of current arm to encourage exploration
-                    if let Some(arm) = lib.active_arm {
-                        lib.record_reward(arm, -0.3);
+                    if let Ok(mut lib) = lib_arc.write() {
+                        if let Some(arm) = lib.active_arm {
+                            lib.record_reward(arm, -0.3);
+                        }
                     }
                     let _ = self.load_best_cartridge(None);
                 }
@@ -404,45 +539,42 @@ impl LlmEngine {
         }
     }
 
-    /// Save current model layers' KV caches into `static_kv_cache`.
-    /// This captures each layer's `kv_cache` Option<(k,v)> if present.
-    pub fn save_static_kv_cache(&self) {
-        eprintln!("[KV-CACHE] save_static_kv_cache: entering");
+    /// Save current model layers' KV caches into `static_kv_cache` tagged with a prompt prefix hash.
+    pub fn save_static_kv_cache_with_hash(&self, prefix_hash: u64) {
         if let Ok(model_guard) = self.model.read() {
-            eprintln!("[KV-CACHE] save_static_kv_cache: acquired model read lock");
-            // Export may be expensive; log before/after to detect stalls
-            eprintln!("[KV-CACHE] save_static_kv_cache: calling export_kv_cache()...");
             let vec_cache: KVCache = model_guard.model().export_kv_cache();
-            // Capture the model's recorded injected prefix length so RoPE offsets are preserved
             let prefix_len = model_guard.model().get_prefix_injected_len();
-            eprintln!("[KV-CACHE] save_static_kv_cache: export_kv_cache() returned (layers={}), prefix_len={}", vec_cache.len(), prefix_len);
             if let Ok(mut guard) = self.static_kv_cache.write() {
-                eprintln!("[KV-CACHE] save_static_kv_cache: acquired static_kv_cache write lock");
-                *guard = Some((prefix_len, vec_cache));
-                let layers = guard.as_ref().map(|pair| pair.1.len()).unwrap_or(0);
-                eprintln!("[KV-CACHE] Saved static KV cache ({} layers, prefix_len={})", layers, prefix_len);
-            } else {
-                eprintln!("[KV-CACHE] save_static_kv_cache: failed to acquire static_kv_cache write lock");
+                *guard = Some((prefix_hash, prefix_len, vec_cache));
             }
-        } else {
-            eprintln!("[KV-CACHE] save_static_kv_cache: failed to acquire model read lock");
         }
-        eprintln!("[KV-CACHE] save_static_kv_cache: exiting");
     }
 
-    /// Apply `static_kv_cache` into the model layers' KV caches (if available).
-    pub fn apply_static_kv_cache(&self) {
+    /// Save current model layers' KV caches into `static_kv_cache` (legacy hash=0 wrapper).
+    pub fn save_static_kv_cache(&self) {
+        self.save_static_kv_cache_with_hash(0);
+    }
+
+    /// Apply `static_kv_cache` into the model layers' KV caches ONLY if `prefix_hash` matches.
+    pub fn apply_static_kv_cache_for_hash(&self, prefix_hash: u64) -> bool {
         if let Ok(cache_guard) = self.static_kv_cache.read() {
-            if cache_guard.is_none() { return; }
-            if let Some((prefix_len, ref vec_cache)) = *cache_guard {
+            if let Some((saved_hash, prefix_len, ref vec_cache)) = *cache_guard {
+                if saved_hash != prefix_hash {
+                    return false;
+                }
                 if let Ok(model_guard) = self.model.read() {
                     model_guard.model().import_kv_cache(&vec_cache[..]);
-                    // Restore recorded injected prefix length so RoPE offsets match the cached KV
                     model_guard.model().set_prefix_injected_len(prefix_len);
-                    eprintln!("[KV-CACHE] Applied static KV cache to model layers (prefix_len={})", prefix_len);
+                    return true;
                 }
             }
         }
+        false
+    }
+
+    /// Apply `static_kv_cache` into the model layers' KV caches (legacy hash=0 wrapper).
+    pub fn apply_static_kv_cache(&self) {
+        let _ = self.apply_static_kv_cache_for_hash(0);
     }
 
     /// Load a lightweight draft model for speculative decoding.
@@ -505,6 +637,8 @@ impl LlmEngine {
             None,
             None,
             ghost_prefix,
+            None,
+            None,
             None,
         )?;
         let last = Self::extract_last_logits(&logits)?;
@@ -639,15 +773,16 @@ impl LlmEngine {
                         }
                     }
 
-                    // Python fallback
+                    // Python fallback (pass paths via sys.argv — zero command injection!)
                     let fixed = abs_path.with_extension("fixed.json");
-                    let py_src = abs_path.to_string_lossy().to_string();
-                    let py_dest = fixed.to_string_lossy().to_string();
-                    let py_cmd = format!(
-                        "from tokenizers import Tokenizer; Tokenizer.from_file(r'{0}').save(r'{1}')",
-                        py_src, py_dest
-                    );
-                    if let Ok(out) = Command::new("python").args(["-c", &py_cmd]).output() {
+                    let py_script = "import sys; from tokenizers import Tokenizer; Tokenizer.from_file(sys.argv[1]).save(sys.argv[2])";
+                    if let Ok(out) = Command::new("python")
+                        .arg("-c")
+                        .arg(py_script)
+                        .arg(abs_path)
+                        .arg(&fixed)
+                        .output()
+                    {
                         if out.status.success() && fixed.exists() {
                             if let Ok(tok2) = Tokenizer::from_file(&fixed) {
                                 return Ok(tok2);
@@ -683,6 +818,15 @@ impl LlmEngine {
         
         if path_str.ends_with(".safetensors") {
             eprintln!("[LlmEngine] 📦 Safetensors format detected...");
+            
+            // To prevent OOM with large safetensors files on 8GB VRAM, force CPU if not overridden
+            let safetensors_device = if std::env::var("SODALS_FORCE_CUDA").is_ok() || !candle_core::utils::cuda_is_available() {
+                device
+            } else {
+                eprintln!("[LlmEngine] ⚠️ Forcing CPU for Safetensors to prevent CUDA OOM. Set SODALS_FORCE_CUDA=1 to override.");
+                Device::Cpu
+            };
+
             let model_dir = path.parent().unwrap_or(std::path::Path::new("."));
             let model_stem = path.file_stem().and_then(|s| s.to_str()).unwrap_or("model");
             
@@ -702,7 +846,45 @@ impl LlmEngine {
                 safetensor_paths.push(path.clone());
             }
             
-            Ok((QwenModel::from_awq_safetensors(&safetensor_paths, &device)?, device))
+            let cfg = if let Ok(config_str) = std::fs::read_to_string(model_dir.join("config.json")) {
+                if let Ok(val) = serde_json::from_str::<serde_json::Value>(&config_str) {
+                    let mut config_obj = val.clone();
+                    if let Some(text_config) = val.get("text_config") {
+                        if let Some(obj) = config_obj.as_object_mut() {
+                            if let Some(text_obj) = text_config.as_object() {
+                                for (k, v) in text_obj {
+                                    obj.insert(k.clone(), v.clone());
+                                }
+                            }
+                        }
+                    }
+                    
+                    let mut cfg = crate::models::qwen_custom::Qwen2Config::default();
+                    if let Some(v) = config_obj.get("vocab_size").and_then(|v| v.as_u64()) { cfg.vocab_size = v as usize; }
+                    if let Some(v) = config_obj.get("hidden_size").and_then(|v| v.as_u64()) { cfg.hidden_size = v as usize; }
+                    if let Some(v) = config_obj.get("intermediate_size").and_then(|v| v.as_u64()) { cfg.intermediate_size = v as usize; }
+                    if let Some(v) = config_obj.get("num_hidden_layers").and_then(|v| v.as_u64()) { cfg.num_hidden_layers = v as usize; }
+                    if let Some(v) = config_obj.get("num_attention_heads").and_then(|v| v.as_u64()) { cfg.num_attention_heads = v as usize; }
+                    if let Some(v) = config_obj.get("num_key_value_heads").and_then(|v| v.as_u64()) { cfg.num_key_value_heads = v as usize; }
+                    if let Some(v) = config_obj.get("max_position_embeddings").and_then(|v| v.as_u64()) { cfg.max_position_embeddings = v as usize; }
+                    if let Some(v) = config_obj.get("rms_norm_eps").and_then(|v| v.as_f64()) { cfg.rms_norm_eps = v; }
+                    if let Some(v) = config_obj.get("rope_theta").and_then(|v| v.as_f64()) { cfg.rope_theta = v; }
+                    if let Some(v) = config_obj.get("sliding_window").and_then(|v| v.as_u64()) { cfg.sliding_window = Some(v as usize); }
+                    
+                    eprintln!("[LlmEngine] ?? Parsed Qwen2Config: vocab_size={}, hidden_size={}", cfg.vocab_size, cfg.hidden_size);
+                    cfg
+                } else {
+                    crate::models::qwen_custom::Qwen2Config::default()
+                }
+            } else {
+                crate::models::qwen_custom::Qwen2Config::default()
+            };
+
+
+            
+            let vb = unsafe { candle_nn::VarBuilder::from_mmaped_safetensors(&safetensor_paths, candle_core::DType::F32, &safetensors_device)? };
+            let model = QwenModel::from_safetensors(vb, &cfg, &safetensors_device)?;
+            Ok((model, safetensors_device))
         } else {
             let mut file = std::fs::File::open(path)?;
             let content = candle_core::quantized::gguf_file::Content::read(&mut file)?;
@@ -727,7 +909,7 @@ impl LlmEngine {
         self.active_steering = steering_vector;
     }
 
-    /// Compute logit bias from steering vector - GPU-RESIDENT
+        /// Compute logit bias from steering vector - GPU-RESIDENT
     fn compute_logit_bias_from_steering(&self, logits: &Tensor) -> Result<Tensor> {
         if self.active_steering.is_none() {
             return Ok(logits.clone());
@@ -744,8 +926,23 @@ impl LlmEngine {
         let vocab_size = *logits.dims().last()
             .ok_or_else(|| Error::msg("Empty logits tensor"))?;
         
+        if real_parts.is_empty() {
+            return Ok(logits.clone());
+        }
+
         let bias_vec: Vec<f32> = (0..vocab_size)
-            .map(|i| real_parts[i % real_parts.len()] * bias_strength as f32)
+            .map(|i| {
+                let mapped_index = i % real_parts.len();
+                
+                // DECAYED MODULO: 
+                // We use modulo to spread the semantic wave (restoring stochastic resonance).
+                // But we add a decay factor so higher tokens (up to 150k) receive less bias.
+                // This prevents the aliasing from destroying language model stability 
+                // and causing infinite repetition loops.
+                let decay = 1.0 / (1.0 + (i as f32 / real_parts.len() as f32));
+                
+                real_parts[mapped_index] * bias_strength as f32 * decay
+            })
             .collect();
         
         let bias_tensor = Tensor::from_vec(
@@ -770,7 +967,29 @@ impl LlmEngine {
     // ============================================================================
     pub fn apply_skew_g_braking(&self, logits: &mut Tensor, _variance: f32) -> Result<()> {
         // To brake a cognitive flatline, we SHARPEN the logits (decrease effective temperature).
+        // Structural/control tokens (</think>, <think>, EOS, control) are preserved from the
+        // sharpening so braking never amplifies degenerate structural emissions.
+        const STRUCTURAL: [usize; 5] = [248044, 248045, 248046, 248068, 248069];
+        let preserved: Vec<(usize, f32)> = if let Ok(v) = logits.to_vec1::<f32>() {
+            STRUCTURAL.iter().filter_map(|&id| v.get(id).map(|&val| (id, val))).collect()
+        } else {
+            Vec::new()
+        };
+
         *logits = logits.affine(1.20, 0.0)?;
+
+        if !preserved.is_empty() {
+            if let Ok(mut v) = logits.to_vec1::<f32>() {
+                for (id, val) in preserved {
+                    if let Some(slot) = v.get_mut(id) {
+                        *slot = val;
+                    }
+                }
+                if let Ok(t) = Tensor::from_vec(v, logits.shape().clone(), logits.device()) {
+                    *logits = t;
+                }
+            }
+        }
         Ok(())
     }
 
@@ -907,7 +1126,13 @@ impl LlmEngine {
         let r_new_sq = (p_plus_base + interference)?;
         let r_new_sq = r_new_sq.clamp(0.0f32, f32::MAX)?;
 
+        if let Ok(vec) = logits.to_vec1::<f32>() {
+            let think_id = 248068;
+            eprintln!("[CLIFFORD-DIAG] <think> logit received: {:?}", vec.get(think_id));
+        }
+
         let best_id = r_new_sq.argmax(0)?.to_vec0::<u32>()?;
+        eprintln!("[CLIFFORD-DIAG] argmax chose: {}", best_id);
         Ok(best_id)
     }
 
@@ -918,7 +1143,6 @@ impl LlmEngine {
         self.clear_kv_cache();
     }
 
-    /// Extrapolating `clear_kv_cache` to `LlmEngine`
     pub fn clear_kv_cache(&self) {
         if let Ok(model) = self.model.read() {
             model.clear_kv_cache();
@@ -933,6 +1157,12 @@ impl LlmEngine {
         if let Ok(mut memory) = self.semantic_memory.write() {
             memory.clear_state();
             eprintln!("[LlmEngine] 🌊 Semantic memory vibrations zeroed.");
+        }
+    }
+
+    pub fn truncate_kv_cache(&self, keep_len: usize) {
+        if let Ok(model) = self.model.read() {
+            let _ = model.truncate_kv_cache(keep_len);
         }
     }
 
@@ -991,17 +1221,18 @@ impl LlmEngine {
             // If image is provided, ensure we decode it first and use generate_multimodal to inject visual tokens
             let decoded_bytes = base64::Engine::decode(&base64::engine::general_purpose::STANDARD, &base64_data)
                 .unwrap_or_default();
-            self.generate_multimodal(prompt, &[("image/png", &decoded_bytes)], config)?
+            self.generate_multimodal(prompt, &[("image/png", &decoded_bytes)], config, 0)?
         } else {
-            crate::engine::generation_loop::generate_stream(self, prompt, None, None, |_| {}, config, 0)?
+            crate::engine::generation_loop::generate_stream(self, prompt, None, None, |_| {}, config, 0, 0)?
         };
 
-        // RUBIK'S TOPOLOGY: Remove <thinking> blocks before returning
+        // RUBIK'S TOPOLOGY: Remove <thinking> blocks safely (handles reversed/stray </thinking>)
         let response_without_thinking = if response.contains("<thinking>") {
             let mut cleaned = response.clone();
             while let Some(start) = cleaned.find("<thinking>") {
-                if let Some(end) = cleaned.find("</thinking>") {
-                    let end_tag_end = end + 11;
+                let search_from = start + "<thinking>".len();
+                if let Some(rel_end) = cleaned[search_from..].find("</thinking>") {
+                    let end_tag_end = search_from + rel_end + "</thinking>".len();
                     cleaned.replace_range(start..end_tag_end, "");
                 } else {
                     break;
@@ -1098,7 +1329,8 @@ impl LlmEngine {
         &mut self,
         prompt: &str,
         images: &[(&str, &[u8])],  // (mime_type, raw_bytes)
-        requested_config: &NeuroConfig
+        requested_config: &NeuroConfig,
+        max_tokens: usize
     ) -> Result<String> {
         eprintln!("[MULTIMODAL] Ingesting {} image payloads", images.len());
         
@@ -1138,7 +1370,7 @@ impl LlmEngine {
             
             // Call text-only generation with no visual prefix
             return crate::engine::generation_loop::generate_stream(
-                self, &enhanced_prompt, None, None as Option<crate::fast_math::SemanticWave>, |_| {}, requested_config, 0
+                self, &enhanced_prompt, None, None as Option<crate::fast_math::SemanticWave>, |_| {}, requested_config, 0, max_tokens
             );
         }
         
@@ -1159,7 +1391,16 @@ impl LlmEngine {
             let visual_concat = Tensor::cat(&visual_tokens, 1)?;
             let compressed_visual = Self::spatial_compress_visual(&visual_concat, 256)?;
             let visual_seq_len = compressed_visual.dim(1)?;
-            (compressed_visual, visual_seq_len)
+            
+            let final_visual = if compressed_visual.dim(2)? < hidden_size {
+                let pad_dim = hidden_size - compressed_visual.dim(2)?;
+                let pad_tensor = Tensor::zeros((1, visual_seq_len, pad_dim), compressed_visual.dtype(), compressed_visual.device())?;
+                Tensor::cat(&[&compressed_visual, &pad_tensor], 2)?
+            } else {
+                compressed_visual
+            };
+            
+            (final_visual, visual_seq_len)
         } else {
             (Tensor::zeros((1, 1, hidden_size), DType::F32, &self.device)?, 0)
         };
@@ -1167,7 +1408,7 @@ impl LlmEngine {
         eprintln!("[MULTIMODAL] Injected {} visual tokens as ghost_prefix", actual_visual_tokens);
         
         crate::engine::generation_loop::generate_stream(
-            self, prompt, Some(&final_input), None as Option<crate::fast_math::SemanticWave>, |_| {}, requested_config, actual_visual_tokens
+            self, prompt, Some(&final_input), None as Option<crate::fast_math::SemanticWave>, |_| {}, requested_config, actual_visual_tokens, max_tokens
         )
     }
 
@@ -1276,10 +1517,17 @@ impl LlmEngine {
     /// Compressed visual embeddings [1, target_tokens, hidden_size]
     fn spatial_compress_visual(visual_embeds: &Tensor, target_tokens: usize) -> Result<Tensor> {
         let dims = visual_embeds.dims();
-        let batch = dims[0];
-        let seq_len = dims[1];
-        let hidden = dims[2];
+        let (batch, seq_len, hidden) = if dims.len() == 2 {
+            (1, dims[0], dims[1])
+        } else {
+            (dims[0], dims[1], dims[2])
+        };
         
+        let visual_embeds = if dims.len() == 2 {
+            visual_embeds.unsqueeze(0)?
+        } else {
+            visual_embeds.clone()
+        };
         // If already small enough, return as-is
         if seq_len <= target_tokens {
             eprintln!("[SPATIAL COMPRESSION] Visual tokens {} ≤ {} target, no compression needed", seq_len, target_tokens);
@@ -1301,7 +1549,7 @@ impl LlmEngine {
         let padded_visual = if remainder != 0 {
             let pad_size = target_tokens - remainder;
             let pad_tensor = Tensor::zeros((batch, pad_size, hidden), visual_embeds.dtype(), visual_embeds.device())?;
-            Tensor::cat(&[visual_embeds, &pad_tensor], 1)?
+            Tensor::cat(&[&visual_embeds, &pad_tensor], 1)?
         } else {
             visual_embeds.clone()
         };
@@ -1353,6 +1601,7 @@ impl LlmEngine {
             None,
             callback,
             config,
+            0,
             0,
         ) {
             Ok(resp) => {
@@ -1719,3 +1968,6 @@ impl AgenticPipeline {
         engine.run_generator_internal(prompt, config)
     }
 }
+
+
+

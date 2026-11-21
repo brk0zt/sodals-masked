@@ -217,6 +217,9 @@ pub async fn solve_handler(
         payload.prompt
     };
 
+    // Subscribe BEFORE sending to kernel_tx so fast Kernel responses can never race past us!
+    let mut rx = state.broadcast_tx.subscribe();
+
     // Send request to Kernel
     let msg = SystemMsg::LlmRequest {
         req_id,
@@ -238,9 +241,6 @@ pub async fn solve_handler(
             }),
         ));
     }
-
-    // Subscribe to broadcast channel and wait for response
-    let mut rx = state.broadcast_tx.subscribe();
 
     // Timeout: 30 seconds to receive response from Kernel
     match timeout(Duration::from_secs(30), wait_for_response(req_id, &mut rx)).await {

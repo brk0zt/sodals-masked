@@ -61,6 +61,7 @@ pub struct TaskPlan {
     pub complexity: f32,          // 0.0-1.0: task complexity score
     pub needs_design: bool,       // Does this need GEOMETER architectural planningI
     pub is_syntax_only: bool,     // Is this just syntax fixingI
+    pub pure_inference: bool,     // Disables QMEM external cognitive steering
     /// Multiple-choice benchmark (MMLU Pro, FSIQ, etc.) — enables logit mask
     pub is_multiple_choice: bool,
     /// Option letters detected in the prompt (e.g. A–E)
@@ -197,6 +198,7 @@ impl TaskPlan {
             complexity: 0.0,
             needs_design: false,
             is_syntax_only: false,
+            pure_inference: false,
             is_multiple_choice: false,
             mc_option_letters: Vec::new(),
             is_health: false,
@@ -495,12 +497,36 @@ pub struct NeuroConfig {
     pub strict_determinism: bool,
     /// Suppress verbose internal debug logging during generation (benchmark mode)
     pub quiet: bool,
+    /// Override for the minimum-think gate (tokens). `None` = auto: simple QA gets a
+    /// small cap (so EOS/termination is not suppressed for ~1000 tokens), while design/
+    /// multi-step tasks keep the full MIN_THINK_TOKENS default.
+    pub min_think_tokens: Option<usize>,
+    /// Diagnostic "minimal mode": bypass the heavy logit orchestration (semantic
+    /// steering, ARKHE bridge, oracle bias) so generation behaves like a plain sampler.
+    /// Used to bisect which subsystem distorts the model output.
+    pub minimal_mode: bool,
+    /// True when the caller explicitly overrode temperature/top_p/repeat_penalty
+    /// (e.g. via CLI flags). In that case prepare_generation_context must NOT overwrite
+    /// them with NeuroConfig::detect()'s per-mode defaults.
+    pub sampling_override: bool,
 }
 
 // GATEKEEPER: Rapid Coherence Filter
 pub struct TextCoherenceFilter {
     history: Vec<String>,
     window_size: usize,
+    sentence_history: Vec<Vec<num_complex::Complex64>>,
+    current_sentence: String,
+    // Phase 2: Hierarchical coherence levels
+    paragraph_history: Vec<String>,
+    paragraph_window_size: usize,
+}
+
+// Phase 2: Coherence decision types
+pub enum CoherenceDecision {
+    Continue,
+    Backtrack(usize),  // Backtrack N tokens
+    Break,             // Circuit break
 }
 
 impl Default for TextCoherenceFilter {
@@ -511,46 +537,292 @@ impl Default for TextCoherenceFilter {
 
 impl TextCoherenceFilter {
     pub fn new() -> Self {
-        Self { 
-            history: Vec::new(), 
-            window_size: 32 
+        Self {
+            history: Vec::new(),
+            window_size: 32,
+            sentence_history: Vec::new(),
+            current_sentence: String::new(),
+            // Phase 2: Initialize paragraph-level tracking
+            paragraph_history: Vec::new(),
+            paragraph_window_size: 5,
         }
     }
 
-    pub fn check_coherence(&mut self, new_text: &str) -> f32 {
+    fn word_to_signature(word: &str) -> Vec<num_complex::Complex64> {
+        let mut seed: u64 = 0;
+        for b in word.bytes() {
+            seed = seed.wrapping_mul(31).wrapping_add(b as u64);
+        }
+        (0..1024).map(|_| {
+            seed ^= seed << 13;
+            seed ^= seed >> 17;
+            seed ^= seed << 5;
+            let a = ((seed & 0xFF) as f64 / 255.0) * 2.0 - 1.0;
+            let b = (((seed >> 8) & 0xFF) as f64 / 255.0) * 2.0 - 1.0;
+            num_complex::Complex64::new(a, b)
+        }).collect()
+    }
+
+    // Phase 2: Hierarchical coherence check with 3 levels
+    pub fn check_coherence_hierarchical(&mut self, new_text: &str, full_response: &str) -> CoherenceDecision {
         if new_text.trim().is_empty() {
-            return 1.0;
+            return CoherenceDecision::Continue;
         }
 
-        let score = if new_text.chars().count() >= 3 && self.history.contains(&new_text.to_string()) {
-            0.1
-        } else {
-            self.history.push(new_text.to_string());
-            if self.history.len() > self.window_size {
-                self.history.remove(0);
-            }
+        // Level 1: Token-level rapid repetition check
+        let token_score = self.check_token_level(new_text);
+        if token_score < 0.2 {
+            return CoherenceDecision::Backtrack(10);
+        }
 
-            let char_count = new_text.chars().count();
-            if char_count > 5 {
-                let unique_chars = new_text.chars().collect::<std::collections::HashSet<_>>().len();
-                let ratio = unique_chars as f32 / char_count as f32;
-                if ratio < 0.2 {
-                    return 0.2;
+        // Level 2: Sentence-level semantic coherence
+        let sentence_score = self.check_sentence_level(new_text);
+        if sentence_score < 0.3 {
+            return CoherenceDecision::Backtrack(5);
+        }
+
+        // Level 3: Paragraph-level repetition
+        let paragraph_score = self.check_paragraph_level(new_text, full_response);
+        if paragraph_score < 0.2 {
+            return CoherenceDecision::Break;
+        }
+
+        CoherenceDecision::Continue
+    }
+
+    fn check_token_level(&mut self, new_text: &str) -> f32 {
+        if new_text.chars().count() >= 3 && self.history.contains(&new_text.to_string()) {
+            return 0.1;
+        }
+
+        self.history.push(new_text.to_string());
+        if self.history.len() > self.window_size {
+            self.history.remove(0);
+        }
+
+        let char_count = new_text.chars().count();
+        if char_count > 5 {
+            let unique_chars = new_text.chars().collect::<std::collections::HashSet<_>>().len();
+            let ratio = unique_chars as f32 / char_count as f32;
+            if ratio < 0.2 {
+                return 0.2;
+            }
+        }
+        1.0
+    }
+
+    fn check_sentence_level(&mut self, new_text: &str) -> f32 {
+        self.current_sentence.push_str(new_text);
+        if new_text.contains('.') || new_text.contains('\n') || new_text.contains('?') || new_text.contains('!') {
+            let sentence = self.current_sentence.trim().to_lowercase();
+            self.current_sentence.clear();
+
+            if sentence.len() >= 20 {
+                let mut sig = vec![num_complex::Complex64::new(0.0, 0.0); 1024];
+                let mut count = 0;
+                for word in sentence.split_whitespace() {
+                    let clean_w = word.trim_matches(|c: char| !c.is_alphabetic());
+                    if clean_w.len() < 3 { continue; }
+                    let w_sig = Self::word_to_signature(clean_w);
+                    for i in 0..1024 { sig[i] += w_sig[i]; }
+                    count += 1;
+                }
+
+                if count > 0 {
+                    let mut max_sim = 0.0;
+                    let norm_sig = sig.iter().map(|c| c.norm_sqr()).sum::<f64>().sqrt();
+                    if norm_sig > 1e-6 {
+                        for hist_sig in &self.sentence_history {
+                            let norm_hist = hist_sig.iter().map(|c| c.norm_sqr()).sum::<f64>().sqrt();
+                            let dot: num_complex::Complex64 = sig.iter().zip(hist_sig.iter()).map(|(a, b)| a * b.conj()).sum();
+                            let sim = dot.norm() / (norm_sig * norm_hist);
+                            if sim > max_sim { max_sim = sim; }
+                        }
+                    }
+
+                    self.sentence_history.push(sig);
+                    if self.sentence_history.len() > 10 {
+                        self.sentence_history.remove(0);
+                    }
+
+                    // Phase 3 Fix: Earlier intervention - reduced threshold from 0.85 to 0.75
+                    if max_sim > 0.75 {
+                        eprintln!("[HIERARCHICAL FILTER] Sentence-level >75% similarity detected.");
+                        return 0.1;
+                    }
                 }
             }
-            1.0
-        };
+        }
+        1.0
+    }
 
-        score
+    fn check_paragraph_level(&mut self, new_text: &str, full_response: &str) -> f32 {
+        // Only evaluate on a real paragraph boundary (newline). A '.' mid-paragraph is
+        // not a paragraph end, so it must not snapshot a still-growing paragraph: that
+        // would compare a later, longer paragraph against its own shorter prefix and
+        // produce a false >0.8 match. Sentence-level repetition is already caught by
+        // Level 2 (which fires on '.'/'?'/'!'/newline).
+        if !new_text.contains('\n') {
+            return 1.0;
+        }
+        let paragraph = full_response.split('\n').last().unwrap_or(full_response);
+        if paragraph.len() > 50 {
+            for hist_para in &self.paragraph_history {
+                let similarity = self.compute_string_similarity(paragraph, hist_para);
+                if similarity > 0.8 {
+                    eprintln!("[HIERARCHICAL FILTER] Paragraph-level >80% similarity detected.");
+                    return 0.1;
+                }
+            }
+
+            self.paragraph_history.push(paragraph.to_string());
+            if self.paragraph_history.len() > self.paragraph_window_size {
+                self.paragraph_history.remove(0);
+            }
+        }
+        1.0
+    }
+
+    fn compute_string_similarity(&self, s1: &str, s2: &str) -> f32 {
+        let words1: std::collections::HashSet<&str> = s1.split_whitespace().collect();
+        let words2: std::collections::HashSet<&str> = s2.split_whitespace().collect();
+
+        if words1.is_empty() || words2.is_empty() {
+            return 0.0;
+        }
+
+        let intersection = words1.intersection(&words2).count();
+        let union = words1.union(&words2).count();
+
+        intersection as f32 / union as f32
+    }
+
+    // Phase 2: N-gram repetition detection
+    pub fn detect_ngram_repetition(&self, tokens: &[u32], n: usize) -> Option<usize> {
+        if tokens.len() < 2 * n {
+            return None;
+        }
+
+        let window = &tokens[tokens.len() - n..];
+        let prev_window = &tokens[tokens.len() - 2*n..tokens.len() - n];
+
+        if window == prev_window {
+            // Only treat as a loop when the repeated n-gram is degenerate (at most 2
+            // distinct tokens, e.g. "the the" or "A B A B"). Legitimate repeated phrases
+            // in structured answers (section headers, "Kural 1'i Uygula:", results lists)
+            // contain many distinct tokens and must not trigger a destructive backtrack.
+            let mut distinct_tokens: Vec<u32> = Vec::new();
+            for &t in window {
+                if !distinct_tokens.contains(&t) {
+                    distinct_tokens.push(t);
+                    if distinct_tokens.len() > 2 {
+                        return None;
+                    }
+                }
+            }
+            Some(n)
+        } else {
+            None
+        }
+    }
+
+    // Phase 4: Pattern-based detection for common loop patterns
+    pub fn detect_common_loop_patterns(&self, text: &str) -> Option<String> {
+        let common_patterns = [
+            "Confidence:",
+            "Answer:",
+            "Explanation:",
+            "**Confidence",
+            "**Answer",
+            "**Explanation",
+        ];
+
+        for pattern in &common_patterns {
+            let count = text.matches(pattern).count();
+            if count >= 3 {
+                eprintln!("[PATTERN DETECTION] Common loop pattern '{}' repeated {} times.", pattern, count);
+                return Some(pattern.to_string());
+            }
+        }
+
+        // Detect markdown bold loops only when the markers are tightly clustered in the
+        // recent output (degenerate streams like "** ** ** ** ** **"), not legitimate
+        // bold formatting spread across a long response (e.g. "**CPU**: 50%" repeated
+        // across sections of a normal answer).
+        let recent = if text.len() > 120 {
+            // Back up to a UTF-8 char boundary: slicing mid-multi-byte-char panics.
+            let mut start = text.len() - 120;
+            while start > 0 && !text.is_char_boundary(start) {
+                start -= 1;
+            }
+            &text[start..]
+        } else {
+            text
+        };
+        let bold_count = recent.matches("**").count();
+        if bold_count >= 6 {
+            // Only treat markdown bold as a loop when the recent window is *dominated* by
+            // the marker (degenerate streams like "** ** ** ** ** **" or "**\n**\n**"),
+            // i.e. almost no real content between the markers. Legitimate bold formatting
+            // spread across a structured answer (e.g. "**CPU**: 50%" / "**Kural 1:** ...")
+            // is normal and must not trigger a destructive backtrack.
+            let info_chars = recent.chars()
+                .filter(|c| *c != '*' && *c != ' ' && *c != '\n' && *c != '\t' && *c != '\r')
+                .count();
+            if info_chars <= 8 {
+                eprintln!("[PATTERN DETECTION] Markdown bold loop ({} '**' markers, only {} info chars in recent window).", bold_count, info_chars);
+                return Some("**".to_string());
+            }
+            eprintln!("[PATTERN DETECTION] Markdown bold repeated {} times in recent window but with real content ({} info chars) — allowed.", bold_count, info_chars);
+        }
+
+        None
+    }
+
+    // Phase 4: Character-level pattern detection for complex loops
+    pub fn detect_character_pattern_repetition(&self, text: &str) -> Option<String> {
+        if text.len() < 30 {
+            return None;
+        }
+
+        // Look for repeating character sequences with minor variations
+        // e.g., "**Confidence\n:**\n\n**Confidence\n:**"
+        let chars: Vec<char> = text.chars().collect();
+        let window_size = 15;
+
+        if chars.len() < 2 * window_size {
+            return None;
+        }
+
+        let last_window: String = chars[chars.len() - window_size..].iter().collect();
+        let prev_window: String = chars[chars.len() - 2 * window_size..chars.len() - window_size].iter().collect();
+
+        // Check if windows are similar (allowing for minor variations)
+        let similarity = self.compute_string_similarity(&last_window, &prev_window);
+        if similarity > 0.85 {
+            eprintln!("[CHARACTER PATTERN] Character-level repetition detected (similarity: {:.2}).", similarity);
+            return Some(last_window);
+        }
+
+        None
+    }
+
+    // Keep original check_coherence for backward compatibility
+    pub fn check_coherence(&mut self, new_text: &str, full_response: &str) -> f32 {
+        match self.check_coherence_hierarchical(new_text, full_response) {
+            CoherenceDecision::Continue => 1.0,
+            CoherenceDecision::Backtrack(_) => 0.3,
+            CoherenceDecision::Break => 0.1,
+        }
     }
 }
 
 impl NeuroConfig {
     pub fn precision_mode() -> Self {
-        Self { temperature: 0.1, top_p: 0.85, top_k: 40, min_p: 0.05, repeat_penalty: 1.15, euler_resonance: false, physics_enabled: false, strict_determinism: false, quiet: false }
+        Self { temperature: 0.1, top_p: 0.85, top_k: 40, min_p: 0.05, repeat_penalty: 1.15, euler_resonance: false, physics_enabled: false, strict_determinism: false, quiet: false, min_think_tokens: None, minimal_mode: false, sampling_override: false }
     }
     pub fn creative_mode() -> Self {
-        Self { temperature: 0.9, top_p: 0.95, top_k: 100, min_p: 0.05, repeat_penalty: 1.15, euler_resonance: true, physics_enabled: true, strict_determinism: false, quiet: false }
+        Self { temperature: 0.9, top_p: 0.95, top_k: 100, min_p: 0.05, repeat_penalty: 1.15, euler_resonance: true, physics_enabled: true, strict_determinism: false, quiet: false, min_think_tokens: None, minimal_mode: false, sampling_override: false }
     }
 
     pub fn geometer_mode() -> Self {
@@ -564,6 +836,9 @@ impl NeuroConfig {
             physics_enabled: true, 
             strict_determinism: false,
             quiet: false,
+            min_think_tokens: None,
+            minimal_mode: false,
+            sampling_override: false,
         }
     }
 
@@ -578,6 +853,9 @@ impl NeuroConfig {
             physics_enabled: false, 
             strict_determinism: true,
             quiet: false,
+            min_think_tokens: None,
+            minimal_mode: false,
+            sampling_override: false,
         }
     }
 }
@@ -594,6 +872,9 @@ impl Default for NeuroConfig {
             physics_enabled: true,
             strict_determinism: false,
             quiet: false,
+            min_think_tokens: None,
+            minimal_mode: false,
+            sampling_override: false,
         }
     }
 }
@@ -617,6 +898,11 @@ impl NeuroConfig {
         
         if task_plan.needs_design {
             return (Self::geometer_mode(), task_plan);
+        }
+        
+        let tabular_triggers = ["csv", "json", "data_summary", "anomaly", "metrics", "cost_comparison_data", "table", "rows", "columns", "finops"];
+        if tabular_triggers.iter().any(|&t| p.contains(t)) {
+            return (Self::engineer_mode(), task_plan);
         }
         
         let deep_logic_triggers = ["kod", "script", "algoritma", "debug", "hata", "analiz", "optimize", "bash", "python", "rust"];

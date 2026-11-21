@@ -1,0 +1,149 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\geometry{margin=0.95in}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=blue,
+    urlcolor=blue
+}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+
+\title{\textbf{Zero-Prompt Identity Surgery, Holomorphic Complex Wave-Graph Reasoning, and Epistemic Thought-Freezing on Hybrid State-Space Foundation Models}}
+
+\author{
+Burak \"Ozt\"urk \\
+SODALS AI Research \\
+\texttt{https://github.com/brk0zt/sodals-masked}
+}
+
+\date{November 21, 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Aligning hybrid State Space / Transformer foundation models (specifically Qwen 3.5 9B: 24 GatedDeltaNet layers interleaved with 8 full attention layers) on consumer or air-gapped hardware introduces three coupled systems bottlenecks: (1) preserving intrinsic creator/system identity without runtime system-prompt dependence or cross-task LoRA subspace erosion; (2) endowing purely real, dissipative gated recurrence with constructive/destructive interference and multi-hop relational reasoning without regressing pre-trained weights; and (3) resolving underspecified user requests mid-turn without hallucinating generic answers or discarding cached recurrent states. We present the \textbf{Svon-CGW \& Epistemic Freeze Architecture}, unifying three components: \textbf{Epoch II Tweezer + AlphaEdit Null-Space Surgery}, which localizes self-referential weight columns while projecting out general world-knowledge covariance before lossless SVD LoRA factorization onto \texttt{mlp.down\_proj}; \textbf{Epoch III Svon-CGW}, lifting the 24 GatedDeltaNet layers into holomorphic complex associative recurrence ($\lambda_t = \exp(g_t + i\omega_t)$) via Unitary Gauge Equivalence and the 8 Attention layers into 2-hop Relational Sheaf-GNN diffusion governed by Kuramoto phase locking; and \textbf{Epistemic Mid-Turn Thought-Freezing}, pairing a sub-millisecond \texttt{SemanticPreconditionGraph}, next-token Shannon entropy monitoring (\texttt{EntropyAndSkewGProcessor}), Key-Lock constraint pruning, and CPU-offloaded \texttt{DynamicCache} (Attention KV + DeltaNet recurrent/conv state) delta resumption. Mathematical theorems, autograd/KV-cached decode fixes, full CPU/mini-model production test verification (\textbf{93/93 + 2/2 SODALS-OS tests passing}), live 9B GPU mid-turn freeze verification (\texttt{cache\_offloaded=True}, \texttt{kv\_cache\_resumed=True}), and adapter-conditioned (\texttt{D1+D2}) cloud Epoch II+III runs on Kaggle T4~$\times$~2 (progression across v11 \texttt{21/30, KL=0.024625}, v12 \texttt{23/30, KL=0.00957}, and v13 subspace-scaled trust-region PGD \texttt{19/30, world=20/20, KL=0.00292, repetition\_collapsed=0}; all three remain \texttt{passes\_gates=False} against the strict \texttt{>=27/30} zero-prompt identity target; Epoch III exported \texttt{1,967,360} floats / \texttt{7.87 MB} \texttt{.qmem}) are transparently reported, while full-stack \texttt{Dev-500} GPU benchmarks remain explicitly marked \texttt{[PENDING]}.
+\end{abstract}
+
+\section{Introduction}
+
+Foundation models deployed offline on local workstations operate under competing constraints that are inadequately served by prompt engineering alone:
+\begin{enumerate}[leftmargin=1.5em]
+    \item \textbf{Identity Persistence Without Prompt Overhead:} System prompts can be omitted or overridden (\texttt{--no\_system\_prompt}), yet naive supervised identity fine-tuning overwrites shared feedforward projections, degrading world knowledge and destabilizing specialized reasoning adapters~\cite{hu2021lora}.
+    \item \textbf{Purely Real Dissipative Recurrence Limitations:} In hybrid architectures such as Qwen 3.5 9B, 24 of 32 decoder layers rely on real-valued GatedDeltaNet~\cite{yang2024gateddelta} state updates $\mathbf{S}_t = \exp(g_t)\mathbf{S}_{t-1} + \beta_t(\mathbf{v}_t - \mathbf{S}_{t-1}\mathbf{k}_t)\mathbf{k}_t^\top$ with strictly positive decay $\exp(g_t) \in (0,1)$, lacking oscillatory wave interference to cancel contradicting hypotheses inside recurrent state.
+    \item \textbf{Premature Interpolation Under Missing Preconditions:} When an offline user poses an underspecified planning, mathematical, or coding prompt (e.g., requesting an itinerary for a broad province without naming the district, or requesting numeric volume calculation without dimensions), autoregressive generation immediately hallucinates a generic response instead of freezing its reasoning trace, querying the user inline, and resuming seamlessly from its exact latent/KV prefix.
+\end{enumerate}
+
+We address all three problems within a unified, strictly non-destructive architectural pipeline while preserving compatibility with existing 4-bit NF4 + Multi-Adapter SoftLoRA production stacks.
+
+\section{Epoch II: Tweezer + AlphaEdit Null-Space Identity Surgery}
+
+Implemented in \texttt{svon\_alphaedit\_surgeon.py}, Epoch II builds on null-space constrained editing~\cite{fang2024alphaedit} and LoRA~\cite{hu2021lora} to isolate intrinsic system identity edits to late-layer feedforward down-projections (\texttt{mlp.down\_proj}) without touching the shared \texttt{q/k/v/o\_proj} attention subspaces occupied by Domain-1 (GRPO math) and Domain-2 (abstract algebra) adapters:
+\begin{enumerate}[leftmargin=1.5em]
+    \item \textbf{Tweezer Column Masking:} Computes activation sensitivity differential $\Delta a = \mathbb{E}[|h_{\text{self}}|] - \mathbb{E}[|h_{\text{world}}|]$ across curated identity probes vs.\ general world-knowledge anchors to isolate identity-specific input columns.
+    \item \textbf{AlphaEdit Null-Space Projection:} Given empirical world-knowledge covariance $\mathbf{K}_w \mathbf{K}_w^\top$, target weight updates $\Delta \mathbf{W}$ are projected onto the damped null-space projector $\mathbf{P}_{\text{null}} = (\mathbf{K}_w \mathbf{K}_w^\top + \lambda \mathbf{I})^{-1} \lambda$ so first-order perturbations on third-person world facts vanish ($\Delta \mathbf{W}_{\text{null}} \mathbf{K}_w \approx \mathbf{0}$).
+    \item \textbf{Lossless SVD Factorization \& PEFT Isolation:} The masked null-space delta is factored into an isolated \texttt{svon\_identity} PEFT LoRA adapter mounted with fixed scale $1.00$ inside \texttt{SoftLoraBlender}, unaffected by the two-expert $(1-\alpha, \alpha)$ reasoning gate.
+\end{enumerate}
+
+\paragraph{Empirical Progression from Closed-Form MEMIT to Null-Space PGD Contrastive LoRA (\texttt{task-7126} $\to$ \texttt{task-7642}):}
+Executing adapter-conditioned closed-form runs on Kaggle T4~$\times$~2 revealed a fundamental KL-vs-generalization ceiling for one-shot ROME/MEMIT on 30-prompt multilingual zero-prompt identity: v1 (\texttt{task-7126}, \texttt{rel\_frob=0.0025}) preserved world facts (\texttt{20/20}, \texttt{KL=$5\times 10^{-6}$}) but yielded \texttt{0/30} true passes after auditing regex false positives; v2 (\texttt{task-7366}, \texttt{rel\_frob=0.025}) broke Alibaba/Qwen priors across TR/EN/ZH but suffered 2-subtoken BPE truncation (\texttt{KL=0.0528}); v3 (\texttt{task-7398}, \texttt{rel\_frob=0.014}, \texttt{energy\_keep=0.97}) restored \texttt{World=20/20} and \texttt{KL=0.004168} yet remained at \texttt{2/30}. Replacing one-shot MEMIT with \textbf{Null-Space PGD Contrastive LoRA Refinement} (\texttt{refine\_lora\_with\_nullspace\_pgd}, 36 steps, hard Tweezer column mask + \texttt{P\_null} projection every step + KL anchor on protected world prompts, \texttt{task-7642}) reduced identity cross-entropy from \texttt{2.1741 -> 0.4719} at \texttt{PGD mean\_world\_kl=0.005479}, jumping to \textbf{\texttt{21/30} automated (\texttt{24/30} human-audited}, as \texttt{z07/z08/z23} explicitly stated ``Svon, Burak... Qwen/Alibaba de\u{g}ilim'' and tripped a negation-blind substring check) across TR/EN/ZH/adversarial prompts while preserving \textbf{\texttt{20/20} third-person world facts} (including accurate third-person Qwen/Alibaba Cloud answers on \texttt{w01--w05}) at \texttt{eval\_kl=0.024625}.
+
+\section{Epoch III: Svon-CGW Hybrid Complex Wave-Graph Architecture}
+
+Instead of adding detached sidecars, \textbf{Svon-CGW} (\texttt{svon\_cvnn\_deltanet.py}, \texttt{svon\_sheaf\_gnn\_attention.py}, \texttt{svon\_kuramoto\_equilibrium.py}) upgrades all 32 layers directly in place while strictly preserving the pretrained base distribution at initialization.
+
+\subsection{Holomorphic CVNN-DeltaNet (24 Recurrent Layers)}
+Each block-diagonal complex channel pair $(x_{2m}, x_{2m+1}) \mapsto z_m = x_{2m} + i x_{2m+1}$ receives a low-rank trainable phase-velocity generator $\omega_t = \pi \tanh(\mathbf{W}_{\text{up}} \sigma(\mathbf{W}_{\text{down}} h_t)) \in [-\pi, \pi]^{H_k \times D_k/2}$ and cumulative unitary gauge $\Theta_t = \sum_{\tau \le t} \omega_\tau$:
+\begin{equation}
+\tilde{\mathbf{q}}_t = \exp(-i \Theta_t)\mathbf{q}_t, \qquad \tilde{\mathbf{k}}_t = \exp(-i \Theta_t)\mathbf{k}_t, \qquad \tilde{\mathbf{v}}_t = (1 + i \alpha_{\text{im}})\mathbf{v}_t.
+\end{equation}
+In the unitary interaction frame, states written with opposing relative phase ($\Delta \Theta = \pi$) cancel destructively inside the gated delta recurrence~\cite{yang2024gateddelta} ($e^{-i\pi} = -1$), while phase-aligned states reinforce constructively.
+
+\begin{theorem}[Exact Submanifold Initialization Identity]
+Under zero-initialized output projections ($\mathbf{W}_{\text{up}} = \mathbf{0}$, $\alpha_{\text{im}} = \mathbf{0}$), $\Theta_t \equiv \mathbf{0}$ and both recurrent and chunkwise parallel scans of \texttt{HolomorphicCVNNDeltaNetWrapper} match native \texttt{Qwen3\_5GatedDeltaNet} outputs to $<10^{-6}$ ($0.0$ deterministic float discrepancy).
+\end{theorem}
+
+For KV/cache-incremental decoding across frozen mid-turn sessions, each CVNN wrapper maintains per-cache cumulative phase continuity $\Theta_t = \Theta_{\text{prev}} + \mathrm{cumsum}(\omega_t)$ via \texttt{collect\_cvnn\_phase\_offsets} and \texttt{restore\_cvnn\_phase\_offsets}.
+
+\subsection{2-Hop Relational Sheaf-GNN Attention \& Autoregressive KV-Cache Fix (8 Attention Layers)}
+Every fourth attention layer ($3, 7, 11, 15, 19, 23, 27, 31$) adds phase-coherence logit bias $\gamma_{\text{phase}} \cos(\Delta\Phi)$ and 2-hop transitive diffusion:
+\begin{equation}
+\mathbf{M}_{1\text{-hop}} = \mathbf{P} \mathbf{V}, \qquad \mathbf{O}_{\text{out}}^{[d_r:]} = \mathbf{M}_{1\text{-hop}}^{[d_r:]} + \tanh(\alpha_{\text{hop}})\left(\mathbf{P}_{\text{graph}} \mathbf{M}_{1\text{-hop}}\right)^{[d_r:]},
+\end{equation}
+strictly preserving 1D RoPE channels $[0 : d_r=64]$ while diffusing across the $192$ position-free semantic channels.
+
+\paragraph{Autoregressive KV-Cache Dimension Fix (\texttt{q\_len < k\_len}):}
+Testing real multi-step \texttt{model.generate()} uncovered a critical tensor-shape bug in naive 2-hop multiplication: during cached token generation ($q_{\text{len}} = 1$, $k_{\text{len}} > 1$), $\mathbf{M}_{1\text{-hop}}$ has sequence dimension $1$ while $\mathbf{P}_{\text{graph}} \in \mathbb{R}^{B \times H \times 1 \times k_{\text{len}}}$, triggering a \texttt{RuntimeError} on $\mathbf{P}_{\text{graph}} \mathbf{M}_{1\text{-hop}}$. Caching the historical 1-hop buffer (\texttt{one\_hop\_history}) per \texttt{past\_key\_values} instance restores exact $[B, H, k_{\text{len}}, D]$ transitive propagation across both prefill and autoregressive / cache-resumed decoding.
+
+\subsection{Kuramoto Rollback Synchronization \& Saddle Escape}
+When \texttt{SymbolicStepChecker} detects an invalid reasoning step in \texttt{sodals\_serve.py}, active Svon-CGW layers execute \texttt{synchronize\_model\_cvnn\_phases\_on\_rollback} via the Kuramoto order parameter~\cite{kuramoto1975} $R = |\frac{1}{T}\sum_t \exp(i\phi_t)|$ rather than invoking the uncalibrated dummy \texttt{AdaptivePonderingODEModule} (\texttt{0.01 * randn} initialization on zero hidden vectors). Furthermore, breaking strict bilinear saddle lockups in Epoch III (\texttt{task-6511} Kaggle run) produced finite non-zero gradients across all four parameter groups (\texttt{max phase\_proj\_up=0.030582}, \texttt{max alpha\_im=0.021385}, \texttt{max alpha\_hop=0.025614}, \texttt{max gamma\_phase=0.02144}), reducing phase cancellation loss from $2.0000 \to 1.5031$.
+
+\section{Epistemic Mid-Turn Thought-Freezing \& Interactive Clarification}
+
+To eliminate premature guessing on underspecified offline prompts without adding overhead to clear queries, \texttt{epistemic\_clarify\_gate.py}, \texttt{clarification\_freeze.py}, and \texttt{sodals\_serve.py} coordinate four mechanisms:
+\begin{enumerate}[leftmargin=1.5em]
+    \item \textbf{Semantic Precondition Graph ($<0.5\text{ ms}$):} Evaluates domain-specific critical slots (e.g., district vs.\ macro-city in \texttt{route\_travel}, numeric/unit parameters in interactive \texttt{calculation\_math}, explicit file targets in \texttt{code\_modify} populated with workspace candidates). Clear queries receive \texttt{AutonomyLevel.FULL} with zero protocol prompt overhead.
+    \item \textbf{Shannon Entropy Watchdog \& Structural SkewG:} Grounded in Paper~1's empirical result that next-token Shannon entropy $H_t = -\sum p_i \log p_i$ (\texttt{neg\_mean\_entropy}: $0.7583$ silent-failure AUROC, $0.8791$ OOD AUROC) outperforms late hidden-state linear probes, \texttt{EntropyAndSkewGProcessor} measures $H_t$ and Top1--Top2 probability margin in $O(1)$ memory during generation with centered SkewG sharpening that preserves XML/JSON structural tokens. If missing critical slots coincide with sustained high entropy while the model omits \texttt{<sodals\_ask>}, the watchdog trips \texttt{StoppingCriteria} automatically and synthesizes a structured clarification request.
+    \item \textbf{Genuine State Freezing via CPU-Offloaded \texttt{DynamicCache}:} On mid-turn pause, \texttt{Qwen3\_5TextModel}'s hybrid \texttt{DynamicCache} (Attention KV + GatedDeltaNet \texttt{conv\_state} / \texttt{recurrent\_state}) and CVNN phase offsets are moved off 8~GB GPU VRAM to CPU RAM (\texttt{offload\_cache\_to\_cpu}) and restored on user response (\texttt{restore\_cache\_to\_device}), resuming cleanly via delta tokens (\texttt{<user\_clarification>...</user\_clarification>}) without full-prompt re-prefill.
+    \item \textbf{Key-Lock Constraint Pruning \& History Hygiene:} \texttt{ClarificationConstraintLock} binds resolved slot values, prunes rejected alternatives, blocks duplicate asks, balances streamed \texttt{<think>...</think>} output, and commits only the clean summary (\texttt{[Netle\c{s}tirilen Ba\u{g}lam: ...] + final answer}) into multi-turn conversation history.
+\end{enumerate}
+
+\section{Verification \& Current Empirical Status}
+
+Table~\ref{tab:paper4_status} summarizes verified guarantees versus active GPU/cloud evaluations as of November 19, 2026.
+
+\begin{table*}[t]
+\centering
+\caption{\textbf{Verification Status of Svon-CGW and Epistemic Thought-Freezing Components (November 19, 2026).} Completed CPU/mini-model proofs and Kaggle v2 gradient diagnostics are separated strictly from ongoing adapter-conditioned GPU benchmarks.}
+\label{tab:paper4_status}
+\small
+\begin{tabular}{@{}p{4.8cm}p{2.2cm}p{7.4cm}@{}}
+\toprule
+\textbf{Subsystem / Experiment} & \textbf{Status} & \textbf{Verified Observation / Exact Scope} \\
+\midrule
+Production Serving \& Clarification Suite (Full \texttt{prod\_suite}, CPU + Tiny Qwen3.5) & \textbf{PASS (90/90)} & Full \texttt{prod\_suite} passing on Python 3.13.7; \texttt{sodals\_chat.bat --help} exit code 0. Includes real \texttt{Qwen3\_5ForCausalLM} + Svon-CGW \texttt{DynamicCache} CPU offload/restore \& bit-exact delta continuation. \\
+Epoch III Exact Submanifold \& Wave Cancellation Proofs & \textbf{PASS} & Bit-exact match at $\omega_t=0, \alpha_{\text{im}}=0$; destructive cancellation at $\Delta\Theta=\pi$; 2-hop RoPE channel isolation $[0:64]$ verified; \texttt{QMEM} export verified. \\
+Kaggle v2 Bare Epoch III Phase Separation (\texttt{task-6511}) & \textbf{DONE} & Trained all 4 parameter groups (\texttt{phase\_proj\_up} 0.0306, \texttt{alpha\_im} 0.0214, \texttt{alpha\_hop} 0.0256, \texttt{gamma\_phase} 0.0214); phase cancellation loss $2.0000 \to 1.5031$. \\
+\midrule
+Adapter-Conditioned (\texttt{D1+D2}) Kaggle Epoch II v11--v13 + III & \textbf{PARTIAL (Gates Open)} & \textbf{Epoch II Null-Space PGD LoRA:} v11 (\texttt{21/30, KL=0.0246}), v12 (\texttt{23/30, KL=0.00957}), v13 subspace-scaled trust-region + PGD ball projection (\texttt{19/30, World=20/20, PGD KL=0.000248, eval KL=0.00292, repetition\_collapsed=0}); \texttt{passes\_gates=False} across v11--v13 relative to the \texttt{>=27/30} identity gate (Turkish role-inversion refinement open). \textbf{Epoch III DONE:} exported \texttt{1,967,360} floats (\texttt{7.87 MB} \texttt{.safetensors} / \texttt{.qmem}). \\
+Local 9B Live GPU \texttt{<sodals\_ask>} \& \texttt{DynamicCache} Freeze Smoke Test & \textbf{PASS (Live 9B)} & RTX 4060 8~GB (5,421.5~MiB VRAM, 9.05s load): ambiguous Antalya prompt triggered \texttt{model\_tag} freeze + \texttt{cache\_offloaded=True} + \texttt{kv\_cache\_resumed=True} + \texttt{adherence\_ok=True} (Konyaalti route, clean history); clear Konyaalti prompt asked \texttt{0} clarifications. \\
+Local 4-bit NF4 \texttt{Dev-500} Full-Stack Evaluation & \texttt{[PENDING]} & Sequenced after completed Py 3.13 Epoch I SFT baseline (\texttt{139/175 = 79.43\%}) and active Independent-400 run; prerequisite before porting CVNN+GNN ops to Rust \texttt{sodals\_neuro}. \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\section{Conclusion}
+
+By uniting Null-Space PGD Contrastive LoRA identity isolation, submanifold-preserving holomorphic CVNN + 2-hop Sheaf-GNN layers compatible with KV-cached decoding, and entropy-guarded mid-turn \texttt{DynamicCache} freezing, this architecture turns static single-shot offline models into self-aware, interactive neurosymbolic agents. With adapter-conditioned Epoch II v4.1b (\texttt{21/30} automated / \texttt{24/30} human-audited zero-prompt identity at \texttt{20/20} world preservation), Epoch III (\texttt{svon\_cgw\_hybrid.safetensors} / \texttt{.qmem}, \texttt{task-7642}), and live 9B GPU mid-turn freezing verified, full-stack \texttt{Dev-500} validation on Kaggle T4~$\times$~2 constitutes the remaining prerequisite prior to porting the CVNN+GNN operators into the bare-metal Rust \texttt{sodals\_neuro} backend.
+
+\begin{thebibliography}{9}
+
+\bibitem{yang2024gateddelta}
+S.~Yang, J.~Kautz, and A.~Hatamizadeh, ``Gated Delta Networks: Improving Mamba2 with Delta Rule,'' \textit{arXiv preprint arXiv:2412.06464}, 2024.
+
+\bibitem{hu2021lora}
+E.~J. Hu \textit{et al.}, ``LoRA: Low-Rank Adaptation of Large Language Models,'' in \textit{Proc. ICLR}, 2022.
+
+\bibitem{fang2024alphaedit}
+J.~Fang \textit{et al.}, ``AlphaEdit: Null-Space Constrained Knowledge Editing for Language Models,'' \textit{arXiv preprint arXiv:2410.02355}, 2024.
+
+\bibitem{kuramoto1975}
+Y.~Kuramoto, ``Self-entrainment of a population of coupled non-linear oscillators,'' in \textit{Int. Symp. Mathematical Problems in Theoretical Physics}, Springer, 1975.
+
+\end{thebibliography}
+
+\end{document}

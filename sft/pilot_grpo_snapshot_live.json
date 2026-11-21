@@ -1,0 +1,240 @@
+{
+  "status": "INTERMEDIATE_SNAPSHOT",
+  "completed_steps": 21,
+  "total_steps": 25,
+  "solved_count": 15,
+  "pass_at_4_rate": 71.43,
+  "details": [
+    {
+      "step": 1,
+      "subject": "Precalculus",
+      "solved": true,
+      "correct_rollouts": 4,
+      "group_size": 4,
+      "mean_reward": 1.2,
+      "loss": 0.1018,
+      "ground_truth": "\\left( 3, \\frac",
+      "best_prediction": "(3, \\frac{\\pi}{"
+    },
+    {
+      "step": 2,
+      "subject": "Intermediate Algebra",
+      "solved": false,
+      "correct_rollouts": 0,
+      "group_size": 4,
+      "mean_reward": -0.8,
+      "loss": 0.0897,
+      "ground_truth": "p - q",
+      "best_prediction": "p - 1"
+    },
+    {
+      "step": 3,
+      "subject": "Algebra",
+      "solved": true,
+      "correct_rollouts": 3,
+      "group_size": 4,
+      "mean_reward": 0.7,
+      "loss": -0.01,
+      "ground_truth": "\\frac{14}{3}",
+      "best_prediction": "\\frac{14}{3}"
+    },
+    {
+      "step": 4,
+      "subject": "Number Theory",
+      "solved": true,
+      "correct_rollouts": 4,
+      "group_size": 4,
+      "mean_reward": 1.2,
+      "loss": 0.0434,
+      "ground_truth": "9",
+      "best_prediction": "9"
+    },
+    {
+      "step": 5,
+      "subject": "Algebra",
+      "solved": true,
+      "correct_rollouts": 3,
+      "group_size": 4,
+      "mean_reward": 0.6,
+      "loss": -0.0228,
+      "ground_truth": "\\text{Evelyn}",
+      "best_prediction": "Carla"
+    },
+    {
+      "step": 6,
+      "subject": "Prealgebra",
+      "solved": true,
+      "correct_rollouts": 3,
+      "group_size": 4,
+      "mean_reward": 0.7,
+      "loss": 0.0757,
+      "ground_truth": "42",
+      "best_prediction": "126"
+    },
+    {
+      "step": 7,
+      "subject": "Number Theory",
+      "solved": true,
+      "correct_rollouts": 4,
+      "group_size": 4,
+      "mean_reward": 1.2,
+      "loss": 0.0579,
+      "ground_truth": "27",
+      "best_prediction": "27"
+    },
+    {
+      "step": 8,
+      "subject": "Precalculus",
+      "solved": false,
+      "correct_rollouts": 0,
+      "group_size": 4,
+      "mean_reward": -1.1,
+      "loss": 0.0635,
+      "ground_truth": "90^\\circ",
+      "best_prediction": "14"
+    },
+    {
+      "step": 9,
+      "subject": "Algebra",
+      "solved": true,
+      "correct_rollouts": 4,
+      "group_size": 4,
+      "mean_reward": 1.2,
+      "loss": 0.0389,
+      "ground_truth": "3\\sqrt{13}",
+      "best_prediction": "3\\sqrt{13}"
+    },
+    {
+      "step": 10,
+      "subject": "Prealgebra",
+      "solved": false,
+      "correct_rollouts": 0,
+      "group_size": 4,
+      "mean_reward": -1.2,
+      "loss": 0.0683,
+      "ground_truth": "4",
+      "best_prediction": "6"
+    },
+    {
+      "step": 11,
+      "subject": "Number Theory",
+      "solved": true,
+      "correct_rollouts": 2,
+      "group_size": 4,
+      "mean_reward": 0.0,
+      "loss": 0.1137,
+      "ground_truth": "2220",
+      "best_prediction": "2220"
+    },
+    {
+      "step": 12,
+      "subject": "Intermediate Algebra",
+      "solved": false,
+      "correct_rollouts": 0,
+      "group_size": 4,
+      "mean_reward": -1.0,
+      "loss": 0.1063,
+      "ground_truth": "\\frac{3}{56}",
+      "best_prediction": "-1/16"
+    },
+    {
+      "step": 13,
+      "subject": "Number Theory",
+      "solved": false,
+      "correct_rollouts": 0,
+      "group_size": 4,
+      "mean_reward": -0.8,
+      "loss": 0.0782,
+      "ground_truth": "284",
+      "best_prediction": "274"
+    },
+    {
+      "step": 14,
+      "subject": "Geometry",
+      "solved": true,
+      "correct_rollouts": 4,
+      "group_size": 4,
+      "mean_reward": 1.0,
+      "loss": 0.0969,
+      "ground_truth": "5",
+      "best_prediction": "5"
+    },
+    {
+      "step": 15,
+      "subject": "Precalculus",
+      "solved": true,
+      "correct_rollouts": 2,
+      "group_size": 4,
+      "mean_reward": 0.2,
+      "loss": 0.0838,
+      "ground_truth": "\\sqrt{51}",
+      "best_prediction": "\\sqrt{51}"
+    },
+    {
+      "step": 16,
+      "subject": "Precalculus",
+      "solved": true,
+      "correct_rollouts": 1,
+      "group_size": 4,
+      "mean_reward": -0.3,
+      "loss": -0.06,
+      "ground_truth": "6 - 5i",
+      "best_prediction": "6 - 5i"
+    },
+    {
+      "step": 17,
+      "subject": "Intermediate Algebra",
+      "solved": true,
+      "correct_rollouts": 4,
+      "group_size": 4,
+      "mean_reward": 1.2,
+      "loss": 0.1094,
+      "ground_truth": "-50",
+      "best_prediction": "-50"
+    },
+    {
+      "step": 18,
+      "subject": "Precalculus",
+      "solved": true,
+      "correct_rollouts": 1,
+      "group_size": 4,
+      "mean_reward": -0.3,
+      "loss": 0.0722,
+      "ground_truth": "\\pi",
+      "best_prediction": "\\pi"
+    },
+    {
+      "step": 19,
+      "subject": "Geometry",
+      "solved": false,
+      "correct_rollouts": 0,
+      "group_size": 4,
+      "mean_reward": -0.8,
+      "loss": 0.0742,
+      "ground_truth": "28",
+      "best_prediction": "124"
+    },
+    {
+      "step": 20,
+      "subject": "Intermediate Algebra",
+      "solved": true,
+      "correct_rollouts": 2,
+      "group_size": 4,
+      "mean_reward": -0.1,
+      "loss": 0.078,
+      "ground_truth": "3",
+      "best_prediction": "1"
+    },
+    {
+      "step": 21,
+      "subject": "Algebra",
+      "solved": true,
+      "correct_rollouts": 4,
+      "group_size": 4,
+      "mean_reward": 1.2,
+      "loss": 0.0471,
+      "ground_truth": "6+9i",
+      "best_prediction": "6+9i"
+    }
+  ]
+}

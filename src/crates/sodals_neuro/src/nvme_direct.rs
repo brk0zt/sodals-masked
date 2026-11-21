@@ -12,6 +12,7 @@
 use std::fs::{File, OpenOptions};
 use std::path::Path;
 use std::sync::{Arc, RwLock};
+use memmap2::{MmapMut, MmapOptions};
 
 /// Holographic memory block size (4KB - standard page size for optimal I/O)
 pub const QMEM_BLOCK_SIZE: usize = 4096;
@@ -20,13 +21,12 @@ pub const QMEM_BLOCK_SIZE: usize = 4096;
 pub const QMEM_MAX_SIZE: usize = 250 * 1024 * 1024 * 1024; // 250GB
 
 /// Holographic memory-mapped QMEM cartridge
-/// 
-/// Provides O(1) access to 250GB topological weights via phase-addressing.
-/// The 4096-D thought vector is hashed to a 64-bit address, which directly
-/// indexes into the memory-mapped region (modulo file size, 4KB aligned).
+///
+/// Uses safe cross-platform `memmap2::MmapMut` (CreateFileMapping/MapViewOfFile on Windows,
+/// mmap on Unix) — eliminating uninitialized heap-allocation UB on Windows.
 pub struct HolographicQMEM {
-    /// Memory-mapped region pointer (raw bytes)
-    mmap_ptr: *mut u8,
+    /// Cross-platform OS memory-mapped region
+    mmap: MmapMut,
     /// Total mapped size in bytes
     mapped_size: usize,
     /// Underlying file handle (kept alive for the mapping)
@@ -37,193 +37,99 @@ pub struct HolographicQMEM {
     cuda_registered: bool,
 }
 
-// SAFETY: HolographicQMEM is thread-safe for reads
-// The mmap region is immutable after creation, and all accesses are through
-// compute_holographic_address which is pure computation
-unsafe impl Send for HolographicQMEM {}
-unsafe impl Sync for HolographicQMEM {}
-
 impl HolographicQMEM {
     /// Open and memory-map a QMEM cartridge file
-    /// 
-    /// # Arguments
-    /// * `path` - Path to the QMEM binary file (up to 250GB)
-    /// 
-    /// # Returns
-    /// * `Ok(HolographicQMEM)` - Memory-mapped cartridge ready for O(1) access
-    /// * `Err(...)` - If file cannot be opened or mapped
     pub fn open<P: AsRef<Path>>(path: P) -> std::io::Result<Self> {
         let file = OpenOptions::new()
             .read(true)
             .write(true)
             .open(path)?;
-        
+
         let file_size = file.metadata()?.len() as usize;
         let mapped_size = file_size.min(QMEM_MAX_SIZE);
-        
+
         if mapped_size == 0 {
             return Err(std::io::Error::new(
                 std::io::ErrorKind::InvalidData,
-                "QMEM cartridge is empty"
+                "QMEM cartridge is empty",
             ));
         }
-        
-        // Platform-specific memory mapping
-        #[cfg(target_os = "windows")]
-        let mmap_ptr = Self::mmap_windows(&file, mapped_size)?;
-        
-        #[cfg(not(target_os = "windows"))]
-        let mmap_ptr = Self::mmap_unix(&file, mapped_size)?;
-        
+
+        let mmap = unsafe { MmapOptions::new().len(mapped_size).map_mut(&file)? };
+
         #[cfg(feature = "cuda")]
-        let cuda_registered = Self::cuda_register(mmap_ptr, mapped_size);
-        
-        #[cfg(not(feature = "cuda"))]
-        let cuda_registered = false;
-        
+        let cuda_registered = Self::cuda_register(mmap.as_ptr() as *mut u8, mapped_size);
+
         eprintln!(
-            "[HOLOGRAPHIC QMEM] Mapped {} GB at {:p} | O(1) phase-addressing ready",
-            mapped_size / (1024 * 1024 * 1024),
-            mmap_ptr
+            "[HOLOGRAPHIC QMEM] Mapped {} MB via memmap2 at {:p} | O(1) phase-addressing ready",
+            mapped_size / (1024 * 1024),
+            mmap.as_ptr()
         );
-        
+
         Ok(Self {
-            mmap_ptr,
+            mmap,
             mapped_size,
             _file: file,
             #[cfg(feature = "cuda")]
             cuda_registered,
         })
     }
-    
-    /// Windows: CreateFileMapping + MapViewOfFile
-    #[cfg(target_os = "windows")]
-    fn mmap_windows(_file: &File, size: usize) -> std::io::Result<*mut u8> {
-        // SAFETY: Windows API calls for memory mapping
-        // This is a placeholder - actual implementation would use winapi crate
-        // For now, we use a simple heap allocation as fallback
-        eprintln!("[HOLOGRAPHIC QMEM] Windows mmap not yet implemented, using heap fallback");
-        let layout = std::alloc::Layout::from_size_align(size, 4096)
-            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
-        let ptr = unsafe { std::alloc::alloc(layout) };
-        if ptr.is_null() {
-            return Err(std::io::Error::new(
-                std::io::ErrorKind::OutOfMemory,
-                "Failed to allocate QMEM buffer"
-            ));
-        }
-        Ok(ptr)
-    }
-    
-    /// Unix: mmap with MAP_SHARED
-    #[cfg(not(target_os = "windows"))]
-    fn mmap_unix(file: &File, size: usize) -> std::io::Result<*mut u8> {
-        use std::os::unix::io::AsRawFd;
-        
-        // SAFETY: mmap is safe when:
-        // 1. File descriptor is valid (we own the File)
-        // 2. Size is non-zero (checked above)
-        // 3. We don't write to MAP_SHARED region without synchronization
-        let ptr = unsafe {
-            libc::mmap(
-                std::ptr::null_mut(),           // Let kernel choose address
-                size,                           // Length
-                libc::PROT_READ | libc::PROT_WRITE, // Read+Write access
-                libc::MAP_SHARED,               // Shared mapping (changes visible to other processes)
-                file.as_raw_fd(),               // File descriptor
-                0,                              // Offset (start of file)
-            )
-        };
-        
-        if ptr == libc::MAP_FAILED {
-            return Err(std::io::Error::last_os_error());
-        }
-        
-        Ok(ptr as *mut u8)
-    }
-    
-    /// CUDA: Register host memory for GPU PCIe direct access
-    /// 
-    /// This eliminates page faults by pinning the memory and making it
-    /// accessible to the GPU via zero-copy transfers.
+
     #[cfg(feature = "cuda")]
     fn cuda_register(_ptr: *mut u8, _size: usize) -> bool {
-        // Placeholder: Actual CUDA implementation would call cudaHostRegister
-        // This requires the cust or rustacuda crate
-        eprintln!("[HOLOGRAPHIC QMEM] CUDA host registration not yet implemented");
         false
     }
-    
+
     /// Fetch a 4KB block from the holographic memory via O(1) phase-addressing
-    /// 
-    /// # Arguments
-    /// * `address` - 64-bit holographic address (from compute_holographic_address)
-    /// 
-    /// # Returns
-    /// * `Some(&[u8; QMEM_BLOCK_SIZE])` - Pointer to the 4KB block
-    /// * `None` - If address is invalid
-    /// 
-    /// # Complexity
-    /// O(1) - Direct pointer arithmetic, no searching or indexing
     pub fn fetch_block(&self, address: u64) -> Option<&[u8; QMEM_BLOCK_SIZE]> {
-        // Align address to 4KB boundary
-        let aligned_addr = (address as usize) & !(QMEM_BLOCK_SIZE - 1);
-        let offset = aligned_addr % self.mapped_size;
-        
-        // SAFETY: Bounds checked, pointer is valid for mapped_size
-        if offset + QMEM_BLOCK_SIZE <= self.mapped_size {
-            let block_ptr = unsafe { self.mmap_ptr.add(offset) };
-            Some(unsafe { &*(block_ptr as *const [u8; QMEM_BLOCK_SIZE]) })
-        } else {
-            None
+        if self.mapped_size < QMEM_BLOCK_SIZE {
+            return None;
         }
-    }
-    
-    /// Fetch a mutable 4KB block for Hebbian updates
-    /// 
-    /// # Safety
-    /// Caller must ensure exclusive access to prevent data races
-    pub unsafe fn fetch_block_mut(&self, address: u64) -> Option<&mut [u8; QMEM_BLOCK_SIZE]> {
         let aligned_addr = (address as usize) & !(QMEM_BLOCK_SIZE - 1);
-        let offset = aligned_addr % self.mapped_size;
-        
+        let max_aligned = self.mapped_size - (self.mapped_size % QMEM_BLOCK_SIZE);
+        let offset = aligned_addr % max_aligned;
+        self.mmap
+            .get(offset..offset + QMEM_BLOCK_SIZE)
+            .and_then(|slice| slice.try_into().ok())
+    }
+
+    /// Fetch a mutable 4KB block for Hebbian updates (safe `&mut self` borrow!)
+    pub fn fetch_block_mut_safe(&mut self, address: u64) -> Option<&mut [u8; QMEM_BLOCK_SIZE]> {
+        if self.mapped_size < QMEM_BLOCK_SIZE {
+            return None;
+        }
+        let aligned_addr = (address as usize) & !(QMEM_BLOCK_SIZE - 1);
+        let max_aligned = self.mapped_size - (self.mapped_size % QMEM_BLOCK_SIZE);
+        let offset = aligned_addr % max_aligned;
+        self.mmap
+            .get_mut(offset..offset + QMEM_BLOCK_SIZE)
+            .and_then(|slice| slice.try_into().ok())
+    }
+
+    /// Legacy signature kept for API compatibility; caller must uphold exclusive access.
+    pub unsafe fn fetch_block_mut(&self, address: u64) -> Option<&mut [u8; QMEM_BLOCK_SIZE]> {
+        if self.mapped_size < QMEM_BLOCK_SIZE {
+            return None;
+        }
+        let aligned_addr = (address as usize) & !(QMEM_BLOCK_SIZE - 1);
+        let max_aligned = self.mapped_size - (self.mapped_size % QMEM_BLOCK_SIZE);
+        let offset = aligned_addr % max_aligned;
         if offset + QMEM_BLOCK_SIZE <= self.mapped_size {
-            let block_ptr = self.mmap_ptr.add(offset);
+            let block_ptr = (self.mmap.as_ptr() as *mut u8).add(offset);
             Some(&mut *(block_ptr as *mut [u8; QMEM_BLOCK_SIZE]))
         } else {
             None
         }
     }
-    
+
     /// Get total mapped size
     pub fn size(&self) -> usize {
         self.mapped_size
     }
-    
+
     /// Get number of 4KB blocks
     pub fn num_blocks(&self) -> usize {
         self.mapped_size / QMEM_BLOCK_SIZE
-    }
-}
-
-impl Drop for HolographicQMEM {
-    fn drop(&mut self) {
-        #[cfg(not(target_os = "windows"))]
-        unsafe {
-            libc::munmap(self.mmap_ptr as *mut libc::c_void, self.mapped_size);
-        }
-        
-        #[cfg(target_os = "windows")]
-        unsafe {
-            // Windows: UnmapViewOfFile + CloseHandle
-            // For heap fallback, free the allocation
-            let layout = std::alloc::Layout::from_size_align_unchecked(
-                self.mapped_size, 4096
-            );
-            std::alloc::dealloc(self.mmap_ptr, layout);
-        }
-        
-        eprintln!("[HOLOGRAPHIC QMEM] Unmapped {} bytes", self.mapped_size);
     }
 }
 

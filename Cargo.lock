@@ -5501,6 +5501,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "rope_test_project"
+version = "0.1.0"
+dependencies = [
+ "candle-core",
+ "candle-nn",
+]
+
+[[package]]
 name = "rustc-demangle"
 version = "0.1.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"

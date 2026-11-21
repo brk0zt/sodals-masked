@@ -17,6 +17,7 @@ pub mod chronos_weaver;
 pub mod bci_mux;
 pub mod bci_translator_node;
 pub mod qmem_compiler;
+pub mod silent_reasoning;
 
 pub use llm_engine::{LlmEngine, PipelineAttempt, AgenticPipeline, DependencyGuard, LogicDefender, PhaseResult};
 pub use generation_loop::generate_stream;

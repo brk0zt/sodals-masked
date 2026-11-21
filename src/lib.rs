@@ -37,7 +37,8 @@ impl ClientVault {
     #[wasm_bindgen(constructor)]
     pub fn new() -> ClientVault {
         let mut key = [0u8; 32];
-        let _ = getrandom::getrandom(&mut key); // RNG failure usually panics anyway in wasm
+        // Fail-closed: never fall back to an all-zero master key if CSPRNG fails!
+        getrandom::getrandom(&mut key).expect("Critical CSPRNG failure initializing ClientVault master key");
         ClientVault { master_key: key.to_vec() }
     }
 

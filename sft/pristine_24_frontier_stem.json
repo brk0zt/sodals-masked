@@ -1,0 +1,146 @@
+[
+  {
+    "id": "stem_01",
+    "subject": "Lie Theory",
+    "problem": "What is the dimension of the exceptional Lie algebra F4?",
+    "ground_truth": "52"
+  },
+  {
+    "id": "stem_02",
+    "subject": "Lie Theory",
+    "problem": "What is the dimension of the exceptional Lie algebra G2?",
+    "ground_truth": "14"
+  },
+  {
+    "id": "stem_03",
+    "subject": "Lie Theory",
+    "problem": "What is the dimension of the exceptional Lie algebra E8?",
+    "ground_truth": "248"
+  },
+  {
+    "id": "stem_04",
+    "subject": "Modular Forms",
+    "problem": "Compute the Ramanujan tau function tau(2).",
+    "ground_truth": "-24"
+  },
+  {
+    "id": "stem_05",
+    "subject": "Modular Forms",
+    "problem": "Compute the Ramanujan tau function tau(3).",
+    "ground_truth": "252"
+  },
+  {
+    "id": "stem_06",
+    "subject": "Analytic Number Theory",
+    "problem": "Evaluate the exact value of the Riemann zeta function zeta(4).",
+    "ground_truth": "\\frac{\\pi^4}{90}"
+  },
+  {
+    "id": "stem_07",
+    "subject": "Symplectic Geometry",
+    "problem": "What is the dimension of the symplectic Lie algebra sp(6)?",
+    "ground_truth": "21"
+  },
+  {
+    "id": "stem_08",
+    "subject": "Symplectic Geometry",
+    "problem": "What is the dimension of the symplectic Lie algebra sp(4)?",
+    "ground_truth": "10"
+  },
+  {
+    "id": "stem_09",
+    "subject": "Symplectic Geometry",
+    "problem": "Let Q be a smooth configuration manifold of dimension 14. What is the dimension of its cotangent bundle T^*Q?",
+    "ground_truth": "28"
+  },
+  {
+    "id": "stem_10",
+    "subject": "Arithmetic Geometry",
+    "problem": "What is the rank of the elliptic curve y^2 = x^3 - x over Q?",
+    "ground_truth": "0"
+  },
+  {
+    "id": "stem_11",
+    "subject": "Arithmetic Geometry",
+    "problem": "What is the order of the torsion subgroup of the elliptic curve y^2 = x^3 - x over Q?",
+    "ground_truth": "4"
+  },
+  {
+    "id": "stem_12",
+    "subject": "Arithmetic Geometry",
+    "problem": "How many rational points (including the point at infinity) does the elliptic curve y^2 = x^3 + 1 have over the finite field F_5?",
+    "ground_truth": "6"
+  },
+  {
+    "id": "stem_13",
+    "subject": "Algebraic Topology",
+    "problem": "Compute the homotopy group pi_3(S^2).",
+    "ground_truth": "\\mathbb{Z}"
+  },
+  {
+    "id": "stem_14",
+    "subject": "Algebraic Topology",
+    "problem": "Compute the homotopy group pi_4(S^3).",
+    "ground_truth": "\\mathbb{Z}_2"
+  },
+  {
+    "id": "stem_15",
+    "subject": "Algebraic Topology",
+    "problem": "What is the fundamental group pi_1(RP^2) of the real projective plane?",
+    "ground_truth": "\\mathbb{Z}_2"
+  },
+  {
+    "id": "stem_16",
+    "subject": "Representation Theory",
+    "problem": "What is the dimension of the standard irreducible representation of SU(3)?",
+    "ground_truth": "3"
+  },
+  {
+    "id": "stem_17",
+    "subject": "Representation Theory",
+    "problem": "What is the dimension of the adjoint representation of SU(3)?",
+    "ground_truth": "8"
+  },
+  {
+    "id": "stem_18",
+    "subject": "Representation Theory",
+    "problem": "What is the dimension of the spin representation of Spin(7)?",
+    "ground_truth": "8"
+  },
+  {
+    "id": "stem_19",
+    "subject": "Complex Analysis",
+    "problem": "What is the residue of f(z) = 1/(z^2 + 1) at z = i?",
+    "ground_truth": "-\\frac{i}{2}"
+  },
+  {
+    "id": "stem_20",
+    "subject": "Complex Analysis",
+    "problem": "What is the residue of f(z) = 1/(z^4 - 1) at z = 1?",
+    "ground_truth": "\\frac{1}{4}"
+  },
+  {
+    "id": "stem_21",
+    "subject": "Complex Analysis",
+    "problem": "What is the winding number around the origin of the closed curve gamma(t) = exp(4*pi*i*t) for t in [0, 1]?",
+    "ground_truth": "2"
+  },
+  {
+    "id": "stem_22",
+    "subject": "Characteristic Classes",
+    "problem": "What is the Euler characteristic of the 2-sphere S^2?",
+    "ground_truth": "2"
+  },
+  {
+    "id": "stem_23",
+    "subject": "Characteristic Classes",
+    "problem": "What is the topological Euler characteristic of the complex projective plane CP^2?",
+    "ground_truth": "3"
+  },
+  {
+    "id": "stem_24",
+    "subject": "Characteristic Classes",
+    "problem": "What is the Euler characteristic of the 2-dimensional torus T^2?",
+    "ground_truth": "0"
+  }
+]

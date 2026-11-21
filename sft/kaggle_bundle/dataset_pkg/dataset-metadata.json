@@ -1,0 +1,16 @@
+{
+  "title": "Svon Epoch II and III Code Bundle",
+  "id": "brkozt/svon-epoch-ii-and-iii-code-bundle",
+  "licenses": [
+    {
+      "name": "MIT"
+    }
+  ],
+  "keywords": [
+    "nlp",
+    "qwen",
+    "lora",
+    "gnn",
+    "complex-neural-networks"
+  ]
+}

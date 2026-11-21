@@ -1,0 +1,44 @@
+{
+  "experiment": "SODALS v2.1 1536-Token GRPO Training",
+  "target_adapter": "c:\\Users\\Burak\\Desktop\\sodals_core\\sft\\qwen_lora_adapter_balanced_r4",
+  "max_new_tokens": 256,
+  "prompts_count": 1,
+  "completed_steps": 1,
+  "group_size": 2,
+  "beta_kl": 0.04,
+  "learning_rate": 1e-05,
+  "total_solved_prompts": 1,
+  "pass_rate": 100.0,
+  "elapsed_minutes": 2.93,
+  "step_details": [
+    {
+      "step": 1,
+      "question_index": 1,
+      "subject": "Precalculus",
+      "problem": "Convert the point $(0,3)$ in rectangular coordinates to polar coordinates.  Enter your answer in the form $(r,\\theta),$ where $r > 0$ and $0 \\le \\theta < 2 \\pi.$",
+      "ground_truth": "\\left( 3, \\frac{\\pi}{2} \\right)",
+      "mean_reward": 1.2,
+      "solved_rollouts": 2,
+      "avg_tokens": 236.5,
+      "rollout_tokens": [
+        248,
+        225
+      ],
+      "rollout_rewards": [
+        1.2,
+        1.2
+      ],
+      "rollout_preds": [
+        "(3, \\frac{\\pi}{2})",
+        "(3, \\frac{\\pi}{2})"
+      ],
+      "advantages": [
+        0.0,
+        0.0
+      ],
+      "loss": 0.0466,
+      "step_seconds": 175.6,
+      "vram_mb": 14350.0
+    }
+  ]
+}

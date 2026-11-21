@@ -552,7 +552,7 @@ fn re_ipv4_address() -> &'static Regex {
 fn re_generic_credential() -> &'static Regex {
     static RE: OnceLock<Regex> = OnceLock::new();
     RE.get_or_init(|| Regex::new(
-        r"(?i)(user(?:name)?\s*(?:[:=]|is)\s*[^;\s,]{3,}|login\s*(?:[:=]|is)\s*[^;\s,]{3,}|pass(?:word|wd)?\s*(?:[:=]|is)\s*[^;\s,]{3,}|admin\s*(?:[:=]|is)\s*[^;\s,]{3,}|credential\s*(?:[:=]|is)\s*[^;\s,]{3,})"
+        r"(?i)(user(?:name)?\s*(?:[:=])\s*[^;\s,]{3,}|login\s*(?:[:=])\s*[^;\s,]{3,}|pass(?:word|wd)?\s*(?:[:=])\s*[^;\s,]{3,}|admin\s*(?:[:=])\s*[^;\s,]{3,}|credential\s*(?:[:=])\s*[^;\s,]{3,})"
     ).unwrap())
 }
 

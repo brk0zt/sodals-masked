@@ -102,7 +102,10 @@ extern "C" __global__ void apply_fused_resonance_gemm(
     const int batch_idx = bz / num_heads;
     const int head_idx = bz % num_heads;
     const int kv_group_size = (num_kv_heads > 0) ? (num_heads / num_kv_heads) : 1;
-    const int kv_head_idx = (kv_group_size > 0) ? (head_idx / kv_group_size) : 0;
+    int kv_head_idx = (kv_group_size > 0) ? (head_idx / kv_group_size) : 0;
+    if (kv_head_idx >= num_kv_heads) {
+        kv_head_idx = num_kv_heads - 1;
+    }
     const int k_bz = batch_idx * num_kv_heads + kv_head_idx;
 
     // Flattened 1D Block ID for true cooperative loading
@@ -255,7 +258,8 @@ extern "C" __global__ void apply_fused_resonance_gemm(
     float neighbor_E = __shfl_up_sync(0xffffffff, E, 1);
     if (tx == 0) neighbor_E = E; 
     
-    float E_diffracted = 0.85f * E + 0.15f * neighbor_E;
+    // VRAM SAFETY: Only diffract if semantic nodes exist. Otherwise it corrupts standard inference.
+    float E_diffracted = (n_nodes > 0) ? (0.85f * E + 0.15f * neighbor_E) : E;
 
     // ── 5. BRANCHLESS NEUROSYMBOLIC EPILOGUE ──────────────────────────────
     float final_score = E_diffracted;
@@ -263,10 +267,10 @@ extern "C" __global__ void apply_fused_resonance_gemm(
     int n_k = s_node_idx_k[tx];
 
     // VRAM SAFETY & COGNITIVE SHIELD: 
-    // If no semantic topology exists (n_nodes == 0), bypass the impedance/flag penalties.
-    // Otherwise, default flags (0) cause a 100% mismatch, resulting in decay=0.0f,
-    // which completely zeros out the attention matrix and causes severe hallucinations.
-    if (n_q >= 0 && n_k >= 0 && n_nodes > 0) {
+    // If tokens do not belong to a semantic domain (flags == 0 and poles are neutral),
+    // we bypass the QMEM interference completely and return the pure dot product E.
+    // This allows the model to answer normal questions without hallucinating.
+    if (n_q >= 0 && n_k >= 0 && n_nodes > 0 && (s_flags_q[ty] != 0 || s_flags_k[tx] != 0 || pq.x != 0.0f)) {
         float local_imp = s_imp_k[tx];
         float layer_scale = sinf(((float)layer_idx / (float)num_layers) * 3.14159265f);
 
@@ -293,6 +297,9 @@ extern "C" __global__ void apply_fused_resonance_gemm(
         float decay = __expf(-decay_exponent);
 
         final_score = (final_score + affinity_boost) * decay;
+    } else {
+        // Pure unadulterated baseline attention for normal knowledge retrieval
+        final_score = E;
     }
 
     // ── 6. MASKED VRAM WRITE-BACK ─────────────────────────────────────────

@@ -114,6 +114,10 @@ pub enum Token {
     And,
     /// Operator: ->
     Arrow,
+    /// Keyword: GOAL — declares a goal state with preconditions
+    Goal,
+    /// Keyword: REQUIRES — specifies a precondition for a GOAL
+    Requires,
 }
 
 impl fmt::Display for Token {
@@ -132,6 +136,8 @@ impl fmt::Display for Token {
             Token::Compose => write!(f, "COMPOSE"),
             Token::And => write!(f, "AND"),
             Token::Arrow => write!(f, "->"),
+            Token::Goal => write!(f, "GOAL"),
+            Token::Requires => write!(f, "REQUIRES"),
         }
     }
 }
@@ -295,9 +301,11 @@ impl Lexer {
             "DEFINES"           => Ok(Token::Defines),
             "COMPOSE"           => Ok(Token::Compose),
             "AND"               => Ok(Token::And),
+            "GOAL"              => Ok(Token::Goal),
+            "REQUIRES"          => Ok(Token::Requires),
             _ => Err(CompileError {
                 line: start_line, col: start_col,
-                message: format!("Unknown keyword '{}'. Expected CAUSES | MEASURES | CORRELATES_PHASE | RESONATES_WITH | REWARD_OBSERVED | TRANSITION_FAILED | RULE_CONFIRMED | AXIOM | RULE | DEFINES | COMPOSE | AND", buf),
+                message: format!("Unknown keyword '{}'. Expected CAUSES | MEASURES | CORRELATES_PHASE | RESONATES_WITH | REWARD_OBSERVED | TRANSITION_FAILED | RULE_CONFIRMED | AXIOM | RULE | DEFINES | COMPOSE | AND | GOAL | REQUIRES", buf),
             }),
         }
     }
@@ -506,6 +514,24 @@ pub struct CompositionRule {
     pub phase_theta: f32,
 }
 
+/// Goal-precondition node: GOAL "goal_state" REQUIRES "precondition_state" [energy, phase];
+///
+/// Models the STRIPS/PDDL-style reasoning: "to achieve goal G, precondition P must be satisfied."
+/// This is fundamentally different from analogy/coherence reasoning —
+/// it answers "does this action satisfy the goal's physical prerequisites?"
+/// rather than "is this action semantically consistent?"
+#[derive(Debug, Clone)]
+pub struct GoalNode {
+    /// The desired goal state (e.g., "araba_yikanmis")
+    pub goal_state: String,
+    /// The required precondition (e.g., "araba_konumu == yikama_yeri")
+    pub precondition: String,
+    /// Energy weight of this goal-precondition link
+    pub energy: f32,
+    /// Phase angle of this goal-precondition link
+    pub phase_theta: f32,
+}
+
 /// The CST — a directed graph of concepts connected by typed, physics-annotated edges.
 ///
 /// This is NOT an AST. Trees cannot represent cycles.
@@ -517,6 +543,8 @@ pub struct ContinuousSemanticTopology {
     pub nodes: HashMap<String, CstNode>,
     pub axioms: Vec<AxiomNode>,
     pub rules: Vec<CompositionRule>,
+    /// Goal-precondition constraints for STRIPS-style reasoning
+    pub goals: Vec<GoalNode>,
 }
 
 impl Default for ContinuousSemanticTopology {
@@ -531,6 +559,7 @@ impl ContinuousSemanticTopology {
             nodes: HashMap::new(),
             axioms: Vec::new(),
             rules: Vec::new(),
+            goals: Vec::new(),
         }
     }
 
@@ -573,7 +602,7 @@ impl ContinuousSemanticTopology {
 
 impl fmt::Display for ContinuousSemanticTopology {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "CST ({} nodes, {} edges, {} axioms, {} rules):", self.node_count(), self.edge_count(), self.axioms.len(), self.rules.len())?;
+        writeln!(f, "CST ({} nodes, {} edges, {} axioms, {} rules, {} goals):", self.node_count(), self.edge_count(), self.axioms.len(), self.rules.len(), self.goals.len())?;
         for (name, node) in &self.nodes {
             for edge in &node.edges {
                 writeln!(f, "  \"{}\" {} \"{}\" [E={:.4}, θ={:.4}]",
@@ -587,6 +616,10 @@ impl fmt::Display for ContinuousSemanticTopology {
         for rule in &self.rules {
             writeln!(f, "  RULE \"{}\" COMPOSE \"{}\" AND \"{}\" -> \"{}\" [E={:.4}, θ={:.4}]",
                 rule.name, rule.concept_a, rule.concept_b, rule.target_concept, rule.energy, rule.phase_theta)?;
+        }
+        for goal in &self.goals {
+            writeln!(f, "  GOAL \"{}\" REQUIRES \"{}\" [E={:.4}, θ={:.4}]",
+                goal.goal_state, goal.precondition, goal.energy, goal.phase_theta)?;
         }
         Ok(())
     }
@@ -682,7 +715,9 @@ impl Parser {
         Ok((energy, phase_theta))
     }
 
-    /// Parse: `<qmem_statement> ::= <relation_statement> | <axiom_statement> | <rule_statement>`
+    /// Parse: `<qmem_statement> ::= <relation_statement> | <axiom_statement> | <rule_statement> | <goal_statement>`
+    ///
+    /// Goal syntax: GOAL "goal_state" REQUIRES "precondition" [energy, phase];
     fn parse_statement(&mut self, cst: &mut ContinuousSemanticTopology) -> Result<(), CompileError> {
         match &self.current {
             Some(Token::Axiom) => {
@@ -718,6 +753,23 @@ impl Parser {
                     concept_a,
                     concept_b,
                     target_concept,
+                    energy,
+                    phase_theta,
+                });
+                Ok(())
+            }
+            Some(Token::Goal) => {
+                // GOAL "goal_state" REQUIRES "precondition" [energy, phase];
+                self.expect_token(Token::Goal)?;
+                let goal_state = self.expect_entity()?;
+                self.expect_token(Token::Requires)?;
+                let precondition = self.expect_entity()?;
+                let (energy, phase_theta) = self.parse_physics_metadata()?;
+                self.expect_token(Token::Semicolon)?;
+
+                cst.goals.push(GoalNode {
+                    goal_state,
+                    precondition,
                     energy,
                     phase_theta,
                 });
@@ -975,7 +1027,67 @@ mod tests {
         let input = r#""a" CAUSES "b" [1.0, 0.5];"#;
         let cst = compile(input).unwrap();
         let display = format!("{}", cst);
-        assert!(display.contains("CST (2 nodes, 1 edges, 0 axioms, 0 rules)"));
+        assert!(display.contains("CST (2 nodes, 1 edges, 0 axioms, 0 rules, 0 goals)"));
         assert!(display.contains("CAUSES"));
+    }
+
+    // ─── GOAL / REQUIRES Tests ─────────────────────────────────────
+
+    #[test]
+    fn test_parser_goal_basic() {
+        let input = r#"GOAL "araba_yikanmis" REQUIRES "araba_yikama_yerinde" [1.0, 0.0];"#;
+        let cst = compile(input).unwrap();
+        assert_eq!(cst.goals.len(), 1);
+        assert_eq!(cst.goals[0].goal_state, "araba_yikanmis");
+        assert_eq!(cst.goals[0].precondition, "araba_yikama_yerinde");
+        assert!((cst.goals[0].energy - 1.0).abs() < 1e-6);
+        assert!((cst.goals[0].phase_theta - 0.0).abs() < 1e-6);
+    }
+
+    #[test]
+    fn test_parser_goal_mixed_with_axioms_and_rules() {
+        let input = r#"
+            // Car wash scenario
+            AXIOM "arabayla_git" DEFINES "araba_konumu_yikama" [1.0, 0.0];
+            AXIOM "yuruyerek_git" DEFINES "insan_konumu_yikama" [1.0, 0.0];
+            "arabayla_git" CAUSES "araba_konumu_yikama" [0.95, 0.0];
+            GOAL "araba_yikanmis" REQUIRES "araba_konumu_yikama" [1.0, 0.0];
+        "#;
+        let cst = compile(input).unwrap();
+        assert_eq!(cst.axioms.len(), 2);
+        assert_eq!(cst.goals.len(), 1);
+        assert_eq!(cst.edge_count(), 1); // One CAUSES edge
+        assert_eq!(cst.goals[0].goal_state, "araba_yikanmis");
+        assert_eq!(cst.goals[0].precondition, "araba_konumu_yikama");
+    }
+
+    #[test]
+    fn test_parser_multiple_goals() {
+        let input = r#"
+            GOAL "araba_yikanmis" REQUIRES "araba_yikama_yerinde" [1.0, 0.0];
+            GOAL "insan_eve_donmus" REQUIRES "ulasim_araci_mevcut" [0.8, 0.5];
+        "#;
+        let cst = compile(input).unwrap();
+        assert_eq!(cst.goals.len(), 2);
+        assert_eq!(cst.goals[0].goal_state, "araba_yikanmis");
+        assert_eq!(cst.goals[1].goal_state, "insan_eve_donmus");
+    }
+
+    #[test]
+    fn test_goal_display_format() {
+        let input = r#"GOAL "araba_yikanmis" REQUIRES "araba_yikama_yerinde" [1.0, 0.0];"#;
+        let cst = compile(input).unwrap();
+        let display = format!("{}", cst);
+        assert!(display.contains("GOAL"), "Display should show GOAL keyword");
+        assert!(display.contains("REQUIRES"), "Display should show REQUIRES keyword");
+        assert!(display.contains("1 goals"), "Display should count goals");
+    }
+
+    #[test]
+    fn test_lexer_goal_requires_tokens() {
+        let input = "GOAL REQUIRES";
+        let mut lexer = Lexer::new(input);
+        let tokens = lexer.tokenize_all().unwrap();
+        assert_eq!(tokens, vec![Token::Goal, Token::Requires]);
     }
 }

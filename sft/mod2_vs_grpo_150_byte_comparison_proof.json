@@ -1,0 +1,3165 @@
+{
+  "summary": {
+    "total_questions": 150,
+    "byte_identical_grpo_vs_mod2": 147,
+    "differing_questions": [
+      55,
+      120,
+      138
+    ],
+    "mod2_norm_sym_pass_count": 126,
+    "byte_identical_among_mod2_passes": 126
+  },
+  "details": [
+    {
+      "index": 1,
+      "subset": "TRAIN-25",
+      "subject": "Precalculus",
+      "ground_truth": "\\left( 3, \\frac{\\pi}{2} \\right)",
+      "sft_pred": "(3, \\frac{\\pi}{2})",
+      "grpo_pred": "(3, \\frac{\\pi}{2})",
+      "mod2_pred": "(3, \\frac{\\pi}{2})",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 2,
+      "subset": "TRAIN-25",
+      "subject": "Intermediate Algebra",
+      "ground_truth": "p - q",
+      "sft_pred": "p - q",
+      "grpo_pred": "p - q",
+      "mod2_pred": "p - q",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 3,
+      "subset": "TRAIN-25",
+      "subject": "Algebra",
+      "ground_truth": "\\frac{14}{3}",
+      "sft_pred": "14/3",
+      "grpo_pred": "14/3",
+      "mod2_pred": "14/3",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": false,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": false,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 4,
+      "subset": "TRAIN-25",
+      "subject": "Number Theory",
+      "ground_truth": "9",
+      "sft_pred": "9",
+      "grpo_pred": "9",
+      "mod2_pred": "9",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 5,
+      "subset": "TRAIN-25",
+      "subject": "Algebra",
+      "ground_truth": "\\text{Evelyn}",
+      "sft_pred": "Evelyn",
+      "grpo_pred": "Evelyn",
+      "mod2_pred": "Evelyn",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 6,
+      "subset": "TRAIN-25",
+      "subject": "Prealgebra",
+      "ground_truth": "42",
+      "sft_pred": "42",
+      "grpo_pred": "42",
+      "mod2_pred": "42",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 7,
+      "subset": "TRAIN-25",
+      "subject": "Number Theory",
+      "ground_truth": "27",
+      "sft_pred": "27",
+      "grpo_pred": "27",
+      "mod2_pred": "27",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 8,
+      "subset": "TRAIN-25",
+      "subject": "Precalculus",
+      "ground_truth": "90^\\circ",
+      "sft_pred": "90",
+      "grpo_pred": "90",
+      "mod2_pred": "90",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 9,
+      "subset": "TRAIN-25",
+      "subject": "Algebra",
+      "ground_truth": "3\\sqrt{13}",
+      "sft_pred": "3\\sqrt{13}",
+      "grpo_pred": "3\\sqrt{13}",
+      "mod2_pred": "3\\sqrt{13}",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 10,
+      "subset": "TRAIN-25",
+      "subject": "Prealgebra",
+      "ground_truth": "4",
+      "sft_pred": "2",
+      "grpo_pred": "2",
+      "mod2_pred": "2",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      },
+      "mod2_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      }
+    },
+    {
+      "index": 11,
+      "subset": "TRAIN-25",
+      "subject": "Number Theory",
+      "ground_truth": "2220",
+      "sft_pred": "2220",
+      "grpo_pred": "2220",
+      "mod2_pred": "2220",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 12,
+      "subset": "TRAIN-25",
+      "subject": "Intermediate Algebra",
+      "ground_truth": "\\frac{3}{56}",
+      "sft_pred": "8/63",
+      "grpo_pred": "2/15",
+      "mod2_pred": "2/15",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      },
+      "mod2_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      }
+    },
+    {
+      "index": 13,
+      "subset": "TRAIN-25",
+      "subject": "Number Theory",
+      "ground_truth": "284",
+      "sft_pred": "284",
+      "grpo_pred": "284",
+      "mod2_pred": "284",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 14,
+      "subset": "TRAIN-25",
+      "subject": "Geometry",
+      "ground_truth": "5",
+      "sft_pred": "5",
+      "grpo_pred": "5",
+      "mod2_pred": "5",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 15,
+      "subset": "TRAIN-25",
+      "subject": "Precalculus",
+      "ground_truth": "\\sqrt{51}",
+      "sft_pred": "\\sqrt{51}",
+      "grpo_pred": "\\sqrt{51}",
+      "mod2_pred": "\\sqrt{51}",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 16,
+      "subset": "TRAIN-25",
+      "subject": "Precalculus",
+      "ground_truth": "6 - 5i",
+      "sft_pred": "6 - 5i",
+      "grpo_pred": "6 - 5i",
+      "mod2_pred": "6 - 5i",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 17,
+      "subset": "TRAIN-25",
+      "subject": "Intermediate Algebra",
+      "ground_truth": "-50",
+      "sft_pred": "-50",
+      "grpo_pred": "-50",
+      "mod2_pred": "-50",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 18,
+      "subset": "TRAIN-25",
+      "subject": "Precalculus",
+      "ground_truth": "\\pi",
+      "sft_pred": "\\pi",
+      "grpo_pred": "\\pi",
+      "mod2_pred": "\\pi",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 19,
+      "subset": "TRAIN-25",
+      "subject": "Geometry",
+      "ground_truth": "28",
+      "sft_pred": "28",
+      "grpo_pred": "28",
+      "mod2_pred": "28",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 20,
+      "subset": "TRAIN-25",
+      "subject": "Intermediate Algebra",
+      "ground_truth": "3",
+      "sft_pred": "3",
+      "grpo_pred": "3",
+      "mod2_pred": "3",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 21,
+      "subset": "TRAIN-25",
+      "subject": "Algebra",
+      "ground_truth": "6+9i",
+      "sft_pred": "6 + 9i",
+      "grpo_pred": "6 + 9i",
+      "mod2_pred": "6 + 9i",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 22,
+      "subset": "TRAIN-25",
+      "subject": "Intermediate Algebra",
+      "ground_truth": "13535",
+      "sft_pred": "13535",
+      "grpo_pred": "13535",
+      "mod2_pred": "13535",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 23,
+      "subset": "TRAIN-25",
+      "subject": "Algebra",
+      "ground_truth": "5",
+      "sft_pred": "5",
+      "grpo_pred": "5",
+      "mod2_pred": "5",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 24,
+      "subset": "TRAIN-25",
+      "subject": "Algebra",
+      "ground_truth": "x=5",
+      "sft_pred": "5",
+      "grpo_pred": "5",
+      "mod2_pred": "5",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 25,
+      "subset": "TRAIN-25",
+      "subject": "Algebra",
+      "ground_truth": "10",
+      "sft_pred": "10",
+      "grpo_pred": "10",
+      "mod2_pred": "10",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 26,
+      "subset": "CLEAN-125",
+      "subject": "Intermediate Algebra",
+      "ground_truth": "1,-2",
+      "sft_pred": "0, 5",
+      "grpo_pred": "0, 5",
+      "mod2_pred": "0, 5",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      },
+      "mod2_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      }
+    },
+    {
+      "index": 27,
+      "subset": "CLEAN-125",
+      "subject": "Counting & Probability",
+      "ground_truth": "144",
+      "sft_pred": "2",
+      "grpo_pred": "2",
+      "mod2_pred": "2",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      },
+      "mod2_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      }
+    },
+    {
+      "index": 28,
+      "subset": "CLEAN-125",
+      "subject": "Prealgebra",
+      "ground_truth": "78",
+      "sft_pred": "78",
+      "grpo_pred": "78",
+      "mod2_pred": "78",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 29,
+      "subset": "CLEAN-125",
+      "subject": "Precalculus",
+      "ground_truth": "-2 + 7i",
+      "sft_pred": "-2 + 7i",
+      "grpo_pred": "-2 + 7i",
+      "mod2_pred": "-2 + 7i",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 30,
+      "subset": "CLEAN-125",
+      "subject": "Counting & Probability",
+      "ground_truth": "225",
+      "sft_pred": "225",
+      "grpo_pred": "225",
+      "mod2_pred": "225",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 31,
+      "subset": "CLEAN-125",
+      "subject": "Number Theory",
+      "ground_truth": "52_8",
+      "sft_pred": "52_8",
+      "grpo_pred": "52_8",
+      "mod2_pred": "52_8",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": true,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 32,
+      "subset": "CLEAN-125",
+      "subject": "Prealgebra",
+      "ground_truth": "11\\sqrt2",
+      "sft_pred": "11\\sqrt{2}",
+      "grpo_pred": "11\\sqrt{2}",
+      "mod2_pred": "11\\sqrt{2}",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": false,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": false,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 33,
+      "subset": "CLEAN-125",
+      "subject": "Counting & Probability",
+      "ground_truth": "720",
+      "sft_pred": "720",
+      "grpo_pred": "720",
+      "mod2_pred": "720",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 34,
+      "subset": "CLEAN-125",
+      "subject": "Algebra",
+      "ground_truth": "\\frac{243}{625}",
+      "sft_pred": "243/625",
+      "grpo_pred": "243/625",
+      "mod2_pred": "243/625",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": false,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": false,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 35,
+      "subset": "CLEAN-125",
+      "subject": "Counting & Probability",
+      "ground_truth": "-125",
+      "sft_pred": "-125",
+      "grpo_pred": "-125",
+      "mod2_pred": "-125",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 36,
+      "subset": "CLEAN-125",
+      "subject": "Number Theory",
+      "ground_truth": "3",
+      "sft_pred": "3",
+      "grpo_pred": "3",
+      "mod2_pred": "3",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 37,
+      "subset": "CLEAN-125",
+      "subject": "Intermediate Algebra",
+      "ground_truth": "3, 5, 7",
+      "sft_pred": "3, 5, 7",
+      "grpo_pred": "3, 5, 7",
+      "mod2_pred": "3, 5, 7",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 38,
+      "subset": "CLEAN-125",
+      "subject": "Geometry",
+      "ground_truth": "72",
+      "sft_pred": "72",
+      "grpo_pred": "72",
+      "mod2_pred": "72",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 39,
+      "subset": "CLEAN-125",
+      "subject": "Algebra",
+      "ground_truth": "2000",
+      "sft_pred": "2000",
+      "grpo_pred": "2000",
+      "mod2_pred": "2000",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 40,
+      "subset": "CLEAN-125",
+      "subject": "Number Theory",
+      "ground_truth": "23",
+      "sft_pred": "23",
+      "grpo_pred": "23",
+      "mod2_pred": "23",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 41,
+      "subset": "CLEAN-125",
+      "subject": "Prealgebra",
+      "ground_truth": "12",
+      "sft_pred": "12",
+      "grpo_pred": "12",
+      "mod2_pred": "12",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 42,
+      "subset": "CLEAN-125",
+      "subject": "Geometry",
+      "ground_truth": "17",
+      "sft_pred": "17",
+      "grpo_pred": "17",
+      "mod2_pred": "17",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 43,
+      "subset": "CLEAN-125",
+      "subject": "Algebra",
+      "ground_truth": "4",
+      "sft_pred": "4",
+      "grpo_pred": "4",
+      "mod2_pred": "4",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 44,
+      "subset": "CLEAN-125",
+      "subject": "Intermediate Algebra",
+      "ground_truth": "70 \\sqrt{2}",
+      "sft_pred": "65",
+      "grpo_pred": "80",
+      "mod2_pred": "80",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      },
+      "mod2_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      }
+    },
+    {
+      "index": 45,
+      "subset": "CLEAN-125",
+      "subject": "Prealgebra",
+      "ground_truth": "1.25",
+      "sft_pred": "1",
+      "grpo_pred": "1",
+      "mod2_pred": "1",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      },
+      "mod2_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      }
+    },
+    {
+      "index": 46,
+      "subset": "CLEAN-125",
+      "subject": "Geometry",
+      "ground_truth": "2",
+      "sft_pred": "2",
+      "grpo_pred": "2",
+      "mod2_pred": "2",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 47,
+      "subset": "CLEAN-125",
+      "subject": "Precalculus",
+      "ground_truth": "6",
+      "sft_pred": "6",
+      "grpo_pred": "6",
+      "mod2_pred": "6",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 48,
+      "subset": "CLEAN-125",
+      "subject": "Algebra",
+      "ground_truth": "5",
+      "sft_pred": "5",
+      "grpo_pred": "5",
+      "mod2_pred": "5",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 49,
+      "subset": "CLEAN-125",
+      "subject": "Algebra",
+      "ground_truth": "\\frac{3}{2}",
+      "sft_pred": "\\frac{3}{2}",
+      "grpo_pred": "\\frac{3}{2}",
+      "mod2_pred": "\\frac{3}{2}",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 50,
+      "subset": "CLEAN-125",
+      "subject": "Prealgebra",
+      "ground_truth": "83",
+      "sft_pred": "83",
+      "grpo_pred": "83",
+      "mod2_pred": "83",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 51,
+      "subset": "CLEAN-125",
+      "subject": "Number Theory",
+      "ground_truth": "203",
+      "sft_pred": "203",
+      "grpo_pred": "203",
+      "mod2_pred": "203",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 52,
+      "subset": "CLEAN-125",
+      "subject": "Intermediate Algebra",
+      "ground_truth": "x^5 - x^4 + x^3 - x^2 + x - 1",
+      "sft_pred": "x^5 - x^4 + x^3 - x^2 + x - 1",
+      "grpo_pred": "x^5 - x^4 + x^3 - x^2 + x - 1",
+      "mod2_pred": "x^5 - x^4 + x^3 - x^2 + x - 1",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 53,
+      "subset": "CLEAN-125",
+      "subject": "Prealgebra",
+      "ground_truth": "12",
+      "sft_pred": "12",
+      "grpo_pred": "12",
+      "mod2_pred": "12",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 54,
+      "subset": "CLEAN-125",
+      "subject": "Precalculus",
+      "ground_truth": "-\\frac{\\pi}{6}",
+      "sft_pred": "-\\pi/6",
+      "grpo_pred": "-\\pi/6",
+      "mod2_pred": "-\\pi/6",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 55,
+      "subset": "CLEAN-125",
+      "subject": "Prealgebra",
+      "ground_truth": "0.15",
+      "sft_pred": "0.15",
+      "grpo_pred": "0.15",
+      "mod2_pred": "0",
+      "grpo_equals_mod2_bytes": false,
+      "gate_triggered_in_mod2": true,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      }
+    },
+    {
+      "index": 56,
+      "subset": "CLEAN-125",
+      "subject": "Algebra",
+      "ground_truth": "3",
+      "sft_pred": "3",
+      "grpo_pred": "3",
+      "mod2_pred": "3",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 57,
+      "subset": "CLEAN-125",
+      "subject": "Algebra",
+      "ground_truth": "11",
+      "sft_pred": "11",
+      "grpo_pred": "11",
+      "mod2_pred": "11",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 58,
+      "subset": "CLEAN-125",
+      "subject": "Intermediate Algebra",
+      "ground_truth": "16",
+      "sft_pred": "16",
+      "grpo_pred": "16",
+      "mod2_pred": "16",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 59,
+      "subset": "CLEAN-125",
+      "subject": "Algebra",
+      "ground_truth": "9901",
+      "sft_pred": "9901",
+      "grpo_pred": "9901",
+      "mod2_pred": "9901",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 60,
+      "subset": "CLEAN-125",
+      "subject": "Prealgebra",
+      "ground_truth": "5",
+      "sft_pred": "5",
+      "grpo_pred": "5",
+      "mod2_pred": "5",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 61,
+      "subset": "CLEAN-125",
+      "subject": "Intermediate Algebra",
+      "ground_truth": "(6,31,-1)",
+      "sft_pred": "(-3, 0, -16)",
+      "grpo_pred": "(-3, 0, -16)",
+      "mod2_pred": "(-3, 0, -16)",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      },
+      "mod2_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      }
+    },
+    {
+      "index": 62,
+      "subset": "CLEAN-125",
+      "subject": "Intermediate Algebra",
+      "ground_truth": "-256",
+      "sft_pred": "-256",
+      "grpo_pred": "-256",
+      "mod2_pred": "-256",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 63,
+      "subset": "CLEAN-125",
+      "subject": "Precalculus",
+      "ground_truth": "4",
+      "sft_pred": "4",
+      "grpo_pred": "4",
+      "mod2_pred": "4",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": true,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 64,
+      "subset": "CLEAN-125",
+      "subject": "Intermediate Algebra",
+      "ground_truth": "10",
+      "sft_pred": "10",
+      "grpo_pred": "10",
+      "mod2_pred": "10",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 65,
+      "subset": "CLEAN-125",
+      "subject": "Precalculus",
+      "ground_truth": "\\frac{35}{64}",
+      "sft_pred": "\\frac{35}{128}",
+      "grpo_pred": "\\frac{35}{128}",
+      "mod2_pred": "\\frac{35}{128}",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      },
+      "mod2_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      }
+    },
+    {
+      "index": 66,
+      "subset": "CLEAN-125",
+      "subject": "Prealgebra",
+      "ground_truth": "1",
+      "sft_pred": "1",
+      "grpo_pred": "1",
+      "mod2_pred": "1",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 67,
+      "subset": "CLEAN-125",
+      "subject": "Algebra",
+      "ground_truth": "x^3+3x-6",
+      "sft_pred": "x^3 + 3x",
+      "grpo_pred": "x^3 + 3x",
+      "mod2_pred": "x^3 + 3x",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      },
+      "mod2_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      }
+    },
+    {
+      "index": 68,
+      "subset": "CLEAN-125",
+      "subject": "Prealgebra",
+      "ground_truth": "10",
+      "sft_pred": "10",
+      "grpo_pred": "10",
+      "mod2_pred": "10",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 69,
+      "subset": "CLEAN-125",
+      "subject": "Precalculus",
+      "ground_truth": "46",
+      "sft_pred": "46",
+      "grpo_pred": "46",
+      "mod2_pred": "46",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 70,
+      "subset": "CLEAN-125",
+      "subject": "Intermediate Algebra",
+      "ground_truth": "-1",
+      "sft_pred": "-1",
+      "grpo_pred": "-1",
+      "mod2_pred": "-1",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 71,
+      "subset": "CLEAN-125",
+      "subject": "Number Theory",
+      "ground_truth": "40_9",
+      "sft_pred": "40_9",
+      "grpo_pred": "40_9",
+      "mod2_pred": "40_9",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": true,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 72,
+      "subset": "CLEAN-125",
+      "subject": "Number Theory",
+      "ground_truth": "2516_8",
+      "sft_pred": "1246",
+      "grpo_pred": "1246",
+      "mod2_pred": "1246",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      },
+      "mod2_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      }
+    },
+    {
+      "index": 73,
+      "subset": "CLEAN-125",
+      "subject": "Geometry",
+      "ground_truth": "3",
+      "sft_pred": "3",
+      "grpo_pred": "3",
+      "mod2_pred": "3",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 74,
+      "subset": "CLEAN-125",
+      "subject": "Algebra",
+      "ground_truth": "\\frac{3\\sqrt{3}}{4}",
+      "sft_pred": "\\frac{3\\sqrt{3}}{4}",
+      "grpo_pred": "\\frac{3\\sqrt{3}}{4}",
+      "mod2_pred": "\\frac{3\\sqrt{3}}{4}",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 75,
+      "subset": "CLEAN-125",
+      "subject": "Precalculus",
+      "ground_truth": "\\cot x",
+      "sft_pred": "\\cot x",
+      "grpo_pred": "\\cot x",
+      "mod2_pred": "\\cot x",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 76,
+      "subset": "CLEAN-125",
+      "subject": "Counting & Probability",
+      "ground_truth": "\\frac{11}{36}",
+      "sft_pred": "11/36",
+      "grpo_pred": "11/36",
+      "mod2_pred": "11/36",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": false,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": false,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 77,
+      "subset": "CLEAN-125",
+      "subject": "Intermediate Algebra",
+      "ground_truth": "0",
+      "sft_pred": "0",
+      "grpo_pred": "0",
+      "mod2_pred": "0",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 78,
+      "subset": "CLEAN-125",
+      "subject": "Algebra",
+      "ground_truth": "4",
+      "sft_pred": "4",
+      "grpo_pred": "4",
+      "mod2_pred": "4",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 79,
+      "subset": "CLEAN-125",
+      "subject": "Intermediate Algebra",
+      "ground_truth": "(-2,1)",
+      "sft_pred": "(-2, 1)",
+      "grpo_pred": "(-2, 1)",
+      "mod2_pred": "(-2, 1)",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 80,
+      "subset": "CLEAN-125",
+      "subject": "Prealgebra",
+      "ground_truth": "2",
+      "sft_pred": "2",
+      "grpo_pred": "2",
+      "mod2_pred": "2",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 81,
+      "subset": "CLEAN-125",
+      "subject": "Intermediate Algebra",
+      "ground_truth": "501",
+      "sft_pred": "501",
+      "grpo_pred": "501",
+      "mod2_pred": "501",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 82,
+      "subset": "CLEAN-125",
+      "subject": "Algebra",
+      "ground_truth": "3",
+      "sft_pred": "3",
+      "grpo_pred": "3",
+      "mod2_pred": "3",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 83,
+      "subset": "CLEAN-125",
+      "subject": "Algebra",
+      "ground_truth": "\\frac{3}{2}",
+      "sft_pred": "3/2",
+      "grpo_pred": "3/2",
+      "mod2_pred": "3/2",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": false,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": false,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 84,
+      "subset": "CLEAN-125",
+      "subject": "Intermediate Algebra",
+      "ground_truth": "2",
+      "sft_pred": "2",
+      "grpo_pred": "2",
+      "mod2_pred": "2",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 85,
+      "subset": "CLEAN-125",
+      "subject": "Algebra",
+      "ground_truth": "-1",
+      "sft_pred": "-1",
+      "grpo_pred": "-1",
+      "mod2_pred": "-1",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 86,
+      "subset": "CLEAN-125",
+      "subject": "Geometry",
+      "ground_truth": "\\sqrt{5}",
+      "sft_pred": "\\sqrt{5}",
+      "grpo_pred": "\\sqrt{5}",
+      "mod2_pred": "\\sqrt{5}",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 87,
+      "subset": "CLEAN-125",
+      "subject": "Prealgebra",
+      "ground_truth": "240",
+      "sft_pred": "240",
+      "grpo_pred": "240",
+      "mod2_pred": "240",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": true,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 88,
+      "subset": "CLEAN-125",
+      "subject": "Algebra",
+      "ground_truth": "1",
+      "sft_pred": "1",
+      "grpo_pred": "1",
+      "mod2_pred": "1",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 89,
+      "subset": "CLEAN-125",
+      "subject": "Algebra",
+      "ground_truth": "2",
+      "sft_pred": "2",
+      "grpo_pred": "2",
+      "mod2_pred": "2",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 90,
+      "subset": "CLEAN-125",
+      "subject": "Number Theory",
+      "ground_truth": "21",
+      "sft_pred": "21",
+      "grpo_pred": "21",
+      "mod2_pred": "21",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 91,
+      "subset": "CLEAN-125",
+      "subject": "Prealgebra",
+      "ground_truth": "\\frac{3}{2}",
+      "sft_pred": "\\frac{3}{2}",
+      "grpo_pred": "\\frac{3}{2}",
+      "mod2_pred": "\\frac{3}{2}",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 92,
+      "subset": "CLEAN-125",
+      "subject": "Algebra",
+      "ground_truth": "1",
+      "sft_pred": "1",
+      "grpo_pred": "1",
+      "mod2_pred": "1",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 93,
+      "subset": "CLEAN-125",
+      "subject": "Counting & Probability",
+      "ground_truth": "\\frac{448}{15625}",
+      "sft_pred": "448/15625",
+      "grpo_pred": "448/15625",
+      "mod2_pred": "448/15625",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": false,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": false,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 94,
+      "subset": "CLEAN-125",
+      "subject": "Algebra",
+      "ground_truth": "33",
+      "sft_pred": "33",
+      "grpo_pred": "33",
+      "mod2_pred": "33",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 95,
+      "subset": "CLEAN-125",
+      "subject": "Prealgebra",
+      "ground_truth": "80",
+      "sft_pred": "110",
+      "grpo_pred": "110",
+      "mod2_pred": "110",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      },
+      "mod2_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      }
+    },
+    {
+      "index": 96,
+      "subset": "CLEAN-125",
+      "subject": "Precalculus",
+      "ground_truth": "-4",
+      "sft_pred": "-4",
+      "grpo_pred": "-4",
+      "mod2_pred": "-4",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 97,
+      "subset": "CLEAN-125",
+      "subject": "Intermediate Algebra",
+      "ground_truth": "1 \\pm \\sqrt{19}",
+      "sft_pred": "1, -1",
+      "grpo_pred": "x \\in \\mathbb{R} \\setminus \\{-5, -3, -1, 3, 5, 7\\}",
+      "mod2_pred": "x \\in \\mathbb{R} \\setminus \\{-5, -3, -1, 3, 5, 7\\}",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      },
+      "mod2_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      }
+    },
+    {
+      "index": 98,
+      "subset": "CLEAN-125",
+      "subject": "Prealgebra",
+      "ground_truth": "\\text{east}",
+      "sft_pred": "East",
+      "grpo_pred": "East",
+      "mod2_pred": "East",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": false,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": false,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 99,
+      "subset": "CLEAN-125",
+      "subject": "Prealgebra",
+      "ground_truth": "2k+2",
+      "sft_pred": "2k + 2",
+      "grpo_pred": "2k + 2",
+      "mod2_pred": "2k + 2",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 100,
+      "subset": "CLEAN-125",
+      "subject": "Precalculus",
+      "ground_truth": "\\begin{pmatrix} -1/3 \\\\ 2/3 \\\\ 5/3 \\end{pmatrix}",
+      "sft_pred": "\\begin{pmatrix} -1/3 \\\\ 2/3 \\\\ 5/3 \\end{pmatrix}",
+      "grpo_pred": "\\begin{pmatrix} -1/3 \\\\ 2/3 \\\\ 5/3 \\end{pmatrix}",
+      "mod2_pred": "\\begin{pmatrix} -1/3 \\\\ 2/3 \\\\ 5/3 \\end{pmatrix}",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 101,
+      "subset": "CLEAN-125",
+      "subject": "Geometry",
+      "ground_truth": "145^\\circ",
+      "sft_pred": "115",
+      "grpo_pred": "115",
+      "mod2_pred": "115",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      },
+      "mod2_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      }
+    },
+    {
+      "index": 102,
+      "subset": "CLEAN-125",
+      "subject": "Intermediate Algebra",
+      "ground_truth": "850",
+      "sft_pred": "850",
+      "grpo_pred": "850",
+      "mod2_pred": "850",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 103,
+      "subset": "CLEAN-125",
+      "subject": "Intermediate Algebra",
+      "ground_truth": "(a+5)(b+2)",
+      "sft_pred": "(a + 5)(b + 2)",
+      "grpo_pred": "(a + 5)(b + 2)",
+      "mod2_pred": "(a + 5)(b + 2)",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 104,
+      "subset": "CLEAN-125",
+      "subject": "Intermediate Algebra",
+      "ground_truth": "(3,4]",
+      "sft_pred": "(1, 3]",
+      "grpo_pred": "(1, 3]",
+      "mod2_pred": "(1, 3]",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      },
+      "mod2_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      }
+    },
+    {
+      "index": 105,
+      "subset": "CLEAN-125",
+      "subject": "Intermediate Algebra",
+      "ground_truth": "40",
+      "sft_pred": "18",
+      "grpo_pred": "40",
+      "mod2_pred": "40",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 106,
+      "subset": "CLEAN-125",
+      "subject": "Prealgebra",
+      "ground_truth": "29",
+      "sft_pred": "29",
+      "grpo_pred": "29",
+      "mod2_pred": "29",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 107,
+      "subset": "CLEAN-125",
+      "subject": "Intermediate Algebra",
+      "ground_truth": "\\frac43",
+      "sft_pred": "4/3",
+      "grpo_pred": "4/3",
+      "mod2_pred": "4/3",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": false,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": false,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 108,
+      "subset": "CLEAN-125",
+      "subject": "Number Theory",
+      "ground_truth": "9",
+      "sft_pred": "14",
+      "grpo_pred": "14",
+      "mod2_pred": "14",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      },
+      "mod2_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      }
+    },
+    {
+      "index": 109,
+      "subset": "CLEAN-125",
+      "subject": "Intermediate Algebra",
+      "ground_truth": "2",
+      "sft_pred": "2",
+      "grpo_pred": "2",
+      "mod2_pred": "2",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 110,
+      "subset": "CLEAN-125",
+      "subject": "Precalculus",
+      "ground_truth": "120^\\circ",
+      "sft_pred": "120",
+      "grpo_pred": "120^\\circ",
+      "mod2_pred": "120^\\circ",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 111,
+      "subset": "CLEAN-125",
+      "subject": "Intermediate Algebra",
+      "ground_truth": "504",
+      "sft_pred": "7",
+      "grpo_pred": "1",
+      "mod2_pred": "1",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      },
+      "mod2_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      }
+    },
+    {
+      "index": 112,
+      "subset": "CLEAN-125",
+      "subject": "Counting & Probability",
+      "ground_truth": "210",
+      "sft_pred": "210",
+      "grpo_pred": "210",
+      "mod2_pred": "210",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": true,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 113,
+      "subset": "CLEAN-125",
+      "subject": "Algebra",
+      "ground_truth": "13",
+      "sft_pred": "13",
+      "grpo_pred": "13",
+      "mod2_pred": "13",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 114,
+      "subset": "CLEAN-125",
+      "subject": "Algebra",
+      "ground_truth": "8000",
+      "sft_pred": "8000",
+      "grpo_pred": "8000",
+      "mod2_pred": "8000",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 115,
+      "subset": "CLEAN-125",
+      "subject": "Intermediate Algebra",
+      "ground_truth": "-5",
+      "sft_pred": "-5",
+      "grpo_pred": "-5",
+      "mod2_pred": "-5",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 116,
+      "subset": "CLEAN-125",
+      "subject": "Counting & Probability",
+      "ground_truth": "1260",
+      "sft_pred": "1260",
+      "grpo_pred": "1260",
+      "mod2_pred": "1260",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 117,
+      "subset": "CLEAN-125",
+      "subject": "Algebra",
+      "ground_truth": "2",
+      "sft_pred": "2",
+      "grpo_pred": "2",
+      "mod2_pred": "2",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 118,
+      "subset": "CLEAN-125",
+      "subject": "Algebra",
+      "ground_truth": "3",
+      "sft_pred": "3",
+      "grpo_pred": "3",
+      "mod2_pred": "3",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 119,
+      "subset": "CLEAN-125",
+      "subject": "Intermediate Algebra",
+      "ground_truth": "81",
+      "sft_pred": "81",
+      "grpo_pred": "81",
+      "mod2_pred": "81",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 120,
+      "subset": "CLEAN-125",
+      "subject": "Prealgebra",
+      "ground_truth": "-9",
+      "sft_pred": "4",
+      "grpo_pred": "2",
+      "mod2_pred": "13",
+      "grpo_equals_mod2_bytes": false,
+      "gate_triggered_in_mod2": true,
+      "grpo_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      },
+      "mod2_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      }
+    },
+    {
+      "index": 121,
+      "subset": "CLEAN-125",
+      "subject": "Intermediate Algebra",
+      "ground_truth": "\\text{even}",
+      "sft_pred": "odd",
+      "grpo_pred": "odd",
+      "mod2_pred": "odd",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      },
+      "mod2_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      }
+    },
+    {
+      "index": 122,
+      "subset": "CLEAN-125",
+      "subject": "Prealgebra",
+      "ground_truth": "6",
+      "sft_pred": "6",
+      "grpo_pred": "6",
+      "mod2_pred": "6",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 123,
+      "subset": "CLEAN-125",
+      "subject": "Algebra",
+      "ground_truth": "9",
+      "sft_pred": "9",
+      "grpo_pred": "9",
+      "mod2_pred": "9",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 124,
+      "subset": "CLEAN-125",
+      "subject": "Geometry",
+      "ground_truth": "8",
+      "sft_pred": "10",
+      "grpo_pred": "10",
+      "mod2_pred": "10",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": true,
+      "grpo_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      },
+      "mod2_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      }
+    },
+    {
+      "index": 125,
+      "subset": "CLEAN-125",
+      "subject": "Algebra",
+      "ground_truth": "\\frac{11}{2}",
+      "sft_pred": "11/2",
+      "grpo_pred": "11/2",
+      "mod2_pred": "11/2",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": false,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": false,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 126,
+      "subset": "CLEAN-125",
+      "subject": "Algebra",
+      "ground_truth": "-3",
+      "sft_pred": "-3",
+      "grpo_pred": "-3",
+      "mod2_pred": "-3",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 127,
+      "subset": "CLEAN-125",
+      "subject": "Intermediate Algebra",
+      "ground_truth": "1+274i",
+      "sft_pred": "2",
+      "grpo_pred": "2",
+      "mod2_pred": "2",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      },
+      "mod2_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      }
+    },
+    {
+      "index": 128,
+      "subset": "CLEAN-125",
+      "subject": "Number Theory",
+      "ground_truth": "4210_{5}",
+      "sft_pred": "4210_5",
+      "grpo_pred": "4210_5",
+      "mod2_pred": "4210_5",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": true,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": false,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": false,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 129,
+      "subset": "CLEAN-125",
+      "subject": "Algebra",
+      "ground_truth": "36",
+      "sft_pred": "36",
+      "grpo_pred": "36",
+      "mod2_pred": "36",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 130,
+      "subset": "CLEAN-125",
+      "subject": "Geometry",
+      "ground_truth": "\\frac{3840}{289}",
+      "sft_pred": "3840/289",
+      "grpo_pred": "3840/289",
+      "mod2_pred": "3840/289",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": false,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": false,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 131,
+      "subset": "CLEAN-125",
+      "subject": "Number Theory",
+      "ground_truth": "13",
+      "sft_pred": "5",
+      "grpo_pred": "5",
+      "mod2_pred": "5",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      },
+      "mod2_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      }
+    },
+    {
+      "index": 132,
+      "subset": "CLEAN-125",
+      "subject": "Algebra",
+      "ground_truth": "8",
+      "sft_pred": "8",
+      "grpo_pred": "8",
+      "mod2_pred": "8",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 133,
+      "subset": "CLEAN-125",
+      "subject": "Prealgebra",
+      "ground_truth": "4",
+      "sft_pred": "4",
+      "grpo_pred": "4",
+      "mod2_pred": "4",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 134,
+      "subset": "CLEAN-125",
+      "subject": "Prealgebra",
+      "ground_truth": "120",
+      "sft_pred": "120",
+      "grpo_pred": "120",
+      "mod2_pred": "120",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 135,
+      "subset": "CLEAN-125",
+      "subject": "Intermediate Algebra",
+      "ground_truth": "16",
+      "sft_pred": "16",
+      "grpo_pred": "16",
+      "mod2_pred": "16",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 136,
+      "subset": "CLEAN-125",
+      "subject": "Prealgebra",
+      "ground_truth": "9",
+      "sft_pred": "9",
+      "grpo_pred": "9",
+      "mod2_pred": "9",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 137,
+      "subset": "CLEAN-125",
+      "subject": "Intermediate Algebra",
+      "ground_truth": "64",
+      "sft_pred": "64",
+      "grpo_pred": "64",
+      "mod2_pred": "64",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 138,
+      "subset": "CLEAN-125",
+      "subject": "Number Theory",
+      "ground_truth": "204_5",
+      "sft_pred": "224_5",
+      "grpo_pred": "224_5",
+      "mod2_pred": "244_5",
+      "grpo_equals_mod2_bytes": false,
+      "gate_triggered_in_mod2": true,
+      "grpo_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      },
+      "mod2_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      }
+    },
+    {
+      "index": 139,
+      "subset": "CLEAN-125",
+      "subject": "Counting & Probability",
+      "ground_truth": "\\frac{1}{3}",
+      "sft_pred": "1/3",
+      "grpo_pred": "1/3",
+      "mod2_pred": "1/3",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": false,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": false,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 140,
+      "subset": "CLEAN-125",
+      "subject": "Intermediate Algebra",
+      "ground_truth": "1",
+      "sft_pred": "1",
+      "grpo_pred": "1",
+      "mod2_pred": "1",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 141,
+      "subset": "CLEAN-125",
+      "subject": "Number Theory",
+      "ground_truth": "13",
+      "sft_pred": "13",
+      "grpo_pred": "13",
+      "mod2_pred": "13",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 142,
+      "subset": "CLEAN-125",
+      "subject": "Number Theory",
+      "ground_truth": "2",
+      "sft_pred": "2",
+      "grpo_pred": "2",
+      "mod2_pred": "2",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 143,
+      "subset": "CLEAN-125",
+      "subject": "Counting & Probability",
+      "ground_truth": "28800",
+      "sft_pred": "28800",
+      "grpo_pred": "28800",
+      "mod2_pred": "28800",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 144,
+      "subset": "CLEAN-125",
+      "subject": "Precalculus",
+      "ground_truth": "3 \\sqrt{5}",
+      "sft_pred": "3\\sqrt{5}",
+      "grpo_pred": "3\\sqrt{5}",
+      "mod2_pred": "3\\sqrt{5}",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 145,
+      "subset": "CLEAN-125",
+      "subject": "Precalculus",
+      "ground_truth": "(15,-29)",
+      "sft_pred": "(15, -29)",
+      "grpo_pred": "(15, -29)",
+      "mod2_pred": "(15, -29)",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 146,
+      "subset": "CLEAN-125",
+      "subject": "Intermediate Algebra",
+      "ground_truth": "-2",
+      "sft_pred": "-2",
+      "grpo_pred": "-2",
+      "mod2_pred": "-2",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 147,
+      "subset": "CLEAN-125",
+      "subject": "Algebra",
+      "ground_truth": "\\frac{\\sqrt{3}}{3}",
+      "sft_pred": "\\frac{\\sqrt{3}}{3}",
+      "grpo_pred": "\\frac{\\sqrt{3}}{3}",
+      "mod2_pred": "\\frac{\\sqrt{3}}{3}",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 148,
+      "subset": "CLEAN-125",
+      "subject": "Intermediate Algebra",
+      "ground_truth": "16",
+      "sft_pred": "24",
+      "grpo_pred": "24",
+      "mod2_pred": "24",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      },
+      "mod2_grades": {
+        "strict": false,
+        "legacy": false,
+        "norm_sym": false
+      }
+    },
+    {
+      "index": 149,
+      "subset": "CLEAN-125",
+      "subject": "Algebra",
+      "ground_truth": "11",
+      "sft_pred": "11",
+      "grpo_pred": "11",
+      "mod2_pred": "11",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    },
+    {
+      "index": 150,
+      "subset": "CLEAN-125",
+      "subject": "Number Theory",
+      "ground_truth": "49",
+      "sft_pred": "49",
+      "grpo_pred": "49",
+      "mod2_pred": "49",
+      "grpo_equals_mod2_bytes": true,
+      "gate_triggered_in_mod2": false,
+      "grpo_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      },
+      "mod2_grades": {
+        "strict": true,
+        "legacy": true,
+        "norm_sym": true
+      }
+    }
+  ]
+}

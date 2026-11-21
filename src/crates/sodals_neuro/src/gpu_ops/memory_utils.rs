@@ -179,10 +179,13 @@ impl SodalsCudaPinnedAccess for Tensor {
 
 #[cfg(feature = "cuda")]
 extern "C" {
-    // Phase 21: Zero-copy mapped memory for QMEM cartridges
-    // CPU writes to host_ptr, GPU reads from dev_ptr directly over PCIe
-    fn allocate_zero_copy_qmem(bytes: usize, host_ptr: *mut *mut std::ffi::c_void, dev_ptr: *mut *mut std::ffi::c_void) -> i32;
-    fn free_zero_copy_qmem(host_ptr: *mut std::ffi::c_void);
+    // Phase 21: Native VRAM + Pinned Staging for QMEM cartridges (Double-Buffer pattern)
+    fn alloc_pinned_memory(bytes: usize) -> *mut std::ffi::c_void;
+    fn free_pinned_memory(ptr: *mut std::ffi::c_void);
+    fn alloc_device_vram(bytes: usize) -> *mut std::ffi::c_void;
+    fn free_device_vram(ptr: *mut std::ffi::c_void);
+    fn async_memcpy_to_device(host_src: *const std::ffi::c_void, dev_dst: *mut std::ffi::c_void, bytes: usize, stream: *mut std::ffi::c_void) -> i32;
+    fn synchronize_stream(stream: *mut std::ffi::c_void);
     #[allow(dead_code)]
     fn get_device_pointer(host_ptr: *mut std::ffi::c_void, dev_ptr: *mut *mut std::ffi::c_void) -> i32;
 }
@@ -194,44 +197,58 @@ extern "C" {
 #[cfg(feature = "cuda")]
 pub struct ZeroCopyCartridge {
     host_ptr: *mut std::ffi::c_void,
-    dev_ptr: u64,
+    dev_ptr: *mut std::ffi::c_void,
     capacity: usize,
 }
 
 #[cfg(feature = "cuda")]
 impl ZeroCopyCartridge {
-    /// Allocate zero-copy mapped memory for QMEM data.
-    /// Returns error if CUDA allocation fails.
+    /// Allocate Native VRAM memory for GPU and Pinned Memory for CPU staging.
     pub fn new(capacity: usize) -> Result<Self, String> {
-        let mut host_ptr: *mut std::ffi::c_void = std::ptr::null_mut();
-        let mut dev_ptr: *mut std::ffi::c_void = std::ptr::null_mut();
-        
         let bytes = capacity * std::mem::size_of::<f32>();
         
         unsafe {
-            let result = allocate_zero_copy_qmem(bytes, &mut host_ptr, &mut dev_ptr);
-            if result != 0 || host_ptr.is_null() {
-                return Err(format!("Failed to allocate zero-copy memory: CUDA error {}", result));
+            let host_ptr = alloc_pinned_memory(bytes);
+            if host_ptr.is_null() {
+                return Err("Failed to allocate pinned host memory".to_string());
             }
+            
+            let dev_ptr = alloc_device_vram(bytes);
+            if dev_ptr.is_null() {
+                free_pinned_memory(host_ptr);
+                return Err("Failed to allocate native VRAM memory".to_string());
+            }
+            
+            Ok(Self {
+                host_ptr,
+                dev_ptr,
+                capacity,
+            })
         }
-        
-        Ok(Self {
-            host_ptr,
-            dev_ptr: dev_ptr as u64,
-            capacity,
-        })
     }
     
     /// Get the raw device pointer for passing to CUDA kernels.
-    /// This pointer can be used directly in GPU kernels - no copy needed.
+    /// This is a Native VRAM pointer.
     pub fn device_ptr(&self) -> u64 {
-        self.dev_ptr
+        self.dev_ptr as u64
     }
     
     /// Get the host pointer for CPU writing.
-    /// Write to this pointer, and the data is immediately available to GPU.
     pub fn host_ptr(&self) -> *mut std::ffi::c_void {
         self.host_ptr
+    }
+    
+    /// Sync host data to VRAM via DMA.
+    pub fn sync_to_vram(&self) -> Result<(), String> {
+        let bytes = self.capacity * std::mem::size_of::<f32>();
+        unsafe {
+            let err = async_memcpy_to_device(self.host_ptr, self.dev_ptr, bytes, std::ptr::null_mut());
+            if err != 0 {
+                return Err(format!("cudaMemcpyAsync failed with error code: {}", err));
+            }
+            synchronize_stream(std::ptr::null_mut());
+        }
+        Ok(())
     }
     
     /// Get capacity (number of f32 elements)
@@ -315,10 +332,13 @@ impl Drop for ZeroCopyCartridge {
         
         if !self.host_ptr.is_null() {
             unsafe {
-                // BARE-METAL VRAM SAFETY: Force GPU to finish all async kernels before freeing memory.
-                // Prevents STATUS_ACCESS_VIOLATION use-after-free race condition.
                 cudaDeviceSynchronize();
-                free_zero_copy_qmem(self.host_ptr);
+                free_pinned_memory(self.host_ptr);
+            }
+        }
+        if !self.dev_ptr.is_null() {
+            unsafe {
+                free_device_vram(self.dev_ptr);
             }
         }
     }
@@ -342,6 +362,9 @@ impl ZeroCopyCartridge {
         Err("ZeroCopyCartridge requires CUDA feature".to_string())
     }
     pub fn write_flags(&mut self, _flags: &[u32]) -> Result<(), String> {
+        Err("ZeroCopyCartridge requires CUDA feature".to_string())
+    }
+    pub fn sync_to_vram(&self) -> Result<(), String> {
         Err("ZeroCopyCartridge requires CUDA feature".to_string())
     }
 }

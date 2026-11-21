@@ -87,8 +87,12 @@ pub fn spawn_oracle(
 
         #[cfg(feature = "cuda")]
         unsafe {
-            // PHASE 3: Bind background thread to CUDA device 0 context before DMA calls
-            let _ = cudaSetDevice(0);
+            // PHASE 3: Bind background thread to CUDA device 0 context before DMA calls.
+            // Faz 21: Only bind when DMA prefetch is enabled; a stray context on this
+            // thread otherwise races the main thread's context (crash source).
+            if std::env::var("SODALS_ORACLE_DMA").is_ok() {
+                let _ = cudaSetDevice(0);
+            }
         }
 
         while let Ok(msg) = msg_rx.recv() {
@@ -123,17 +127,23 @@ pub fn spawn_oracle(
             );
 
             // Step 5: DMA prefetch → VRAM (cudaMemcpyAsync)
-            /* PHASE 21.5: VRAM Prefetch disabled temporarily to isolate STATUS_ACCESS_VIOLATION
+            // CRASH FIX (Faz 21): Concurrent cudaSetDevice + cudaMemcpyAsync from this
+            // background thread races the main thread's candle forward-pass kernels,
+            // causing non-deterministic STATUS_ACCESS_VIOLATION inside nvcuda64.dll
+            // (dump: Rax=0xababab, fault 0xFF..FF). The Oracle mask is never applied
+            // in minimal mode anyway, so DMA is gated behind SODALS_ORACLE_DMA.
             #[cfg(feature = "cuda")]
-            if let Some(ref ada) = oracle_adapter {
-                if let Err(e) = ada.prefetch_impedance(&impedance_f16, vocab_size) {
-                    let err_str = e.to_string();
-                    if !err_str.contains("709") {
-                        eprintln!("[ORACLE] ⚠  DMA error @ pos {}: {}", msg.position, e);
+            if std::env::var("SODALS_ORACLE_DMA").is_ok() {
+                if let Some(ref ada) = oracle_adapter {
+                    if let Err(e) = ada.prefetch_impedance(&impedance_f16, vocab_size) {
+                        let err_str = e.to_string();
+                        if !err_str.contains("709") {
+                            eprintln!("[ORACLE] ⚠  DMA error @ pos {}: {}", msg.position, e);
+                        }
                     }
                 }
             }
-            */
+
 
             // Step 6: PrecomputedMask deposit
             let mask = PrecomputedMask {

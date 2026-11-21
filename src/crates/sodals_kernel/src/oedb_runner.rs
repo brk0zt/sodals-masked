@@ -2166,11 +2166,11 @@ CRITICAL SECURITY RULES: \
                     let image_payloads: Vec<(&str, &[u8])> = decoded_images.iter()
                         .map(|(mime, bytes)| (mime.as_str(), bytes.as_slice()))
                         .collect();
-                    engine.generate_multimodal(&full_prompt, &image_payloads, &config)
+                    engine.generate_multimodal(&full_prompt, &image_payloads, &config, 0)
                         .unwrap_or_else(|e| format!("LLM Engine Error: {}", e))
                 } else {
                     sodals_neuro::engine::generation_loop::generate_stream(
-                        engine, &full_prompt, None, guidance_wave.clone(), |_t| {}, &config, 0
+                        engine, &full_prompt, None, guidance_wave.clone(), |_t| {}, &config, 0, 0
                     ).unwrap_or_else(|e| format!("LLM Engine Error: {}", e))
                 };
 
@@ -2917,7 +2917,7 @@ EXPLANATION: <Explain your grading decisions, focusing strictly on failures and 
             );
 
             if let Ok(auditor_output) = sodals_neuro::engine::generation_loop::generate_stream(
-                engine, &auditor_prompt, None, None, |_t| {}, &judge_config, 0
+                engine, &auditor_prompt, None, None, |_t| {}, &judge_config, 0, 0
             ) {
                 println!("  ── AUDITOR RAW RESPONSE ──\n{}\n  ──────────────────────", auditor_output);
                 for line in auditor_output.lines() {
@@ -3108,11 +3108,31 @@ EXPLANATION: <Explain your grading decisions, focusing strictly on failures and 
     }
 
     /// v4.0: Run the same scenario 2 more times to verify deterministic behavior
-    async fn verify_determinism(&self, scenario: &TestScenario, _original_answer: &str) -> Result<bool> {
+    async fn verify_determinism(&mut self, scenario: &TestScenario, _original_answer: &str) -> Result<bool> {
         if self.llm_engine.is_none() { return Ok(true); }
         
-        for i in 0..2 {
-            info!("  🔎 Determinism check run #{}...", i+1);
+        let prompt = format!("<|im_start|>user\n{}\n<|im_end|>\n<|im_start|>assistant\n", scenario.question);
+        let mut config = sodals_neuro::llm_core::NeuroConfig::default();
+        config.strict_determinism = true;
+        config.temperature = 0.1;
+
+        if let Some(engine) = self.llm_engine.as_mut() {
+            for i in 0..2 {
+                info!("  🔎 Determinism check run #{}...", i+1);
+                engine.reset_internal_state();
+                let output1 = sodals_neuro::engine::generation_loop::generate_stream(
+                    engine, &prompt, None, None, |_| {}, &config, 0, 0
+                )?;
+                
+                engine.reset_internal_state();
+                let output2 = sodals_neuro::engine::generation_loop::generate_stream(
+                    engine, &prompt, None, None, |_| {}, &config, 0, 0
+                )?;
+                
+                if output1 != output2 {
+                    return Ok(false);
+                }
+            }
         }
         
         Ok(true) 

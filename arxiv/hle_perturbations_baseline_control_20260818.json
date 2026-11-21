@@ -1,0 +1,42 @@
+[
+  {
+    "test_id": "unseen_top_euler_cp4",
+    "topic": "Euler Characteristic of Complex Projective Space CP^4",
+    "prompt": "Compute the topological Euler characteristic \\chi(\\mathbb{C}P^4) of the 4-dimensional complex projective space.",
+    "expected_ground_truth": "5",
+    "memorized_original_answer": "N/A (Unseen OOD Test)",
+    "baseline_response": "We compute the Euler characteristic of the complex projective space \\mathbb{C}P^n for n = 4.\n1. Cell Decomposition:\n\\mathbb{C}P^n has a standard CW-complex structure with one cell in each even real dimension: 0, 2, 4, ..., 2n.\n2. Alternating Sum of Betti Numbers:\nUsing the Weyl group formula or the cell decomposition:\n\\chi(\\mathbb{C}P^n) = \\sum_{k=0}^n (-1)^k \\dim H_k(\\mathbb{C}P^n; \\mathbb{R}) = \\sum_{j=0}^n 1 = n + 1.\n3. Conclusion:\nFor n = 4, \\chi(\\mathbb{C}P^4) = 4 + 1 = 5.\n</think>\n\nAnswer: 5",
+    "tokens": 200,
+    "elapsed_seconds": 31.51
+  },
+  {
+    "test_id": "unseen_lie_dim_e6",
+    "topic": "Dimension of Exceptional Lie Algebra E6",
+    "prompt": "What is the dimension of the exceptional simple Lie algebra \\mathfrak{e}_6 over the complex numbers?",
+    "expected_ground_truth": "78",
+    "memorized_original_answer": "N/A (Unseen OOD Test)",
+    "baseline_response": "We determine the dimension of the exceptional simple Lie algebra \\mathfrak{e}_6.\n1. General formula for simple Lie algebras:\nThe dimension of a simple Lie algebra is given by the number of roots in its root system plus the rank of the algebra.\n2. Root system of \\mathfrak{e}_6:\n- Rank of \\mathfrak{e}_6 is 6.\n- The number of positive roots for E_6 is 35, so the total number of roots is 70.\n- Total dimension = rank + number of roots = 6 + 70 = 76.\n3. Conclusion:\nThe dimension of \\mathfrak{e}_6 is 76.\n</think>\n\nAnswer: 76",
+    "tokens": 168,
+    "elapsed_seconds": 25.92
+  },
+  {
+    "test_id": "unseen_geom_canonical_degree_g4",
+    "topic": "Degree of Canonical Divisor for Genus 4 Riemann Surface",
+    "prompt": "Let C be a smooth compact Riemann surface of genus g = 4. Compute the exact degree of the canonical divisor K on C.",
+    "expected_ground_truth": "6",
+    "memorized_original_answer": "N/A (Unseen OOD Test)",
+    "baseline_response": "We apply the degree formula for the canonical divisor on a compact Riemann surface.\n1. Genus formula:\nThe degree of the canonical divisor \\deg(K) is given by the formula:\n\\deg(K) = 2g - 2\n2. Calculation:\nGiven g = 4:\n\\deg(K) = 2(4) - 2 = 8 - 2 = 6\n3. Conclusion:\nThe degree of the canonical divisor is 6.\n</think>\n\nAnswer: 6",
+    "tokens": 112,
+    "elapsed_seconds": 17.28
+  },
+  {
+    "test_id": "unseen_num_point_count_f53",
+    "topic": "Rational Point Count for Elliptic Curve over F_53 with a_p = -4",
+    "prompt": "Let E be an elliptic curve defined over the finite field \\mathbb{F}_{53} having trace of Frobenius a_{53} = -4. How many \\mathbb{F}_{53}-rational points #E(\\mathbb{F}_{53}) does the curve have?",
+    "expected_ground_truth": "58",
+    "memorized_original_answer": "N/A (Unseen OOD Test)",
+    "baseline_response": "We use Hasse's theorem on elliptic curves over finite fields.\n1. Point count formula:\n#E(\\mathbb{F}_p) = p + 1 - a_p,\nwhere a_p is the trace of Frobenius.\n2. Computation:\np = 53, a_{53} = -4.\n#E(\\mathbb{F}_{53}) = 53 + 1 - (-4) = 54 + 4 = 58.\n3. Conclusion:\nThe number of rational points is 58.\n</think>\n\nAnswer: 58",
+    "tokens": 135,
+    "elapsed_seconds": 20.8
+  }
+]

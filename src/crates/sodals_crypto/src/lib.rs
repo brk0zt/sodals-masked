@@ -146,10 +146,11 @@ impl VaultShield {
     }
 
     /// Random Orthogonal Projection
-    /// Vektörü rastgele bir uzaya yansıtır. (Matris Çarpımı)
+    /// Vektörü rastgele bir uzaya yansıtır. (Matris Çarpımı; farklı boyutta isometric obfuscate fallback!)
     pub fn project_vector(&self, vec: &mut [f32]) {
         if vec.len() != MATRIX_DIM {
-            return; // Boyut uyuşmazlığı varsa dokunma (Güvenlik/Stabilite)
+            self.obfuscate_vector(vec);
+            return;
         }
 
         let input = vec.to_owned();

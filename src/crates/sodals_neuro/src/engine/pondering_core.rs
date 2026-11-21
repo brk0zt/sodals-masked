@@ -310,7 +310,7 @@ impl PonderingCore {
                 };
                 
                 // RK4 integration step with optional semantic + phase inversion correction
-                let h_next = self.rk4_step(&h_current, &ghost_tensor, dt, total_correction.as_ref())?;
+                let h_next = self.rk4_step_variable_dt(&h_current, &ghost_tensor, dt, total_correction.as_ref())?;
                 
                 // Check convergence: ||h_next - h_current|| < epsilon
                 let delta_h = (&h_next - &h_current)?;
@@ -386,12 +386,13 @@ impl PonderingCore {
             let h_anchor = h0;
             let drift = (&h_current - h_anchor)?;  // h_current - h0
             let correction = drift.affine(-lambda, 0.0)?;  // -λ·(h_current - h0)
-            
-            // Apply correction as momentum in next RK4 iteration
-            // The semantic_penalty will be applied at the start of next loop
+
+            // FIX: Apply correction to h_current before next RK4 iteration
+            h_current = (&h_current + &correction)?;
+
             // PHASE 50.2: Commented out hot-loop log
             // eprintln!("[GOD'S GATE] Applied vector projection (λ={:.3}) toward semantic anchor", lambda);
-            
+
             // Continue to next Picard iteration with corrected starting point
             converged = false;
         }
@@ -407,11 +408,12 @@ impl PonderingCore {
         
         {
             // Run actual extended topology verification
-            let was_hallucinated = final_divergence > TAU_LOGICAL;
+            let extended_divergence = self.verify_thought_topology_extended(&h_current, None).unwrap_or(final_divergence);
+            let was_hallucinated = extended_divergence > TAU_LOGICAL;
             
             // Store results atomically for next token to read
             // Phase 36: Inline updates eliminate OS thread overhead and stream ordering issues
-            gods_gate_state.store_divergence(final_divergence);
+            gods_gate_state.store_divergence(extended_divergence);
             gods_gate_state.mark_hallucinated(was_hallucinated);
         }
         
@@ -452,7 +454,7 @@ impl PonderingCore {
         // Cosine similarity = dot / (||h_curr|| · ||h_anchor||)
         let norm_product = (&norm_curr * &norm_anchor)?;
         let cosine_sim = (&dot_product / norm_product)?
-            .sum_all()?
+            .mean_all()?
             .to_scalar::<f32>()? as f64;
         
         // Divergence = 1 - |cosine_similarity|
@@ -588,7 +590,7 @@ impl PonderingCore {
     }
     
     /// PHASE 49.6: Bare-Metal variable-dt RK4 using .affine()
-    #[allow(dead_code)]
+    // #[allow(dead_code)]
     fn rk4_step_variable_dt(&self, h_n: &Tensor, ghost_tensor: &Option<Tensor>, dt: f64, correction: Option<&Tensor>) -> Result<Tensor> {
         let half_dt = dt / 2.0;
         let sixth_dt = dt / 6.0;
@@ -810,7 +812,7 @@ impl PonderingCore {
     /// The method computes a "physics residual" that penalizes violations of geometric
     /// conservation laws. This residual is injected into the Picard iteration to force
     /// the RK4 integrator to "rethink" invalid transformations.
-    #[allow(dead_code)]
+    // #[allow(dead_code)]
     fn verify_thought_topology_extended(&self, pondered_vector: &Tensor, grid_topology: Option<&crate::semantic_network::GridTopology>) -> Result<f64> {
         // First, run standard LU-based semantic verification
         let semantic_residual = self.verify_thought_topology(pondered_vector)?;
@@ -854,7 +856,7 @@ impl PonderingCore {
     /// 
     /// # Returns
     /// * Physics violation residual (0.0 = perfect conservation, 1.0 = total violation)
-    #[allow(dead_code)]
+    // #[allow(dead_code)]
     fn compute_physics_violation(&self, topology: &crate::semantic_network::GridTopology, pondered: &Tensor) -> Result<f64> {
         let h_vec: Vec<f32> = pondered.to_vec1()?;
         let hidden_size = h_vec.len();
@@ -943,7 +945,7 @@ impl PonderingCore {
     /// 3. Perform LU decomposition: L = U·U^T (Cholesky for symmetric Laplacian)
     /// 4. Solve L·x = h for x (the "projected" thought)
     /// 5. Compute residual: ||h - L·x|| / ||h||
-    #[allow(dead_code)]
+    // #[allow(dead_code)]
     fn verify_thought_topology(&self, pondered_vector: &Tensor) -> Result<f64> {
         // Check if semantic network is available
         let network_guard = match &self.semantic_network {
@@ -1024,7 +1026,7 @@ impl PonderingCore {
     }
     
     /// Solve Laplacian system using dense LU decomposition
-    #[allow(dead_code)]
+    // #[allow(dead_code)]
     fn solve_lu_dense(&self, laplacian: &Array2<f64>, h: &[f64]) -> Result<f64> {
         let n = h.len();
         
@@ -1105,7 +1107,7 @@ impl PonderingCore {
     /// WARNING: Currently returns a bounded fallback residual. 
     /// TODO (Academic Review): Implement Generalized Minimal Residual method (GMRES)
     /// or Conjugate Gradient (CG) for rigorous O(N^2) Krylov subspace evaluation.
-    #[allow(dead_code)]
+    // #[allow(dead_code)]
     fn solve_lu_sparse_approx(&self, _laplacian: &Array2<f64>, _h: &[f64], n: usize) -> Result<f64> {
         eprintln!("[GOD'S GATE] WARNING: Using unverified sparse fallback for N={}. GMRES solver pending.", n);
         Ok(0.05) // Fallback residual to prevent system stall

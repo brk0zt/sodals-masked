@@ -893,7 +893,21 @@ impl Kernel {
                         tokio::task::spawn_blocking(move || {
                             let config = train_projector::TrainingConfig::default();
                             let vocab = vec!["merhaba".to_string(), "dünya".to_string()];
-                            if let Ok(dataset) = train_projector::AlignmentDataset::from_vocabulary(&vocab, 10, 768) {
+                            // TODO: Wire up real Qwen embed_tokens layer via extract_real_embedding()
+                            // Currently using simulated embeddings — training loop runs but aligns to noise
+                            tracing::warn!("⚠️ /egit: Using SIMULATED embeddings. Wire up real Qwen model for meaningful training.");
+                            let mut waves = Vec::new();
+                            let mut embeddings = Vec::new();
+                            for word in &vocab {
+                                if let Ok(wave) = train_projector::AlignmentDataset::generate_real_wave(word, 10) {
+                                    waves.push(wave);
+                                }
+                                embeddings.push(
+                                    train_projector::AlignmentDataset::generate_simulated_embedding(word, 768)
+                                );
+                            }
+                            if waves.len() == vocab.len() {
+                                let dataset = train_projector::AlignmentDataset::from_real_data(vocab, waves, embeddings);
                                 if let Err(e) = train_projector::train_alignment_layer(config, dataset, None) {
                                     println!("Eğitim Hatası: {}", e);
                                 }

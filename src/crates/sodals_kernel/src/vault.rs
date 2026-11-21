@@ -80,6 +80,26 @@ impl Vault {
         Ok(())
     }
 
+    /// Vektör Araması (Search) — tenant (user_id) izolasyonu ile
+    /// Sadece ilgili kullanıcıya ait anılarda matematiksel benzerliği bulur.
+    pub fn search_for_user(&self, user_id: &str, query_vec: &[f32], top_k: usize) -> Vec<(u64, f32)> {
+        let mut query_proc = query_vec.to_vec();
+        self.shield.project_vector(&mut query_proc);
+
+        let mut scores: Vec<(u64, f32)> = self
+            .memories
+            .par_iter()
+            .filter(|mem| mem.user_id == user_id)
+            .map(|mem| {
+                let score = cosine_similarity(&query_proc, &mem.vector);
+                (mem.id, score)
+            })
+            .collect();
+
+        scores.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+        scores.iter().take(top_k).cloned().collect()
+    }
+
     /// Vektör Araması (Search)
     /// Sadece matematiksel benzerliği bulur, içeriği okumaz.
     pub fn search(&self, query_vec: &[f32], top_k: usize) -> Vec<(u64, f32)> {
@@ -96,6 +116,23 @@ impl Vault {
         // Puana göre sırala
         scores.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
         scores.iter().take(top_k).cloned().collect()
+    }
+
+    /// İçeriği Çöz (Decryption On Demand) — tenant sahipliği doğrulamalı
+    pub fn retrieve_content_for_user(&self, id: u64, user_id: &str) -> Result<String> {
+        let entry = self
+            .memories
+            .iter()
+            .find(|m| m.id == id && m.user_id == user_id)
+            .ok_or(anyhow!("Anı bulunamadı veya erişim yetkisi yok"))?;
+
+        let decrypted_bytes = self.shield.decrypt(&entry.encrypted_data)
+            .context("Şifre çözme hatası")?;
+
+        let text = String::from_utf8(decrypted_bytes)
+            .context("UTF-8 hatası")?;
+
+        Ok(text)
     }
 
     /// İçeriği Çöz (Decryption On Demand)

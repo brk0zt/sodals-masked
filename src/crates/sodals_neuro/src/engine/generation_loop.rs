@@ -8,7 +8,7 @@ use tokenizers::Tokenizer;
 
 use crate::engine::llm_engine::LlmEngine;
 use crate::engine::chimera_router::{NeuroConfig, TaskPlan, PlanMonitor, TextCoherenceFilter, ANALOGICAL_REASONING_PROTOCOL};
-use crate::engine::logits_fusion::{PhysicsGuidedLogitsProcessor, SyntaxPerspective, CausalPerspective, GeometerPerspective};
+use crate::engine::logits_fusion::{PhysicsGuidedLogitsProcessor, SyntaxPerspective, CausalPerspective, GeometerPerspective, LogitPerspective};
 use crate::engine::oracle_worker::{self, OracleHandle};
 use crate::models::qwen_custom::PhaseSignal;
 use crate::semantic_parser::{SemanticNode, SemanticRegisterFile, SemanticRegisterFileWithQmem, CodeWeaver, EbnfLogitMask, MmluLogitMask};
@@ -25,13 +25,14 @@ pub fn generate_stream(
     callback: impl Fn(String) + Send + Sync + 'static,
     requested_config: &NeuroConfig,
     visual_token_count: usize,
+    max_tokens: usize,
 ) -> Result<String> {
     // Detect ARC tasks or prompts requiring the multi-pass reasoning loop.
     // If it is a standard QA prompt (such as SRE, FinOps, FailureSensorIQ, or rule generation),
     // bypass the Phase 1/Phase 2 planner passes and execute the raw generation pass directly.
     let is_arc = prompt.contains("Frame") || prompt.contains("Available actions:") || prompt.contains("GridGame");
     if !is_arc {
-        eprintln!("[INFO] Standard QA prompt detected. Bypassing 3-pass planner loop.");
+        eprintln!("[INFO] Standard QA prompt detected. Bypassing 3-pass planner loop. Max tokens budget: {}", max_tokens);
         let (response, _) = run_raw_generation_pass(
             engine,
             prompt,
@@ -41,7 +42,7 @@ pub fn generate_stream(
             requested_config,
             visual_token_count,
             None,
-            0,
+            max_tokens,
             None,
             Vec::new(),
         )?;
@@ -121,7 +122,7 @@ pub fn generate_stream(
         requested_config,
         visual_token_count,
         None,
-        0, // use default estimated tokens limit
+        max_tokens,
         Some(&prefill),
         computed_impact_radius.clone(),
     )?;
@@ -508,16 +509,20 @@ fn run_raw_generation_pass(
             tokens.len(), if unified_prefix.is_some() { "PRESENT" } else { "ABSENT" });
     }
     eprintln!("[GEN] Prefill starting with {} tokens...", tokens.len());
-    // Try to apply static KV-cache when a real cartridge is in use (node_count > 0)
-    // (prepare_qmem_cartridges may have been called earlier; check again)
-    // Note: safe no-op if static cache is empty.
-    engine.apply_static_kv_cache();
+    // Compute a deterministic prefix hash so static_kv_cache never leaks across different prompts.
+    let prompt_prefix_hash: u64 = {
+        use std::hash::{Hash, Hasher};
+        let mut h = std::collections::hash_map::DefaultHasher::new();
+        tokens.hash(&mut h);
+        h.finish()
+    };
+    let _ = engine.apply_static_kv_cache_for_hash(prompt_prefix_hash);
 
     eprintln!("[GEN] Calling run_prefill_phase...");
     let logits = run_prefill_phase(engine, &input_ids, unified_prefix.as_ref(), &dummy_srf)?;
     eprintln!("[GEN] run_prefill_phase returned.");
-    // After prefill, if we had a QMEM cartridge, save the KV cache for reuse.
-    engine.save_static_kv_cache();
+    // After prefill, save the KV cache tagged with this exact prompt prefix hash.
+    engine.save_static_kv_cache_with_hash(prompt_prefix_hash);
     eprintln!("[GEN] Prefill complete.");
     
     let mut next_token_logits = extract_last_logits(&logits)?;
@@ -649,9 +654,17 @@ fn run_raw_generation_pass(
         None
     };
 
-    let hard_cap = if max_tokens > 0 { max_tokens } else { task_plan.estimated_tokens };
-    eprintln!("[GEN] Starting autoregressive loop. Budget: {} tokens", hard_cap);
-    for _i in 0..hard_cap {
+    let mut hard_cap = if max_tokens > 0 { max_tokens } else { task_plan.estimated_tokens };
+    let mut expansions_performed = 0usize;
+    let mut last_evaluated_cap = 0usize;
+    let max_token_ceiling = std::env::var("SODALS_MAX_TOKEN_CEILING")
+        .ok()
+        .and_then(|v| v.parse::<usize>().ok())
+        .unwrap_or(6144);
+
+    eprintln!("[GEN] Starting autoregressive loop. Budget: {} tokens (Max ceiling: {})", hard_cap, max_token_ceiling);
+    let mut _i = 0usize;
+    while _i < hard_cap {
             // Progress indicator
             if _i % 100 == 0 || _i + 1 == hard_cap {
                 eprintln!("[GEN] Progress: {}/{} tokens generated", _i, hard_cap);
@@ -717,7 +730,7 @@ fn run_raw_generation_pass(
                 if speculative_chain_active {
                     eprintln!("[SPECULATIVE] Speculative chain ended; verifying full model logits for current prefix...");
                     engine.clear_kv_cache();
-                    engine.apply_static_kv_cache();
+                    let _ = engine.apply_static_kv_cache_for_hash(prompt_prefix_hash);
                     let prefix_input = Tensor::new(&all_tokens[..], &engine.device).and_then(|t| t.unsqueeze(0));
                     if let Ok(pref) = prefix_input {
                         let logits = run_prefill_phase(engine, &pref, unified_prefix.as_ref(), &dummy_srf)?;
@@ -774,7 +787,7 @@ fn run_raw_generation_pass(
                     // Fallback: compute full model forward for updated prefix
                     eprintln!("[SPECULATIVE] No draft next logits, running model.forward for verification...");
                     engine.clear_kv_cache();
-                    engine.apply_static_kv_cache();
+                    let _ = engine.apply_static_kv_cache_for_hash(prompt_prefix_hash);
                     let prefix_input = Tensor::new(&all_tokens[..], &engine.device).and_then(|t| t.unsqueeze(0));
                     if let Ok(pref) = prefix_input {
                         let logits = run_prefill_phase(engine, &pref, unified_prefix.as_ref(), &dummy_srf)?;
@@ -796,7 +809,7 @@ fn run_raw_generation_pass(
             );
 
             // FIX #9: TextCoherenceFilter check
-            let coherence = mind_filter.check_coherence(&current_text);
+            let coherence = mind_filter.check_coherence(&current_text, &full_response);
             if coherence < 0.3 {
                 repetition_counter += 1;
                 if repetition_counter > 15 {
@@ -915,7 +928,11 @@ fn run_raw_generation_pass(
             }
 
             // F. Model Forward for Next Token with QMEM and PhaseSignal
-            let phase_sig = crate::engine::oracle_worker::oracle_consume_phase_signal(&oracle);
+            let phase_sig = if config.strict_determinism {
+                None
+            } else {
+                crate::engine::oracle_worker::oracle_consume_phase_signal(&oracle)
+            };
             
             #[cfg(feature = "cuda")]
             let poles_ptr = srf_with_qmem.poles_cartridge.as_ref().map(|c| c.device_ptr());
@@ -941,26 +958,27 @@ fn run_raw_generation_pass(
                 } else {
                     false
                 };
-                let bridge_result = engine.semantic_memory_base.try_read().ok()
-                    .and_then(|net_f| {
-                        engine.semantic_memory.try_read().ok().map(|net_g| {
-                            let impedance_theta = if net_g.n > 0 {
-                                net_g.damping.iter().take(net_g.n).sum::<f64>()
-                                    / net_g.n as f64
-                            } else {
-                                1.0
-                            };
-                            let projection = net_f.compute_clifford_projection(&net_g, impedance_theta);
-                            let h_phase = projection.arg() as f32;
-                            let confidence = projection.norm() as f32;
-                            let sacak_nodes = crate::semantic_network::ResonanceNetwork::find_cross_network_sacak(
-                                &net_f, &net_g, 0.25
-                            );
-                            let sacak_count = sacak_nodes.len();
-                            let cx_w_boost = (sacak_count as f32 * 0.02).min(0.1);
-                            (h_phase, cx_w_boost, sacak_count, confidence)
-                        })
-                    });
+                let read_f = if config.strict_determinism { engine.semantic_memory_base.read().ok() } else { engine.semantic_memory_base.try_read().ok() };
+                let bridge_result = read_f.and_then(|net_f| {
+                    let read_g = if config.strict_determinism { engine.semantic_memory.read().ok() } else { engine.semantic_memory.try_read().ok() };
+                    read_g.map(|net_g| {
+                        let impedance_theta = if net_g.n > 0 {
+                            net_g.damping.iter().take(net_g.n).sum::<f64>()
+                                / net_g.n as f64
+                        } else {
+                            1.0
+                        };
+                        let projection = net_f.compute_clifford_projection(&net_g, impedance_theta);
+                        let h_phase = projection.arg() as f32;
+                        let confidence = projection.norm() as f32;
+                        let sacak_nodes = crate::semantic_network::ResonanceNetwork::find_cross_network_sacak(
+                            &net_f, &net_g, 0.25
+                        );
+                        let sacak_count = sacak_nodes.len();
+                        let cx_w_boost = (sacak_count as f32 * 0.02).min(0.1);
+                        (h_phase, cx_w_boost, sacak_count, confidence)
+                    })
+                });
                 
                 if let Some((h_phase, cx_w_boost, sacak_count, confidence)) = bridge_result {
                     let active_bridge = !(pure_inference && !has_cartridge);
@@ -971,7 +989,8 @@ fn run_raw_generation_pass(
                     }
                 }
                 
-                if let Ok(mut net_f) = engine.semantic_memory_base.try_write() {
+                let mut write_f = if config.strict_determinism { engine.semantic_memory_base.write().ok() } else { engine.semantic_memory_base.try_write().ok() };
+                if let Some(ref mut net_f) = write_f {
                     net_f.step(&[]);
                 }
             }
@@ -996,12 +1015,105 @@ fn run_raw_generation_pass(
 
                 token_concept_map_ptr,
 
+                None,
+
+                None,
+
             ).map_err(|e| anyhow::anyhow!("Forward error: {}", e))?;
             
             next_token_logits = extract_last_logits(&next_logits)?;
             gpr_semantic_divergence = oracle_worker::estimate_logit_peakedness(&next_token_logits)?;
 
-            // Steering vector is now managed dynamically above
+            // DYNAMIC BUDGET EXPANDER SUPERVISOR
+            // When step count reaches ~90% of active hard_cap, evaluate if model is advancing genuine CoT without cyclic loops
+            let threshold = hard_cap * 90 / 100;
+            if _i >= threshold && last_evaluated_cap != hard_cap && expansions_performed < 3 && hard_cap < max_token_ceiling {
+                last_evaluated_cap = hard_cap;
+                let mut window_start = full_response.len().saturating_sub(1500);
+                while window_start > 0 && !full_response.is_char_boundary(window_start) {
+                    window_start -= 1;
+                }
+                let recent_text = &full_response[window_start..];
+                
+                let hesitation_phrases = [
+                    "wait,", "actually,", "let's re-evaluate", "let me verify",
+                    "let's check", "let's re-check"
+                ];
+                let recent_lower = recent_text.to_lowercase();
+                let hesitation_count: usize = hesitation_phrases
+                    .iter()
+                    .map(|p| recent_lower.matches(p).count())
+                    .sum();
+                
+                let words: Vec<&str> = recent_lower
+                    .split_whitespace()
+                    .filter(|w| w.len() > 2)
+                    .collect();
+                let total_words = words.len();
+                let unique_words: std::collections::HashSet<&str> = words.into_iter().collect();
+                let uniqueness_ratio = if total_words > 20 {
+                    unique_words.len() as f64 / total_words as f64
+                } else {
+                    1.0
+                };
+                
+                let is_clean_progress = repetition_counter == 0 
+                    && !duplicate_found 
+                    && hesitation_count <= 8 
+                    && uniqueness_ratio >= 0.32;
+                
+                eprintln!(
+                    "\n[BUDGET SUPERVISOR DIAG] step {}/{}: hesitation_count={}, uniqueness_ratio={:.4}, repetition_counter={}, duplicate_found={}, clean={}",
+                    _i, hard_cap, hesitation_count, uniqueness_ratio, repetition_counter, duplicate_found, is_clean_progress
+                );
+                
+                if is_clean_progress {
+                    let expansion = hard_cap / 2; // +50%
+                    let new_cap = (hard_cap + expansion).min(max_token_ceiling);
+                    if new_cap > hard_cap {
+                        eprintln!(
+                            "\n[BUDGET SUPERVISOR] 🚀 Genuine CoT progress detected at step {}/{} (uniqueness: {:.2}, hesitation_count: {}). Expanding token budget: {} -> {} tokens (+50%).",
+                            _i, hard_cap, uniqueness_ratio, hesitation_count, hard_cap, new_cap
+                        );
+                        hard_cap = new_cap;
+                        expansions_performed += 1;
+                    } else {
+                        expansions_performed = 3;
+                    }
+                } else {
+                    eprintln!(
+                        "\n[BUDGET SUPERVISOR] 🛑 Expansion check at step {}/{} -> DENIED (repetition: {}, dup: {}, hesitation: {}, uniqueness: {:.2}). Maintaining hard cap at {} tokens.",
+                        _i, hard_cap, repetition_counter, duplicate_found, hesitation_count, uniqueness_ratio, hard_cap
+                    );
+                    expansions_performed += 1;
+                }
+            }
+
+            // EMERGENCY ANSWER LATCH FALLBACK
+            // If model is within last 60 tokens of hard_cap and has not produced "Answer:", force answer format prompt
+            if _i >= hard_cap.saturating_sub(60) && _i < hard_cap {
+                let lower = full_response.to_lowercase();
+                if !lower.contains("answer:") {
+                    if _i == hard_cap.saturating_sub(60) {
+                        eprintln!(
+                            "\n[ANSWER LATCH] ⚠️ Hard cap deadline approaching at step {}/{}. Injecting forced Answer: signifier.",
+                            _i, hard_cap
+                        );
+                        let has_close_think = full_response.contains("</think>");
+                        let latch_prompt = if !has_close_think {
+                            "\n</think>\n\nTherefore, the final answer is:\nAnswer: "
+                        } else {
+                            "\n\nTherefore, the final answer is:\nAnswer: "
+                        };
+                        full_response.push_str(latch_prompt);
+                        if let Some(cb) = callback {
+                            cb(latch_prompt.to_string());
+                        }
+                    }
+                }
+            }
+
+            _i += 1;
         }
 
     // Check for skipped files in impact radius
@@ -1239,14 +1351,16 @@ fn setup_processors(
         srf.dx = phase_alignment;
     }
 
-    let syntax_expert = Box::new(SyntaxPerspective { is_code_block: task_plan.is_syntax_only });
-    let causal_expert = Box::new(CausalPerspective { energy: phase_alignment, is_pink_zone });
-    let geometer_expert = Box::new(GeometerPerspective { regret_magnitude: 0.0 });
+    let syntax_expert: Box<dyn LogitPerspective> = Box::new(SyntaxPerspective { is_code_block: task_plan.is_syntax_only });
+    let causal_expert: Box<dyn LogitPerspective> = Box::new(CausalPerspective { energy: phase_alignment, is_pink_zone });
+    let geometer_expert: Box<dyn LogitPerspective> = Box::new(GeometerPerspective { regret_magnitude: 0.0 });
 
     let mut proc = PhysicsGuidedLogitsProcessor::new(
         299792458,
         Some(config.temperature),
         Some(config.top_p),
+        if config.top_k > 0 { Some(config.top_k) } else { None },
+        if config.min_p > 0.0 { Some(config.min_p) } else { None },
         vec![syntax_expert, causal_expert, geometer_expert],
     );
     proc.blind_experts = false; // OPERATIONAL PHASE 6: Experts re-enabled with VRAM sanitation
@@ -1475,6 +1589,8 @@ fn run_prefill_phase(
             None,
             ghost_prefix,
             None, // token_concept_map_ptr: prefill'de semantik harita gerekmez
+            None,
+            None,
         ).map_err(|e| anyhow::anyhow!("Prefill Forward Error: {}", e))?;
         eprintln!("[GEN] run_prefill_phase: model.forward returned.");
         out
@@ -1740,8 +1856,9 @@ fn parse_mcq_prompt(prompt: &str) -> Option<(String, Vec<(String, String)>)> {
         return None;
     }
     
-    let question_text = prompt[q_start..o_start].trim().to_string();
-    let options_block = &prompt[o_start + options_marker.len()..];
+    // Slice lower_prompt (whose byte offsets match q_start/o_start) to avoid UTF-8 panic on case-expanding chars
+    let question_text = lower_prompt[q_start..o_start].trim().to_string();
+    let options_block = &lower_prompt[o_start + options_marker.len()..];
     
     let mut options = Vec::new();
     for line in options_block.lines() {
@@ -1751,12 +1868,14 @@ fn parse_mcq_prompt(prompt: &str) -> Option<(String, Vec<(String, String)>)> {
         }
         
         if let Some(first_char) = trimmed.chars().next() {
-            if (first_char == 'A' || first_char == 'B' || first_char == 'C' || first_char == 'D' || first_char == 'E')
-                && (trimmed[1..].starts_with('.') || trimmed[1..].starts_with(')'))
-            {
-                let letter = first_char.to_string();
-                let content = trimmed[2..].trim().to_string();
-                options.push((letter, content));
+            let up = first_char.to_ascii_uppercase();
+            if matches!(up, 'A' | 'B' | 'C' | 'D' | 'E') && trimmed.len() >= 2 {
+                let rest = &trimmed[first_char.len_utf8()..];
+                if rest.starts_with('.') || rest.starts_with(')') {
+                    let letter = up.to_string();
+                    let content = rest[1..].trim().to_string();
+                    options.push((letter, content));
+                }
             }
         }
     }

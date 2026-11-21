@@ -65,10 +65,19 @@ impl VisionEncoder {
         
         let input = Tensor::from_vec(input_data, (1, 3, 224, 224), &self.device)?;
         
-        // Extract CLIP features [1, 257, 1024]
-        let features = self.model.forward(&input)?;
-        
         // Map to LLM space [1, 257, hidden_size]
-        self.projector.forward(&features)
+        // Instead of forward() which returns pooled output [1, 1024],
+        // we use output_hidden_states() to get all sequence tokens [1, 257, 1024]
+        let hidden_states = self.model.output_hidden_states(&input)?;
+        
+        // The last element is the pooled output after final layer norm.
+        // The second to last element is the full encoder outputs [1, 257, 1024].
+        let num_states = hidden_states.len();
+        if num_states < 2 {
+            return Err(candle_core::Error::Msg("Not enough hidden states from vision model".to_string()));
+        }
+        let features = &hidden_states[num_states - 2];
+        
+        self.projector.forward(features)
     }
 }

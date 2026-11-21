@@ -201,7 +201,7 @@ impl<E: ArcEnvironment> AgentLoop<E> {
             config.temperature = 0.1;
             
             if let Ok(dsl_output) = crate::engine::generation_loop::generate_stream(
-                eng, &prompt, None, None, |_t| {}, &config, 0
+                eng, &prompt, None, None, |_t| {}, &config, 0, 0
             ) {
                 eprintln!("[AGENT LOOP] Sentezlenen DSL:\n{}", dsl_output);
                 if let Ok(cst) = crate::compiler::qmem_compiler::compile(&dsl_output) {
@@ -372,7 +372,7 @@ impl<E: ArcEnvironment> AgentLoop<E> {
                 let mut net_child = ResonanceNetwork::new(4096);
                 self.adapter.embed_observation(&child_obs, &mut net_child);
                 
-                let (h_phase, _) = self.pipeline.bridge.project(net_f, &net_child, 1.0);
+                let (h_phase, _, _) = self.pipeline.bridge.project(net_f, &net_child, 1.0);
                 let score = (std::f64::consts::PI - h_phase.abs()).max(0.0);
                 all_scores.push(score);
                 

@@ -13,6 +13,10 @@
 use num_complex::Complex64;
 use std::collections::HashMap;
 
+fn verbose() -> bool {
+    std::env::var("SODALS_VERBOSE").is_ok()
+}
+
 use crate::semantic_network::ResonanceNetwork;
 use crate::semantic_parser::SemanticRegisterFile;
 use crate::fluid_algebra::{bind_phasors, apply_viscosity};
@@ -71,13 +75,14 @@ impl CliffordBridge {
     /// * `impedance_theta` - Ortalama topological impedance (θ_z)
     ///
     /// # Returns
-    /// `(h_phase: f64, confidence: f64)` — h_phase SRF.dx'e yazılır
+    /// `(h_phase: f64, confidence: f64, vsa_bound: Option<(String, Vec<Complex64>)>)`
+    /// — h_phase SRF.dx'e yazılır; vsa_bound dinamik H-VSA bağı için ad+sinyaldir.
     pub fn project(
         &mut self,
         net_f: &ResonanceNetwork,
         net_g: &ResonanceNetwork,
         impedance_theta: f64,
-    ) -> (f64, f64) {
+    ) -> (f64, f64, Option<(String, Vec<Complex64>)>) {
         // ─── Makroskopik katman ───────────────────────────────────────────────
         let f_phase = net_f.compute_aggregate_phase();
         let g_phase = net_g.compute_aggregate_phase();
@@ -144,15 +149,31 @@ impl CliffordBridge {
 
         self.last_h_phase = h_phase;
         self.last_confidence = combined_confidence;
-        self.last_bound_signature = bound_sig;
+        self.last_bound_signature = bound_sig.clone();
 
-        eprintln!(
-            "[CLIFFORD BRIDGE] f={:.3} g={:.3} θ_z={:.3} → h={:.3} conf={:.3} saçak={}",
-            f_phase, g_phase, impedance_theta, h_phase, combined_confidence,
-            self.last_sacak.len()
-        );
+        // Dinamik H-VSA bağı: en yüksek enerjili iki düğümün birleşik imzası
+        let vsa_bound_opt = if let (Some(id_f), Some(id_g)) = (top_f, top_g) {
+            if !self.last_bound_signature.is_empty() {
+                Some((
+                    format!("VSA_BIND_{}_{}", id_f, id_g),
+                    self.last_bound_signature.clone(),
+                ))
+            } else {
+                None
+            }
+        } else {
+            None
+        };
 
-        (h_phase, combined_confidence)
+        if verbose() {
+            eprintln!(
+                "[CLIFFORD BRIDGE] f={:.3} g={:.3} θ_z={:.3} → h={:.3} conf={:.3} saçak={}",
+                f_phase, g_phase, impedance_theta, h_phase, combined_confidence,
+                self.last_sacak.len()
+            );
+        }
+
+        (h_phase, combined_confidence, vsa_bound_opt)
     }
 
     /// En yüksek kinetik enerjiye sahip düğümün ID'sini döndür
@@ -219,6 +240,8 @@ pub struct ArkheState {
     pub h_phase: f32,
     /// Projeksiyon güven skoru → CX_W güncellenir
     pub bridge_confidence: f32,
+    /// Dinamik H-VSA bağı: (etiket, birleşik imza) — aktif belleğe yazılır
+    pub vsa_bound_signature: Option<(String, Vec<Complex64>)>,
 }
 
 /// Hedef görev manifoldu — Arkhe Bilinç tarafından belirlenir
@@ -255,6 +278,7 @@ impl ArkheState {
             gate_open: true,
             h_phase: 0.0,
             bridge_confidence: 0.0,
+            vsa_bound_signature: None,
         }
     }
 }
@@ -332,9 +356,10 @@ impl ArkheCognitionPipeline {
         self.arkhe_sartlar(net_g);
 
         // ─── CliffordBridge — h_phase hesapla ───────────────────────────────
-        let (h_phase, confidence) = self.bridge.project(net_f, net_g, impedance_theta);
+        let (h_phase, confidence, vsa_bound_opt) = self.bridge.project(net_f, net_g, impedance_theta);
         self.state.h_phase = h_phase as f32;
         self.state.bridge_confidence = confidence as f32;
+        self.state.vsa_bound_signature = vsa_bound_opt;
         self.state.sacak_nodes = self.bridge.last_sacak.clone();
 
         // SRF güncelle
@@ -347,10 +372,12 @@ impl ArkheCognitionPipeline {
             // God's Gate kapalı: şart ihlali → DX'i sıfırla (halüsinasyon freni)
             srf.set_data_phase(0.0);
             srf.cx_w = (srf.cx_w * 0.8).max(0.0); // güven düşür
-            eprintln!(
-                "[ARKHE GATE CLOSED] Constraint violation: {:?}",
-                self.state.constraint_violation
-            );
+            if verbose() {
+                eprintln!(
+                    "[ARKHE GATE CLOSED] Constraint violation: {:?}",
+                    self.state.constraint_violation
+                );
+            }
         }
 
         &self.state
@@ -423,10 +450,12 @@ impl ArkheCognitionPipeline {
         let bx_phase = net_g.compute_aggregate_phase() as f32;
         srf.bx = bx_phase; // Bilinç → sistem promptu faz anlamı
 
-        eprintln!(
-            "[ARKHE BILINC] Manifold={:?} bx={:.3} L={:.2} T={:.2} S={:.2}",
-            manifold, bx_phase, logic_energy, temporal_energy, spatial_energy
-        );
+        if verbose() {
+            eprintln!(
+                "[ARKHE BILINC] Manifold={:?} bx={:.3} L={:.2} T={:.2} S={:.2}",
+                manifold, bx_phase, logic_energy, temporal_energy, spatial_energy
+            );
+        }
 
         state.task_manifold = manifold;
         state.bx_phase = bx_phase;
@@ -462,10 +491,12 @@ impl ArkheCognitionPipeline {
             .map(|(_, label, score)| (label, score))
             .collect();
 
-        eprintln!(
-            "[ARKHE BENZERLIK] top={:?} saçak_count={}",
-            self.state.top_similarity, self.state.sacak_nodes.len()
-        );
+        if verbose() {
+            eprintln!(
+                "[ARKHE BENZERLIK] top={:?} saçak_count={}",
+                self.state.top_similarity, self.state.sacak_nodes.len()
+            );
+        }
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -511,10 +542,12 @@ impl ArkheCognitionPipeline {
         // Enerji kısıtlı BFS (Dijkstra ağırlıkla)
         let (path, cost) = Self::energy_constrained_bfs(net_g, start, target);
 
-        eprintln!(
-            "[ARKHE CIKARIM] start={} target={} path_len={} cost={:.3}",
-            start, target, path.len(), cost
-        );
+        if verbose() {
+            eprintln!(
+                "[ARKHE CIKARIM] start={} target={} path_len={} cost={:.3}",
+                start, target, path.len(), cost
+            );
+        }
 
         self.state.inference_path = if path.is_empty() { None } else { Some(path) };
         self.state.path_energy_cost = cost;
@@ -662,10 +695,12 @@ impl ArkheCognitionPipeline {
         // Wronskian empedansı
         let wronskian = SemanticWave::compute_cross_network_wronskian(&wave_f, &wave_g);
 
-        eprintln!(
-            "[ARKHE UYUM] constructive={} destructive={} compatibility={:.3} wronskian={:.6} bivector={:.3}",
-            constructive, destructive, compatibility, wronskian, bivector_score
-        );
+        if verbose() {
+            eprintln!(
+                "[ARKHE UYUM] constructive={} destructive={} compatibility={:.3} wronskian={:.6} bivector={:.3}",
+                constructive, destructive, compatibility, wronskian, bivector_score
+            );
+        }
 
         self.state.compatibility_score = compatibility;
         self.state.wronskian = wronskian;
@@ -715,10 +750,12 @@ impl ArkheCognitionPipeline {
         let method_conf = ((self.state.compatibility_score as f32) * (1.0 - violation_penalty))
             .clamp(0.0, 1.0);
 
-        eprintln!(
-            "[ARKHE YONTEM] sequence={:?} confidence={:.3}",
-            &sequence[..sequence.len().min(4)], method_conf
-        );
+        if verbose() {
+            eprintln!(
+                "[ARKHE YONTEM] sequence={:?} confidence={:.3}",
+                &sequence[..sequence.len().min(4)], method_conf
+            );
+        }
 
         self.state.action_sequence = sequence;
         self.state.method_confidence = method_conf;
@@ -770,26 +807,32 @@ impl ArkheCognitionPipeline {
             if relevant_energy > *max_energy {
                 self.state.gate_open = false;
                 self.state.constraint_violation = Some(constraint_name.clone());
-                eprintln!(
-                    "[ARKHE SARTLAR] IHLAL! {}: energy={:.3} > max={:.3} → Gate CLOSED",
-                    constraint_name, relevant_energy, max_energy
-                );
+                if verbose() {
+                    eprintln!(
+                        "[ARKHE SARTLAR] IHLAL! {}: energy={:.3} > max={:.3} → Gate CLOSED",
+                        constraint_name, relevant_energy, max_energy
+                    );
+                }
                 return;
             }
         }
 
         // Wronskian proxy ile soft check (uyum düşükse uyarı)
         if self.state.wronskian < 0.1 && self.state.compatibility_score < 0.2 {
-            eprintln!(
-                "[ARKHE SARTLAR] DÜŞÜK UYUM: wronskian={:.3} compat={:.3} — Gate açık ama güven düşük",
-                self.state.wronskian, self.state.compatibility_score
-            );
+            if verbose() {
+                eprintln!(
+                    "[ARKHE SARTLAR] DÜŞÜK UYUM: wronskian={:.3} compat={:.3} — Gate açık ama güven düşük",
+                    self.state.wronskian, self.state.compatibility_score
+                );
+            }
         }
 
-        eprintln!(
-            "[ARKHE SARTLAR] OK — energy={:.3} gate=OPEN",
-            total_energy
-        );
+        if verbose() {
+            eprintln!(
+                "[ARKHE SARTLAR] OK — energy={:.3} gate=OPEN",
+                total_energy
+            );
+        }
     }
 }
 
@@ -851,13 +894,482 @@ pub fn run_arc_agi_pipeline(
     // Şartlar: kütle korunumu kontrolü
     pipeline.arkhe_sartlar(net_g);
 
-    eprintln!(
-        "[ARC-AGI PIPELINE] manifold=GeometricTransformation gate={} sequence={:?}",
-        pipeline.state.gate_open,
-        &pipeline.state.action_sequence[..pipeline.state.action_sequence.len().min(5)]
-    );
+    if verbose() {
+        eprintln!(
+            "[ARC-AGI PIPELINE] manifold=GeometricTransformation gate={} sequence={:?}",
+            pipeline.state.gate_open,
+            &pipeline.state.action_sequence[..pipeline.state.action_sequence.len().min(5)]
+        );
+    }
 
     pipeline.state.action_sequence.clone()
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// TWO-LAYER DECOUPLED NEUROSYMBOLIC ARKHE STAGE ARCHITECTURE (GGUF & GRPO)
+// Katman 1: Multi-Sample Agreement (G=4) + Lens-Free CST PRM + Tier-1 Gate
+// Katman 2: Quota-Guarded Ternary GRPO Reward & Dynamic Lambda Curriculum
+// ════════════════════════════════════════════════════════════════════════════
+
+/// Nihai karar kapısı çıktısı (Katman 1: Seçmeli Tahmin / Abstention)
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum GateVerdict {
+    /// Güven eşiği geçildi (C_ns >= tau*) -> Doğrulanan cevabı üret
+    CommitAnswer(String),
+    /// 1/4 tam dağılma veya token tükenmesi (C_ns < tau*) -> "[ABSTAIN]" ("Bilmiyorum")
+    AbstainUnknown,
+}
+
+impl GateVerdict {
+    pub const ABSTAIN_TOKEN: &'static str = "[ABSTAIN]";
+
+    pub fn as_output_str(&self) -> &str {
+        match self {
+            GateVerdict::CommitAnswer(s) => s.as_str(),
+            GateVerdict::AbstainUnknown => Self::ABSTAIN_TOKEN,
+        }
+    }
+}
+
+/// Durum Arkhesi: Tekil bir çıkarım dalının (Pass-1 veya Cand 1..4) deterministik özeti
+#[derive(Debug, Clone)]
+pub struct CandidateRolloutTrace {
+    pub branch_id: String,
+    pub extracted_answer: String,
+    pub has_end_tag: bool,
+    pub is_symbolically_valid: bool,
+    pub verified_eq_count: u16,
+    pub contradiction_count: u16,
+    pub doubt_count: u16,
+    pub generated_tokens: u32,
+    pub agree_count: u8,
+    pub lens_free_score: f32,
+}
+
+impl CandidateRolloutTrace {
+    pub fn new(
+        branch_id: impl Into<String>,
+        extracted_answer: impl Into<String>,
+        has_end_tag: bool,
+        verified_eq_count: u16,
+        contradiction_count: u16,
+        doubt_count: u16,
+    ) -> Self {
+        Self {
+            branch_id: branch_id.into(),
+            extracted_answer: extracted_answer.into(),
+            has_end_tag,
+            is_symbolically_valid: contradiction_count == 0,
+            verified_eq_count,
+            contradiction_count,
+            doubt_count,
+            generated_tokens: 0,
+            agree_count: 1,
+            lens_free_score: -100.0,
+        }
+    }
+}
+
+/// Durum Arkhesi (StateArche): GGUF + DeltaNet SSM ve Nörosembolik boru hattı boyunca
+/// akan deterministik durum zarfı.
+#[derive(Debug, Clone)]
+pub struct ArkheExecutionContext {
+    pub question_id: String,
+    pub prompt_prefix_len: usize,
+    pub domain_alpha: f32,
+    pub rk4_steps: u8,
+    pub pass1_trace: Option<CandidateRolloutTrace>,
+    pub gate_triggered: bool,
+    pub candidate_pool: Vec<CandidateRolloutTrace>,
+    pub max_agreement: u8,
+    pub winning_index: Option<usize>,
+    pub epistemic_confidence: f32,
+    pub gate_verdict: GateVerdict,
+}
+
+impl ArkheExecutionContext {
+    pub fn new(question_id: impl Into<String>, prompt_prefix_len: usize) -> Self {
+        Self {
+            question_id: question_id.into(),
+            prompt_prefix_len,
+            domain_alpha: 0.0,
+            rk4_steps: 2,
+            pass1_trace: None,
+            gate_triggered: false,
+            candidate_pool: Vec::new(),
+            max_agreement: 1,
+            winning_index: None,
+            epistemic_confidence: 0.0,
+            gate_verdict: GateVerdict::AbstainUnknown,
+        }
+    }
+
+    pub fn winning_trace(&self) -> Option<&CandidateRolloutTrace> {
+        if self.gate_triggered && !self.candidate_pool.is_empty() {
+            self.winning_index.and_then(|idx| self.candidate_pool.get(idx))
+        } else {
+            self.pass1_trace.as_ref()
+        }
+    }
+}
+
+/// Polimorfik Arkhe Tasarım Kalıbı Arayüzü
+pub trait ArkheStage {
+    fn stage_name(&self) -> &'static str;
+    fn apply(&mut self, ctx: &mut ArkheExecutionContext, srf: &mut SemanticRegisterFile);
+}
+
+/// Arkhe 1 — Bilinç (ConsciousnessStage):
+/// GPR domain yönlendirme katsayısını (alpha) SRF.bx kaydına yazar ve RK4 adım sayısını belirler.
+pub struct ConsciousnessStage;
+
+impl ConsciousnessStage {
+    pub fn allocate_rk4_steps(alpha: f32) -> u8 {
+        let a = alpha.clamp(0.0, 1.0);
+        if a < 0.25 {
+            2
+        } else {
+            (2 + (3.0 * a).round() as u8).min(5)
+        }
+    }
+}
+
+impl ArkheStage for ConsciousnessStage {
+    fn stage_name(&self) -> &'static str {
+        "Arkhe1_Consciousness"
+    }
+
+    fn apply(&mut self, ctx: &mut ArkheExecutionContext, srf: &mut SemanticRegisterFile) {
+        let alpha = ctx.domain_alpha.clamp(0.0, 1.0);
+        ctx.rk4_steps = Self::allocate_rk4_steps(alpha);
+        srf.bx = alpha * std::f32::consts::PI;
+    }
+}
+
+/// Arkhe 3 — Çıkarım Tetikleyicisi (InferenceTriggerStage):
+/// Sıfır sızıntılı (zero-leakage) Pass-1 yapısal kusur denetimi.
+pub struct InferenceTriggerStage {
+    pub max_doubt_allowed: u16,
+}
+
+impl Default for InferenceTriggerStage {
+    fn default() -> Self {
+        Self { max_doubt_allowed: 1 }
+    }
+}
+
+impl InferenceTriggerStage {
+    pub fn should_trigger(trace: &CandidateRolloutTrace, max_doubt: u16) -> bool {
+        (!trace.has_end_tag)
+            || (!trace.is_symbolically_valid && trace.contradiction_count > 0)
+            || (trace.doubt_count > max_doubt)
+    }
+}
+
+impl ArkheStage for InferenceTriggerStage {
+    fn stage_name(&self) -> &'static str {
+        "Arkhe3_InferenceTrigger"
+    }
+
+    fn apply(&mut self, ctx: &mut ArkheExecutionContext, _srf: &mut SemanticRegisterFile) {
+        if !ctx.candidate_pool.is_empty() {
+            ctx.gate_triggered = true;
+            return;
+        }
+        if let Some(ref p1) = ctx.pass1_trace {
+            ctx.gate_triggered = Self::should_trigger(p1, self.max_doubt_allowed);
+        }
+    }
+}
+
+/// Arkhe 2 — Benzerlik (SimilarityStage):
+/// G=4 aday havuzundaki cevapları kanonik matematiksel forma indirgeyerek denklik sınıflarını sayar.
+pub struct SimilarityStage;
+
+impl SimilarityStage {
+    /// Boşlukları, dış \boxed{} sargısını ve gereksiz parantezleri temizleyen hızlı kanonikleştirici.
+    pub fn canonical_math_key(raw: &str) -> String {
+        let mut s = raw.trim().to_lowercase();
+        if let Some(inner) = s.strip_prefix("\\boxed{").and_then(|x| x.strip_suffix('}')) {
+            s = inner.trim().to_string();
+        }
+        s.chars()
+            .filter(|c| !c.is_whitespace() && *c != '$' && *c != '{' && *c != '}')
+            .collect()
+    }
+
+    pub fn are_equivalent(a: &str, b: &str) -> bool {
+        if a == b {
+            return true;
+        }
+        let ka = Self::canonical_math_key(a);
+        let kb = Self::canonical_math_key(b);
+        !ka.is_empty() && ka == kb
+    }
+}
+
+impl ArkheStage for SimilarityStage {
+    fn stage_name(&self) -> &'static str {
+        "Arkhe2_Similarity"
+    }
+
+    fn apply(&mut self, ctx: &mut ArkheExecutionContext, _srf: &mut SemanticRegisterFile) {
+        if ctx.candidate_pool.is_empty() {
+            let p1_clean = ctx
+                .pass1_trace
+                .as_ref()
+                .map(|p| p.has_end_tag && p.is_symbolically_valid && p.contradiction_count == 0)
+                .unwrap_or(false);
+            ctx.max_agreement = if p1_clean { 4 } else { 1 };
+            return;
+        }
+
+        let n = ctx.candidate_pool.len();
+        let mut counts = vec![1u8; n];
+        let mut max_ag = 1u8;
+
+        for i in 0..n {
+            let mut cnt = 0u8;
+            for j in 0..n {
+                if Self::are_equivalent(
+                    &ctx.candidate_pool[i].extracted_answer,
+                    &ctx.candidate_pool[j].extracted_answer,
+                ) {
+                    cnt = cnt.saturating_add(1);
+                }
+            }
+            counts[i] = cnt.max(1);
+            if counts[i] > max_ag {
+                max_ag = counts[i];
+            }
+        }
+
+        for (i, c) in ctx.candidate_pool.iter_mut().enumerate() {
+            c.agree_count = counts[i];
+        }
+        ctx.max_agreement = max_ag;
+    }
+}
+
+/// Arkhe 4 — Uyum (HarmonyLensFreeStage):
+/// Tuned Lens gürültüsünü tamamen dışlayan Lens-Free Nörosembolik PRM puanlayıcısı:
+/// S_LensFree(c) = 10*has_end + 8*agree_count + 1.5*min(eq_count, 10) - 8*contras - 2*doubt
+pub struct HarmonyLensFreeStage;
+
+impl HarmonyLensFreeStage {
+    pub const EQ_CAP: u16 = 10;
+
+    pub fn compute_score(trace: &CandidateRolloutTrace) -> f32 {
+        if !trace.has_end_tag || trace.extracted_answer.trim().is_empty() {
+            return -100.0;
+        }
+        let eq_capped = trace.verified_eq_count.min(Self::EQ_CAP) as f32;
+        let score = 10.0 * (if trace.has_end_tag { 1.0 } else { 0.0 })
+            + 8.0 * (trace.agree_count as f32)
+            + 1.5 * eq_capped
+            - 8.0 * (trace.contradiction_count as f32)
+            - 2.0 * (trace.doubt_count as f32);
+        (score * 10000.0).round() / 10000.0
+    }
+}
+
+impl ArkheStage for HarmonyLensFreeStage {
+    fn stage_name(&self) -> &'static str {
+        "Arkhe4_HarmonyLensFree"
+    }
+
+    fn apply(&mut self, ctx: &mut ArkheExecutionContext, _srf: &mut SemanticRegisterFile) {
+        if !ctx.gate_triggered || ctx.candidate_pool.is_empty() {
+            if let Some(ref mut p1) = ctx.pass1_trace {
+                let clean = p1.has_end_tag && p1.is_symbolically_valid && p1.contradiction_count == 0;
+                p1.agree_count = if clean { 4 } else { 1 };
+                p1.lens_free_score = if clean { 35.0 } else { -10.0 };
+            }
+            ctx.winning_index = None;
+            return;
+        }
+
+        let mut best_idx = 0usize;
+        let mut best_score = f32::NEG_INFINITY;
+
+        for (i, c) in ctx.candidate_pool.iter_mut().enumerate() {
+            let s = Self::compute_score(c);
+            c.lens_free_score = s;
+            if s > best_score {
+                best_score = s;
+                best_idx = i;
+            }
+        }
+        ctx.winning_index = Some(best_idx);
+    }
+}
+
+/// Arkhe 5 & 6 — Yöntem ve Şartlar (ConditionsTernaryGateStage / God's Gate):
+/// Katman 1: Tier-1 Seçmeli Çekimserlik Kapısı (tau = 0.20)
+/// Katman 2: Çöküş Korumalı (Quota-Guarded) Üçlü GRPO Ödülü ve Dinamik Lambda Takvimi
+pub struct ConditionsTernaryGateStage {
+    pub selective_tau: f32,
+}
+
+impl Default for ConditionsTernaryGateStage {
+    fn default() -> Self {
+        Self { selective_tau: 0.20 }
+    }
+}
+
+impl ConditionsTernaryGateStage {
+    pub fn new(selective_tau: f32) -> Self {
+        Self { selective_tau }
+    }
+
+    /// Katman 1: Epistemik güven kalibrasyonu C_ns in [0.10, 0.95]
+    pub fn calibrate_confidence(ctx: &ArkheExecutionContext) -> f32 {
+        if !ctx.gate_triggered || ctx.candidate_pool.is_empty() {
+            let Some(ref p1) = ctx.pass1_trace else {
+                return 0.10;
+            };
+            if !p1.has_end_tag || p1.generated_tokens >= 2040 {
+                return 0.10;
+            }
+            if !p1.is_symbolically_valid || p1.contradiction_count > 0 {
+                return 0.40;
+            }
+            return 0.90;
+        }
+
+        let Some(winner) = ctx.winning_trace() else {
+            return 0.15;
+        };
+
+        match ctx.max_agreement {
+            ag if ag >= 4 && winner.contradiction_count == 0 => 0.95,
+            3 if winner.has_end_tag => 0.80,
+            2 if winner.lens_free_score >= 26.0 => 0.60,
+            2 => 0.35,
+            _ => 0.15, // 1/4 tam dağılma -> Garantili halüsinasyon bölgesi
+        }
+    }
+
+    /// Katman 2 (Yöntem Arkhesi): İki aşamalı dinamik ceza katsayısı lambda(t)
+    pub fn compute_dynamic_lambda(
+        step: usize,
+        total_steps: usize,
+        lambda_start: f32,
+        lambda_end: f32,
+        warmup_fraction: f32,
+    ) -> f32 {
+        if total_steps == 0 {
+            return lambda_end;
+        }
+        let progress = (step as f32 / total_steps as f32).clamp(0.0, 1.0);
+        if progress <= warmup_fraction {
+            return lambda_start;
+        }
+        let ramp = (progress - warmup_fraction) / (1.0 - warmup_fraction).max(1e-6);
+        let val = lambda_start + ramp * (lambda_end - lambda_start);
+        (val * 10000.0).round() / 10000.0
+    }
+
+    /// Katman 2 (Şartlar Arkhesi): Kotalı ve Asimetrik Maskeli Üçlü GRPO Ödül Hesaplayıcısı
+    pub fn compute_quota_guarded_grpo_rewards(
+        traces: &[CandidateRolloutTrace],
+        is_correct_flags: &[bool],
+        lambda_penalty: f32,
+        max_abstain_quota: usize,
+    ) -> Vec<f32> {
+        let solvable_in_group = is_correct_flags.iter().any(|&ok| ok);
+        let mut abstain_used = 0usize;
+        let mut rewards = Vec::with_capacity(traces.len());
+
+        for (trace, &is_corr) in traces.iter().zip(is_correct_flags.iter()) {
+            let ans_trimmed = trace.extracted_answer.trim();
+            let is_abstain = ans_trimmed == GateVerdict::ABSTAIN_TOKEN
+                || ans_trimmed.eq_ignore_ascii_case("bilmiyorum")
+                || ans_trimmed.eq_ignore_ascii_case("abstain");
+
+            let eq_capped = trace.verified_eq_count.min(HarmonyLensFreeStage::EQ_CAP) as f32;
+            let cst_bonus = (0.025 * eq_capped).min(0.25);
+            let cst_penalty = (0.10 * trace.contradiction_count as f32).min(0.30);
+            let shaping = (cst_bonus - cst_penalty).clamp(-0.25, 0.25);
+
+            let r = if is_corr {
+                1.0 + shaping.max(0.0)
+            } else if is_abstain {
+                abstain_used += 1;
+                if solvable_in_group || abstain_used > max_abstain_quota {
+                    -lambda_penalty
+                } else {
+                    0.0
+                }
+            } else {
+                -lambda_penalty + shaping
+            };
+
+            rewards.push((r * 10000.0).round() / 10000.0);
+        }
+
+        rewards
+    }
+}
+
+impl ArkheStage for ConditionsTernaryGateStage {
+    fn stage_name(&self) -> &'static str {
+        "Arkhe6_ConditionsTernaryGate"
+    }
+
+    fn apply(&mut self, ctx: &mut ArkheExecutionContext, srf: &mut SemanticRegisterFile) {
+        let conf = Self::calibrate_confidence(ctx);
+        ctx.epistemic_confidence = conf;
+        srf.cx_w = conf.clamp(0.0, 1.0);
+
+        let winner_ans = ctx
+            .winning_trace()
+            .map(|w| w.extracted_answer.clone())
+            .unwrap_or_default();
+
+        if winner_ans.trim().is_empty() || conf < self.selective_tau {
+            ctx.gate_verdict = GateVerdict::AbstainUnknown;
+            // Halüsinasyon freni: veri fazını sıfırla
+            srf.set_data_phase(0.0);
+        } else {
+            ctx.gate_verdict = GateVerdict::CommitAnswer(winner_ans);
+        }
+    }
+}
+
+/// Birleşik Nörosembolik Arkhe Orkestratörü (GGUF & Hybrid SSM Çıkarım Hattı)
+pub struct NeurosymbolicArkheOrchestrator {
+    pub consciousness: ConsciousnessStage,
+    pub inference_trigger: InferenceTriggerStage,
+    pub similarity: SimilarityStage,
+    pub harmony: HarmonyLensFreeStage,
+    pub conditions: ConditionsTernaryGateStage,
+}
+
+impl NeurosymbolicArkheOrchestrator {
+    pub fn new(selective_tau: f32) -> Self {
+        Self {
+            consciousness: ConsciousnessStage,
+            inference_trigger: InferenceTriggerStage::default(),
+            similarity: SimilarityStage,
+            harmony: HarmonyLensFreeStage,
+            conditions: ConditionsTernaryGateStage::new(selective_tau),
+        }
+    }
+
+    /// Altı Arkhe aşamasını deterministik sırayla çalıştırır ve SRF'yi günceller.
+    pub fn execute(
+        &mut self,
+        ctx: &mut ArkheExecutionContext,
+        srf: &mut SemanticRegisterFile,
+    ) -> GateVerdict {
+        self.consciousness.apply(ctx, srf);
+        self.inference_trigger.apply(ctx, srf);
+        self.similarity.apply(ctx, srf);
+        self.harmony.apply(ctx, srf);
+        self.conditions.apply(ctx, srf);
+        ctx.gate_verdict.clone()
+    }
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -890,7 +1402,7 @@ mod tests {
         let net_f = make_test_network(4);
         let net_g = make_test_network(4);
         let mut bridge = CliffordBridge::new();
-        let (h_phase, confidence) = bridge.project(&net_f, &net_g, 0.5);
+        let (h_phase, confidence, _steering) = bridge.project(&net_f, &net_g, 0.5);
         assert!(h_phase.abs() <= std::f64::consts::PI + 1e-6);
         assert!(confidence >= 0.0 && confidence <= 1.0 + 1e-6);
     }
@@ -926,5 +1438,92 @@ mod tests {
         // Sıfır eşikle mutlaka ihlal olmalı (toplam enerji > 0)
         // (Ağ boş olduğunda ihlal olmayabilir, sadece gate durumu kontrol et)
         assert!(pipeline.state.constraint_violation.is_some() || pipeline.state.gate_open);
+    }
+
+    #[test]
+    fn test_neurosymbolic_parity_breaking_q124_and_q138() {
+        let mut orch = NeurosymbolicArkheOrchestrator::new(0.20);
+        let mut srf = SemanticRegisterFile::new(0.0);
+
+        // 1. Q124 (GT = 8): Majority plurality (2/4 on "8") beats "12"
+        let mut ctx_q124 = ArkheExecutionContext::new("Q124", 128);
+        ctx_q124.pass1_trace = Some(CandidateRolloutTrace::new("Pass1", "10", false, 2, 0, 0));
+        ctx_q124.candidate_pool = vec![
+            CandidateRolloutTrace::new("Cand1", "12", true, 5, 0, 0),
+            CandidateRolloutTrace::new("Cand2", "8", true, 8, 1, 2),
+            CandidateRolloutTrace::new("Cand3", "8", true, 6, 1, 1),
+            CandidateRolloutTrace::new("Cand4", "7", true, 7, 1, 0),
+        ];
+        let verdict_q124 = orch.execute(&mut ctx_q124, &mut srf);
+        assert_eq!(verdict_q124, GateVerdict::CommitAnswer("8".to_string()));
+        assert_eq!(ctx_q124.max_agreement, 2);
+
+        // 2. Q138 (GT = 204_5): Clean CST branch ("204_5", 6 eqs, 0 contras) beats wrong plurality ("224_5", 2 contras)
+        let mut ctx_q138 = ArkheExecutionContext::new("Q138", 128);
+        ctx_q138.pass1_trace = Some(CandidateRolloutTrace::new("Pass1", "224_5", false, 4, 1, 0));
+        ctx_q138.candidate_pool = vec![
+            CandidateRolloutTrace::new("Cand1", "244_5", true, 4, 1, 0),
+            CandidateRolloutTrace::new("Cand2", "204_5", true, 6, 0, 0),
+            CandidateRolloutTrace::new("Cand3", "224_5", true, 4, 2, 0),
+            CandidateRolloutTrace::new("Cand4", "224_5", true, 4, 2, 0),
+        ];
+        let verdict_q138 = orch.execute(&mut ctx_q138, &mut srf);
+        assert_eq!(verdict_q138, GateVerdict::CommitAnswer("204_5".to_string()));
+    }
+
+    #[test]
+    fn test_neurosymbolic_tier1_selective_abstention_q027() {
+        let mut orch = NeurosymbolicArkheOrchestrator::new(0.20);
+        let mut srf = SemanticRegisterFile::new(0.0);
+        srf.set_data_phase(1.23);
+
+        // Q027: All 4 candidates diverge (1008, 432, 216, 504) -> max_agreement == 1 -> AbstainUnknown
+        let mut ctx_q027 = ArkheExecutionContext::new("Q027", 256);
+        ctx_q027.pass1_trace = Some(CandidateRolloutTrace::new("Pass1", "2", false, 3, 0, 0));
+        ctx_q027.candidate_pool = vec![
+            CandidateRolloutTrace::new("Cand1", "1008", true, 7, 0, 1),
+            CandidateRolloutTrace::new("Cand2", "432", true, 8, 0, 0),
+            CandidateRolloutTrace::new("Cand3", "216", true, 4, 0, 0),
+            CandidateRolloutTrace::new("Cand4", "504", true, 10, 0, 0),
+        ];
+
+        let verdict = orch.execute(&mut ctx_q027, &mut srf);
+        assert_eq!(verdict, GateVerdict::AbstainUnknown);
+        assert_eq!(verdict.as_output_str(), "[ABSTAIN]");
+        assert_eq!(ctx_q027.max_agreement, 1);
+        assert!((ctx_q027.epistemic_confidence - 0.15).abs() < 1e-5);
+        assert_eq!(srf.dx, 0.0); // Halüsinasyon freni DX'i sıfırladı
+    }
+
+    #[test]
+    fn test_quota_guarded_ternary_grpo_rewards_rust() {
+        let traces = vec![
+            CandidateRolloutTrace::new("R1", "[ABSTAIN]", true, 0, 0, 0),
+            CandidateRolloutTrace::new("R2", "[ABSTAIN]", true, 0, 0, 0),
+            CandidateRolloutTrace::new("R3", "999", true, 50, 0, 0), // eq spammer
+            CandidateRolloutTrace::new("R4", "42", true, 4, 0, 0),
+        ];
+
+        // 1. Çözülebilir grup (R4 doğru): her iki çekimser dal da -1.0 ceza alır
+        let rew_solvable = ConditionsTernaryGateStage::compute_quota_guarded_grpo_rewards(
+            &traces,
+            &[false, false, false, true],
+            1.0,
+            1,
+        );
+        assert!((rew_solvable[0] - (-1.0)).abs() < 1e-4);
+        assert!((rew_solvable[1] - (-1.0)).abs() < 1e-4);
+        assert!((rew_solvable[2] - (-0.75)).abs() < 1e-4); // 50 denklem +0.25 ile sınırlandı
+        assert!((rew_solvable[3] - 1.10).abs() < 1e-4);
+
+        // 2. Çözülemeyen grup (0/4 doğru): yalnız ilk çekimser 0.0 alır, ikincisi -1.0 alır (sigma_r > 0)
+        let rew_unsolvable = ConditionsTernaryGateStage::compute_quota_guarded_grpo_rewards(
+            &traces,
+            &[false, false, false, false],
+            1.0,
+            1,
+        );
+        assert!((rew_unsolvable[0] - 0.0).abs() < 1e-4);
+        assert!((rew_unsolvable[1] - (-1.0)).abs() < 1e-4);
     }
 }

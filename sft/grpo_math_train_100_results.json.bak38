@@ -1,0 +1,1539 @@
+{
+  "experiment": "SODALS v2.1 Out-of-MATH-500 1536-Token GRPO Training (Hendrycks MATH Train Split)",
+  "source_dataset": "c:\\Users\\Burak\\Desktop\\sodals_core\\sft\\math_train_100_grpo_prompts.json",
+  "math500_overlap": 0,
+  "target_adapter_in": "c:\\Users\\Burak\\Desktop\\sodals_core\\sft\\qwen_lora_adapter_balanced_r4",
+  "target_adapter_out": "c:\\Users\\Burak\\Desktop\\sodals_core\\sft\\qwen_lora_adapter_grpo_math_train_100",
+  "max_new_tokens": 1536,
+  "prompts_count": 100,
+  "completed_steps": 38,
+  "active_gradient_steps": 30,
+  "group_size": 4,
+  "beta_kl": 0.03,
+  "learning_rate": 3e-05,
+  "total_solved_prompts": 23,
+  "pass_rate": 60.53,
+  "total_time_minutes": 222.07,
+  "step_details": [
+    {
+      "step": 1,
+      "question_index": 1,
+      "train_row_id": 1402,
+      "subject": "Prealgebra",
+      "level": "Level 5",
+      "problem": "How many times does the digit 9 appear in the list of all integers from 1 to 500? (The number $ 99 $, for example, is counted twice, because $9$ appears two times in it.)",
+      "ground_truth": "100",
+      "mean_reward": 0.9952,
+      "solved_rollouts": 2,
+      "active_gradient": true,
+      "avg_tokens": 376.0,
+      "rollout_tokens": [
+        399,
+        308,
+        411,
+        386
+      ],
+      "rollout_rewards": [
+        -0.34,
+        -0.7792,
+        2.57,
+        2.53
+      ],
+      "rollout_preds": [
+        "90",
+        "90",
+        "100",
+        "100"
+      ],
+      "advantages": [
+        -0.74,
+        -0.9834,
+        0.8727,
+        0.8506
+      ],
+      "loss": -0.006,
+      "step_seconds": 392.6,
+      "vram_mb": 10505.2
+    },
+    {
+      "step": 2,
+      "question_index": 2,
+      "train_row_id": 625,
+      "subject": "Intermediate Algebra",
+      "level": "Level 5",
+      "problem": "Suppose that $x_1+1=x_2+2=x_3+3=\\cdots=x_{2008}+2008=x_1+x_2+x_3+\\cdots+x_{2008}+2009$. Find the value of $\\left\\lfloor|S|\\right\\rfloor$, where $S=\\sum_{n=1}^{2008}x_n$.",
+      "ground_truth": "1005",
+      "mean_reward": -1.395,
+      "solved_rollouts": 0,
+      "active_gradient": true,
+      "avg_tokens": 545.0,
+      "rollout_tokens": [
+        525,
+        495,
+        692,
+        468
+      ],
+      "rollout_rewards": [
+        -1.51,
+        -1.51,
+        -1.3,
+        -1.26
+      ],
+      "rollout_preds": [
+        "0",
+        "3015",
+        "999",
+        "1000"
+      ],
+      "advantages": [
+        -0.8589,
+        -0.8589,
+        0.7095,
+        1.0083
+      ],
+      "loss": 0.0085,
+      "step_seconds": 572.3,
+      "vram_mb": 10939.1
+    },
+    {
+      "step": 3,
+      "question_index": 3,
+      "train_row_id": 361,
+      "subject": "Algebra",
+      "level": "Level 5",
+      "problem": "If $w$, $x$, $y$, and $z$ are real numbers satisfying: \\begin{align*}\nw+x+y &= -2, \\\\\nw+x+z &= 4, \\\\\nw+y+z &= 19, \\text{ and} \\\\\nx+y+z &= 12,\n\\end{align*} what is $wx + yz$?",
+      "ground_truth": "99",
+      "mean_reward": 2.01,
+      "solved_rollouts": 4,
+      "active_gradient": true,
+      "avg_tokens": 238.8,
+      "rollout_tokens": [
+        284,
+        211,
+        227,
+        233
+      ],
+      "rollout_rewards": [
+        2.05,
+        2.01,
+        2.01,
+        1.97
+      ],
+      "rollout_preds": [
+        "99",
+        "99",
+        "99",
+        "99"
+      ],
+      "advantages": [
+        1.221,
+        0.0,
+        0.0,
+        -1.221
+      ],
+      "loss": 0.0004,
+      "step_seconds": 241.6,
+      "vram_mb": 10939.1
+    },
+    {
+      "step": 4,
+      "question_index": 4,
+      "train_row_id": 1059,
+      "subject": "Number Theory",
+      "level": "Level 5",
+      "problem": "What is the smallest positive integer $n$ for which $n^2$ is divisible by 18 and $n^3$ is divisible by 640?",
+      "ground_truth": "120",
+      "mean_reward": 1.78,
+      "solved_rollouts": 4,
+      "active_gradient": true,
+      "avg_tokens": 430.2,
+      "rollout_tokens": [
+        323,
+        474,
+        346,
+        578
+      ],
+      "rollout_rewards": [
+        1.77,
+        1.77,
+        1.77,
+        1.81
+      ],
+      "rollout_preds": [
+        "120",
+        "120",
+        "120",
+        "120"
+      ],
+      "advantages": [
+        -0.4975,
+        -0.4975,
+        -0.4975,
+        1.4925
+      ],
+      "loss": -0.0065,
+      "step_seconds": 446.5,
+      "vram_mb": 10939.1
+    },
+    {
+      "step": 5,
+      "question_index": 5,
+      "train_row_id": 1193,
+      "subject": "Prealgebra",
+      "level": "Level 5",
+      "problem": "On a \"prime date,\" both the month and the day are prime numbers. For example, Feb. 7 or 2/7 is a prime date. How many prime dates occurred in 2007?",
+      "ground_truth": "52",
+      "mean_reward": -0.8058,
+      "solved_rollouts": 0,
+      "active_gradient": true,
+      "avg_tokens": 414.5,
+      "rollout_tokens": [
+        445,
+        390,
+        490,
+        333
+      ],
+      "rollout_rewards": [
+        -1.26,
+        -0.5,
+        -0.75,
+        -0.7131
+      ],
+      "rollout_preds": [
+        "49",
+        "39",
+        "88",
+        "59"
+      ],
+      "advantages": [
+        -1.4091,
+        0.9486,
+        0.173,
+        0.2875
+      ],
+      "loss": 0.0004,
+      "step_seconds": 394.6,
+      "vram_mb": 10939.1
+    },
+    {
+      "step": 6,
+      "question_index": 6,
+      "train_row_id": 1435,
+      "subject": "Counting & Probability",
+      "level": "Level 5",
+      "problem": "Robert has 4 indistinguishable gold coins and 4 indistinguishable silver coins. Each coin has an engraving of one face on one side, but not on the other. He wants to stack the eight coins on a table into a single stack so that no two adjacent coins are face to face. Find the number of possible distinguishable arrangements of the 8 coins.",
+      "ground_truth": "630",
+      "mean_reward": -1.5319,
+      "solved_rollouts": 0,
+      "active_gradient": true,
+      "avg_tokens": 583.8,
+      "rollout_tokens": [
+        228,
+        265,
+        1536,
+        306
+      ],
+      "rollout_rewards": [
+        -1.5825,
+        -1.504,
+        -1.5,
+        -1.5413
+      ],
+      "rollout_preds": [
+        "14",
+        "14",
+        "8",
+        "5"
+      ],
+      "advantages": [
+        -1.3099,
+        0.7243,
+        0.8279,
+        -0.2423
+      ],
+      "loss": -0.0029,
+      "step_seconds": 601.3,
+      "vram_mb": 12210.7
+    },
+    {
+      "step": 7,
+      "question_index": 7,
+      "train_row_id": 898,
+      "subject": "Number Theory",
+      "level": "Level 5",
+      "problem": "Suppose that $A$, $B$, and $C$ are non-zero distinct digits less than $6$, and suppose we have ${AB_6}+{C_6}={C}0_6$ and ${AB_6}+{BA_6}={CC_6}$. Find the three-digit number ${ABC}$. (Interpret $AB_6$ as a base-6 number with digits $A$ and $B$, not as $A$ times $B$. The other expressions should be interpreted in this way as well).",
+      "ground_truth": "415",
+      "mean_reward": 1.86,
+      "solved_rollouts": 4,
+      "active_gradient": true,
+      "avg_tokens": 333.2,
+      "rollout_tokens": [
+        344,
+        389,
+        248,
+        352
+      ],
+      "rollout_rewards": [
+        1.65,
+        1.69,
+        1.65,
+        2.45
+      ],
+      "rollout_preds": [
+        "415",
+        "415",
+        "415",
+        "415"
+      ],
+      "advantages": [
+        -0.5332,
+        -0.4316,
+        -0.5332,
+        1.4979
+      ],
+      "loss": -0.0064,
+      "step_seconds": 298.9,
+      "vram_mb": 12210.7
+    },
+    {
+      "step": 8,
+      "question_index": 8,
+      "train_row_id": 1212,
+      "subject": "Prealgebra",
+      "level": "Level 5",
+      "problem": "A state requires that all boat licenses consist of the letter A or M followed by any five digits. What is the number of groups of letters and numbers available for boat licenses?",
+      "ground_truth": "200000",
+      "mean_reward": 2.49,
+      "solved_rollouts": 4,
+      "active_gradient": true,
+      "avg_tokens": 149.0,
+      "rollout_tokens": [
+        143,
+        171,
+        121,
+        161
+      ],
+      "rollout_rewards": [
+        2.53,
+        2.53,
+        2.45,
+        2.45
+      ],
+      "rollout_preds": [
+        "200000",
+        "200000",
+        "200000",
+        "200000"
+      ],
+      "advantages": [
+        0.8642,
+        0.8642,
+        -0.8642,
+        -0.8642
+      ],
+      "loss": -0.0135,
+      "step_seconds": 155.8,
+      "vram_mb": 12210.7
+    },
+    {
+      "step": 9,
+      "question_index": 9,
+      "train_row_id": 1148,
+      "subject": "Number Theory",
+      "level": "Level 5",
+      "problem": "What is the largest value of $n$ less than 100,000 for which the expression $8(n-2)^5-n^2+14n-24$ is a multiple of 5?",
+      "ground_truth": "99997",
+      "mean_reward": 0.9125,
+      "solved_rollouts": 3,
+      "active_gradient": true,
+      "avg_tokens": 524.0,
+      "rollout_tokens": [
+        471,
+        446,
+        522,
+        657
+      ],
+      "rollout_rewards": [
+        -1.3,
+        1.65,
+        1.65,
+        1.65
+      ],
+      "rollout_preds": [
+        "99998",
+        "99997",
+        "99997",
+        "99997"
+      ],
+      "advantages": [
+        -1.4999,
+        0.5,
+        0.5,
+        0.5
+      ],
+      "loss": -0.0084,
+      "step_seconds": 473.7,
+      "vram_mb": 12210.7
+    },
+    {
+      "step": 10,
+      "question_index": 10,
+      "train_row_id": 1326,
+      "subject": "Prealgebra",
+      "level": "Level 5",
+      "problem": "What is the largest five-digit integer whose digits have a product equal to the product $(7)(6)(5)(4)(3)(2)(1)$?",
+      "ground_truth": "98752",
+      "mean_reward": 1.6725,
+      "solved_rollouts": 3,
+      "active_gradient": true,
+      "avg_tokens": 543.2,
+      "rollout_tokens": [
+        495,
+        445,
+        640,
+        593
+      ],
+      "rollout_rewards": [
+        2.05,
+        1.97,
+        2.77,
+        -0.1
+      ],
+      "rollout_preds": [
+        "98752",
+        "98752",
+        "98752",
+        "87653"
+      ],
+      "advantages": [
+        0.3056,
+        0.2408,
+        0.8884,
+        -1.4349
+      ],
+      "loss": 0.0065,
+      "step_seconds": 584.6,
+      "vram_mb": 12210.7
+    },
+    {
+      "step": 11,
+      "question_index": 11,
+      "train_row_id": 908,
+      "subject": "Number Theory",
+      "level": "Level 5",
+      "problem": "Each of two boxes contains both black and white marbles, and the total number of marbles in the two boxes is $25.$ One marble is taken out of each box randomly. The probability that both marbles are black is $27/50,$ and the probability that both marbles are white is $m/n,$ where $m$ and $n$ are relatively prime positive integers. What is $m + n$?",
+      "ground_truth": "26",
+      "mean_reward": -0.5439,
+      "solved_rollouts": 1,
+      "active_gradient": true,
+      "avg_tokens": 459.0,
+      "rollout_tokens": [
+        675,
+        450,
+        486,
+        225
+      ],
+      "rollout_rewards": [
+        1.89,
+        -1.18,
+        -1.22,
+        -1.6656
+      ],
+      "rollout_preds": [
+        "26",
+        "32",
+        "61",
+        "36"
+      ],
+      "advantages": [
+        1.4863,
+        -0.3884,
+        -0.4129,
+        -0.685
+      ],
+      "loss": -0.0142,
+      "step_seconds": 422.7,
+      "vram_mb": 12210.7
+    },
+    {
+      "step": 12,
+      "question_index": 12,
+      "train_row_id": 2216,
+      "subject": "Geometry",
+      "level": "Level 5",
+      "problem": "Point $P$ lies on the diagonal $AC$ of square $ABCD$ with $AP > CP$. Let $O_{1}$ and $O_{2}$ be the circumcenters of triangles $ABP$ and $CDP$ respectively. Given that $AB = 12$ and $\\angle O_{1}PO_{2} = 120^{\\circ}$, then $AP = \\sqrt{a} + \\sqrt{b}$, where $a$ and $b$ are positive integers. Find $a + b$.",
+      "ground_truth": "96",
+      "mean_reward": -1.4476,
+      "solved_rollouts": 0,
+      "active_gradient": true,
+      "avg_tokens": 558.5,
+      "rollout_tokens": [
+        1209,
+        174,
+        373,
+        478
+      ],
+      "rollout_rewards": [
+        -1.26,
+        -1.7188,
+        -1.5115,
+        -1.3
+      ],
+      "rollout_preds": [
+        "288",
+        "21",
+        "216",
+        "8"
+      ],
+      "advantages": [
+        0.8851,
+        -1.2798,
+        -0.3016,
+        0.6963
+      ],
+      "loss": -0.0144,
+      "step_seconds": 543.9,
+      "vram_mb": 12210.7
+    },
+    {
+      "step": 13,
+      "question_index": 13,
+      "train_row_id": 604,
+      "subject": "Intermediate Algebra",
+      "level": "Level 5",
+      "problem": "Let $a$ and $b$ be positive real numbers.  Find the maximum value of\n\\[2(a - x)(x + \\sqrt{x^2 + b^2})\\]in terms of $a$ and $b.$",
+      "ground_truth": "a^2 + b^2",
+      "mean_reward": -1.3,
+      "solved_rollouts": 0,
+      "active_gradient": false,
+      "avg_tokens": 477.2,
+      "rollout_tokens": [
+        479,
+        491,
+        509,
+        430
+      ],
+      "rollout_rewards": [
+        -1.3,
+        -1.3,
+        -1.3,
+        -1.3
+      ],
+      "rollout_preds": [
+        "2b^2",
+        "a^2",
+        "2b^2",
+        "2a^2 + b^2"
+      ],
+      "advantages": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "loss": 0.0,
+      "step_seconds": 376.7,
+      "vram_mb": 12210.7
+    },
+    {
+      "step": 14,
+      "question_index": 14,
+      "train_row_id": 1344,
+      "subject": "Prealgebra",
+      "level": "Level 5",
+      "problem": "There are 8 sprinters in the Olympic 100-meter finals. Three of the sprinters are Americans.  The gold medal goes to first place, silver to second, and bronze to third.   In how many ways can the medals be awarded if at most one American gets a medal?",
+      "ground_truth": "240",
+      "mean_reward": 2.38,
+      "solved_rollouts": 4,
+      "active_gradient": true,
+      "avg_tokens": 321.5,
+      "rollout_tokens": [
+        271,
+        294,
+        263,
+        458
+      ],
+      "rollout_rewards": [
+        1.73,
+        2.69,
+        2.45,
+        2.65
+      ],
+      "rollout_preds": [
+        "240",
+        "240",
+        "240",
+        "240"
+      ],
+      "advantages": [
+        -1.4575,
+        0.6951,
+        0.157,
+        0.6054
+      ],
+      "loss": -0.0062,
+      "step_seconds": 330.5,
+      "vram_mb": 12210.7
+    },
+    {
+      "step": 15,
+      "question_index": 15,
+      "train_row_id": 115,
+      "subject": "Algebra",
+      "level": "Level 5",
+      "problem": "The graphs of $y=|x|$ and $y=-x^2-3x-2$ are drawn.  For every $x$, a vertical segment connecting these two graphs can be drawn as well.  Find the smallest possible length of one of these vertical segments.",
+      "ground_truth": "1",
+      "mean_reward": 1.89,
+      "solved_rollouts": 4,
+      "active_gradient": true,
+      "avg_tokens": 369.5,
+      "rollout_tokens": [
+        470,
+        382,
+        291,
+        335
+      ],
+      "rollout_rewards": [
+        1.73,
+        1.69,
+        2.45,
+        1.69
+      ],
+      "rollout_preds": [
+        "1",
+        "1",
+        "1",
+        "1"
+      ],
+      "advantages": [
+        -0.4279,
+        -0.5349,
+        1.4977,
+        -0.5349
+      ],
+      "loss": 0.0042,
+      "step_seconds": 471.8,
+      "vram_mb": 12210.7
+    },
+    {
+      "step": 16,
+      "question_index": 16,
+      "train_row_id": 1521,
+      "subject": "Counting & Probability",
+      "level": "Level 5",
+      "problem": "What is the largest $2$-digit prime factor of the integer $n = {200\\choose 100}$?",
+      "ground_truth": "61",
+      "mean_reward": 0.5604,
+      "solved_rollouts": 2,
+      "active_gradient": true,
+      "avg_tokens": 630.2,
+      "rollout_tokens": [
+        328,
+        779,
+        685,
+        729
+      ],
+      "rollout_rewards": [
+        -1.5583,
+        -1.1,
+        2.05,
+        2.85
+      ],
+      "rollout_preds": [
+        "199",
+        "199",
+        "61",
+        "61"
+      ],
+      "advantages": [
+        -0.9569,
+        -0.7499,
+        0.6727,
+        1.034
+      ],
+      "loss": -0.0384,
+      "step_seconds": 711.6,
+      "vram_mb": 11019.1
+    },
+    {
+      "step": 17,
+      "question_index": 17,
+      "train_row_id": 9,
+      "subject": "Algebra",
+      "level": "Level 5",
+      "problem": "What is the smallest positive value of $m$ so that the equation $10x^2 - mx + 420 = 0$ has integral solutions?",
+      "ground_truth": "130",
+      "mean_reward": 1.4825,
+      "solved_rollouts": 3,
+      "active_gradient": true,
+      "avg_tokens": 610.8,
+      "rollout_tokens": [
+        843,
+        462,
+        378,
+        760
+      ],
+      "rollout_rewards": [
+        2.05,
+        -1.26,
+        2.65,
+        2.49
+      ],
+      "rollout_preds": [
+        "130",
+        "No such m exists",
+        "130",
+        "130"
+      ],
+      "advantages": [
+        0.3074,
+        -1.4857,
+        0.6325,
+        0.5458
+      ],
+      "loss": -0.0123,
+      "step_seconds": 1030.0,
+      "vram_mb": 11111.5
+    },
+    {
+      "step": 18,
+      "question_index": 18,
+      "train_row_id": 1466,
+      "subject": "Counting & Probability",
+      "level": "Level 5",
+      "problem": "Bob rolls a fair six-sided die each morning. If Bob rolls a composite number, he eats sweetened cereal. If he rolls a prime number, he eats unsweetened cereal. If he rolls a 1, then he rolls again. In a non-leap year, what is the expected number of times Bob will roll his die?",
+      "ground_truth": "438",
+      "mean_reward": -0.4517,
+      "solved_rollouts": 1,
+      "active_gradient": true,
+      "avg_tokens": 270.5,
+      "rollout_tokens": [
+        432,
+        186,
+        235,
+        229
+      ],
+      "rollout_rewards": [
+        -0.38,
+        1.73,
+        -1.5352,
+        -1.6215
+      ],
+      "rollout_preds": [
+        "1.2",
+        "438",
+        "1",
+        "1"
+      ],
+      "advantages": [
+        0.0459,
+        1.3978,
+        -0.6942,
+        -0.7495
+      ],
+      "loss": 0.0128,
+      "step_seconds": 267.2,
+      "vram_mb": 11111.5
+    },
+    {
+      "step": 19,
+      "question_index": 19,
+      "train_row_id": 866,
+      "subject": "Number Theory",
+      "level": "Level 5",
+      "problem": "Let $a, b, c,$ and $d$ be positive integers such that $\\gcd(a, b)=24$, $\\gcd(b, c)=36$, $\\gcd(c, d)=54$, and $70<\\gcd(d, a)<100$. Which of the following must be a divisor of $a$?\n$\\textbf{(A)} \\text{ 5} \\qquad \\textbf{(B)} \\text{ 7} \\qquad \\textbf{(C)} \\text{ 11} \\qquad \\textbf{(D)} \\text{ 13} \\qquad \\textbf{(E)} \\text{ 17}$",
+      "ground_truth": "13",
+      "mean_reward": -1.05,
+      "solved_rollouts": 0,
+      "active_gradient": true,
+      "avg_tokens": 1326.8,
+      "rollout_tokens": [
+        1536,
+        1536,
+        1536,
+        699
+      ],
+      "rollout_rewards": [
+        -1.1,
+        -0.54,
+        -1.38,
+        -1.18
+      ],
+      "rollout_preds": [
+        "24",
+        "\\textbf{(B)} 7",
+        "100",
+        "is often a prime factor that fits the algebraic constraints of the gcd chain"
+      ],
+      "advantages": [
+        -0.1389,
+        1.417,
+        -0.9169,
+        -0.3612
+      ],
+      "loss": -0.0168,
+      "step_seconds": 1531.3,
+      "vram_mb": 12238.9
+    },
+    {
+      "step": 20,
+      "question_index": 20,
+      "train_row_id": 308,
+      "subject": "Algebra",
+      "level": "Level 5",
+      "problem": "What is the length of the segment of the number line whose endpoints satisfy $|x-\\sqrt[5]{16}|=3$?",
+      "ground_truth": "6",
+      "mean_reward": 1.51,
+      "solved_rollouts": 4,
+      "active_gradient": true,
+      "avg_tokens": 230.8,
+      "rollout_tokens": [
+        198,
+        230,
+        258,
+        237
+      ],
+      "rollout_rewards": [
+        1.52,
+        1.48,
+        1.56,
+        1.48
+      ],
+      "rollout_preds": [
+        "6",
+        "6",
+        "6",
+        "6"
+      ],
+      "advantages": [
+        0.2604,
+        -0.7813,
+        1.3022,
+        -0.7813
+      ],
+      "loss": -0.0045,
+      "step_seconds": 208.7,
+      "vram_mb": 12238.9
+    },
+    {
+      "step": 21,
+      "question_index": 21,
+      "train_row_id": 276,
+      "subject": "Algebra",
+      "level": "Level 5",
+      "problem": "For how many positive integers $n$ does $1+2+\\cdots+n$ evenly divide $6n$?",
+      "ground_truth": "5",
+      "mean_reward": 0.8565,
+      "solved_rollouts": 3,
+      "active_gradient": true,
+      "avg_tokens": 357.5,
+      "rollout_tokens": [
+        361,
+        370,
+        337,
+        362
+      ],
+      "rollout_rewards": [
+        -1.524,
+        1.65,
+        1.65,
+        1.65
+      ],
+      "rollout_preds": [
+        "4",
+        "5",
+        "5",
+        "5"
+      ],
+      "advantages": [
+        -1.4999,
+        0.5,
+        0.5,
+        0.5
+      ],
+      "loss": -0.0205,
+      "step_seconds": 327.5,
+      "vram_mb": 12238.9
+    },
+    {
+      "step": 22,
+      "question_index": 22,
+      "train_row_id": 349,
+      "subject": "Algebra",
+      "level": "Level 5",
+      "problem": "If $g(x)=\\sqrt[3]{\\frac{x+3}{4}}$, for what value of $x$ will $g(2x)=2(g(x))$? Express your answer in simplest form.",
+      "ground_truth": "-\\frac{7}{2}",
+      "mean_reward": 1.7018,
+      "solved_rollouts": 3,
+      "active_gradient": true,
+      "avg_tokens": 307.2,
+      "rollout_tokens": [
+        310,
+        270,
+        343,
+        306
+      ],
+      "rollout_rewards": [
+        2.49,
+        2.49,
+        -0.6627,
+        2.49
+      ],
+      "rollout_preds": [
+        "-7/2",
+        "-7/2",
+        "-5/2",
+        "-7/2"
+      ],
+      "advantages": [
+        0.5,
+        0.5,
+        -1.4999,
+        0.5
+      ],
+      "loss": -0.0124,
+      "step_seconds": 281.4,
+      "vram_mb": 12238.9
+    },
+    {
+      "step": 23,
+      "question_index": 23,
+      "train_row_id": 1873,
+      "subject": "Precalculus",
+      "level": "Level 5",
+      "problem": "If $\\sin x + \\sin y = \\frac{96}{65}$ and $\\cos x + \\cos y = \\frac{72}{65}$, then what is the value of $\\tan x + \\tan y$?",
+      "ground_truth": "\\frac{507}{112}",
+      "mean_reward": 0.0625,
+      "solved_rollouts": 1,
+      "active_gradient": true,
+      "avg_tokens": 1001.2,
+      "rollout_tokens": [
+        865,
+        880,
+        994,
+        1266
+      ],
+      "rollout_rewards": [
+        2.85,
+        -1.15,
+        -0.55,
+        -0.9
+      ],
+      "rollout_preds": [
+        "\\frac{507}{112}",
+        "-507/113",
+        "\\frac{78}{31}",
+        "2"
+      ],
+      "advantages": [
+        1.4869,
+        -0.6468,
+        -0.3267,
+        -0.5134
+      ],
+      "loss": -0.0089,
+      "step_seconds": 1114.1,
+      "vram_mb": 11764.7
+    },
+    {
+      "step": 24,
+      "question_index": 24,
+      "train_row_id": 1732,
+      "subject": "Precalculus",
+      "level": "Level 5",
+      "problem": "Let $\\alpha$ and $\\beta$ be real numbers.  Find the minimum value of\n\\[(2 \\cos \\alpha + 5 \\sin \\beta - 8)^2 + (2 \\sin \\alpha + 5 \\cos \\beta - 15)^2.\\]",
+      "ground_truth": "100",
+      "mean_reward": 0.0789,
+      "solved_rollouts": 2,
+      "active_gradient": true,
+      "avg_tokens": 312.8,
+      "rollout_tokens": [
+        222,
+        566,
+        292,
+        171
+      ],
+      "rollout_rewards": [
+        -1.5887,
+        1.65,
+        -1.4758,
+        1.73
+      ],
+      "rollout_preds": [
+        "9",
+        "100",
+        "9",
+        "100"
+      ],
+      "advantages": [
+        -0.8959,
+        0.8441,
+        -0.8353,
+        0.8871
+      ],
+      "loss": 0.0017,
+      "step_seconds": 301.4,
+      "vram_mb": 11764.7
+    },
+    {
+      "step": 25,
+      "question_index": 25,
+      "train_row_id": 409,
+      "subject": "Algebra",
+      "level": "Level 5",
+      "problem": "A ''super ball'' is dropped from a window 16 meters above the ground. On each bounce it rises $\\frac34$ the distance of the preceding high point. The ball is caught when it reached the high point after hitting the ground for the third time. To the nearest meter, how far has it travelled?",
+      "ground_truth": "65",
+      "mean_reward": 1.68,
+      "solved_rollouts": 4,
+      "active_gradient": true,
+      "avg_tokens": 278.0,
+      "rollout_tokens": [
+        329,
+        225,
+        284,
+        274
+      ],
+      "rollout_rewards": [
+        1.77,
+        1.65,
+        1.65,
+        1.65
+      ],
+      "rollout_preds": [
+        "65",
+        "65",
+        "65",
+        "65"
+      ],
+      "advantages": [
+        1.4975,
+        -0.4992,
+        -0.4992,
+        -0.4992
+      ],
+      "loss": -0.0057,
+      "step_seconds": 252.7,
+      "vram_mb": 11764.7
+    },
+    {
+      "step": 26,
+      "question_index": 26,
+      "train_row_id": 600,
+      "subject": "Intermediate Algebra",
+      "level": "Level 5",
+      "problem": "Let $(a,b,c,d)$ be a solution to the system\\begin{align*}a+b&=15,\\\\ab+c+d&=78,\\\\ad+bc&=160,\\\\cd&=96.\\end{align*}Find the greatest possible value of $a^2+b^2+c^2+d^2$.",
+      "ground_truth": "717",
+      "mean_reward": -1.1053,
+      "solved_rollouts": 0,
+      "active_gradient": true,
+      "avg_tokens": 752.2,
+      "rollout_tokens": [
+        677,
+        538,
+        258,
+        1536
+      ],
+      "rollout_rewards": [
+        -0.42,
+        -1.39,
+        -1.5112,
+        -1.1
+      ],
+      "rollout_preds": [
+        "393.5625",
+        "2097",
+        "360",
+        "96"
+      ],
+      "advantages": [
+        1.403,
+        -0.5829,
+        -0.831,
+        0.0109
+      ],
+      "loss": -0.0288,
+      "step_seconds": 789.1,
+      "vram_mb": 12211.3
+    },
+    {
+      "step": 27,
+      "question_index": 27,
+      "train_row_id": 610,
+      "subject": "Intermediate Algebra",
+      "level": "Level 5",
+      "problem": "Let $a,$ $b,$ and $c$ be nonnegative real numbers such that $a + b + c = 1.$  Find the maximum value of\n\\[a + \\sqrt{ab} + \\sqrt[3]{abc}.\\]",
+      "ground_truth": "\\frac{4}{3}",
+      "mean_reward": -1.4291,
+      "solved_rollouts": 0,
+      "active_gradient": true,
+      "avg_tokens": 536.5,
+      "rollout_tokens": [
+        361,
+        353,
+        1019,
+        413
+      ],
+      "rollout_rewards": [
+        -1.524,
+        -1.5323,
+        -1.23,
+        -1.43
+      ],
+      "rollout_preds": [
+        "1",
+        "1",
+        "1",
+        "1"
+      ],
+      "advantages": [
+        -0.6747,
+        -0.7337,
+        1.415,
+        -0.0066
+      ],
+      "loss": 0.0011,
+      "step_seconds": 498.4,
+      "vram_mb": 12211.3
+    },
+    {
+      "step": 28,
+      "question_index": 28,
+      "train_row_id": 1294,
+      "subject": "Prealgebra",
+      "level": "Level 5",
+      "problem": "I have 10 distinguishable socks in my drawer: 4 white, 4 brown, and 2 blue.  In how many ways can I choose a pair of socks, provided that I get two socks of different colors?",
+      "ground_truth": "32",
+      "mean_reward": 2.62,
+      "solved_rollouts": 4,
+      "active_gradient": true,
+      "avg_tokens": 250.8,
+      "rollout_tokens": [
+        277,
+        238,
+        226,
+        262
+      ],
+      "rollout_rewards": [
+        2.69,
+        2.69,
+        2.49,
+        2.61
+      ],
+      "rollout_preds": [
+        "32",
+        "32",
+        "32",
+        "32"
+      ],
+      "advantages": [
+        0.7398,
+        0.7398,
+        -1.374,
+        -0.1057
+      ],
+      "loss": 0.0024,
+      "step_seconds": 233.4,
+      "vram_mb": 12211.3
+    },
+    {
+      "step": 29,
+      "question_index": 29,
+      "train_row_id": 403,
+      "subject": "Algebra",
+      "level": "Level 5",
+      "problem": "If $(ax+b)(bx+a)=26x^2+\\Box\\cdot x+26$, where $a$, $b$, and $\\Box$ are distinct integers, what is the minimum possible value of $\\Box$, the coefficient of $x$?",
+      "ground_truth": "173",
+      "mean_reward": 1.95,
+      "solved_rollouts": 4,
+      "active_gradient": true,
+      "avg_tokens": 305.5,
+      "rollout_tokens": [
+        285,
+        205,
+        435,
+        297
+      ],
+      "rollout_rewards": [
+        1.69,
+        1.73,
+        2.57,
+        1.81
+      ],
+      "rollout_preds": [
+        "173",
+        "173",
+        "173",
+        "173"
+      ],
+      "advantages": [
+        -0.6243,
+        -0.5283,
+        1.4888,
+        -0.3362
+      ],
+      "loss": -0.0046,
+      "step_seconds": 265.8,
+      "vram_mb": 12211.3
+    },
+    {
+      "step": 30,
+      "question_index": 30,
+      "train_row_id": 1253,
+      "subject": "Prealgebra",
+      "level": "Level 5",
+      "problem": "How many two-digit numbers have digits whose sum is a perfect square?",
+      "ground_truth": "17",
+      "mean_reward": 0.9002,
+      "solved_rollouts": 3,
+      "active_gradient": true,
+      "avg_tokens": 361.0,
+      "rollout_tokens": [
+        375,
+        346,
+        378,
+        345
+      ],
+      "rollout_rewards": [
+        -1.4694,
+        1.69,
+        1.69,
+        1.69
+      ],
+      "rollout_preds": [
+        "14",
+        "17",
+        "17",
+        "17"
+      ],
+      "advantages": [
+        -1.4999,
+        0.5,
+        0.5,
+        0.5
+      ],
+      "loss": 0.0055,
+      "step_seconds": 306.5,
+      "vram_mb": 12211.3
+    },
+    {
+      "step": 31,
+      "question_index": 31,
+      "train_row_id": 835,
+      "subject": "Intermediate Algebra",
+      "level": "Level 5",
+      "problem": "For how many real numbers $a^{}_{}$ does the quadratic equation $x^2 + ax^{}_{} + 6a=0$ have only integer roots for $x^{}_{}$?",
+      "ground_truth": "10",
+      "mean_reward": -0.4325,
+      "solved_rollouts": 1,
+      "active_gradient": true,
+      "avg_tokens": 601.2,
+      "rollout_tokens": [
+        506,
+        685,
+        580,
+        634
+      ],
+      "rollout_rewards": [
+        1.65,
+        -1.06,
+        -1.1,
+        -1.22
+      ],
+      "rollout_preds": [
+        "10",
+        "5",
+        "5",
+        "5"
+      ],
+      "advantages": [
+        1.4981,
+        -0.4514,
+        -0.4802,
+        -0.5665
+      ],
+      "loss": -0.0051,
+      "step_seconds": 1001.5,
+      "vram_mb": 18990.9
+    },
+    {
+      "step": 32,
+      "question_index": 32,
+      "train_row_id": 1821,
+      "subject": "Precalculus",
+      "level": "Level 5",
+      "problem": "Triangles $ABC$ and $AEF$ are such that $B$ is the midpoint of $\\overline{EF}.$  Also, $AB = EF = 1,$ $BC = 6,$ $CA = \\sqrt{33},$ and\n\\[\\overrightarrow{AB} \\cdot \\overrightarrow{AE} + \\overrightarrow{AC} \\cdot \\overrightarrow{AF} = 2.\\]Find the cosine of the angle between vectors $\\overrightarrow{EF}$ and $\\overrightarrow{BC}.$",
+      "ground_truth": "\\frac{2}{3}",
+      "mean_reward": -1.5,
+      "solved_rollouts": 0,
+      "active_gradient": false,
+      "avg_tokens": 1536.0,
+      "rollout_tokens": [
+        1536,
+        1536,
+        1536,
+        1536
+      ],
+      "rollout_rewards": [
+        -1.5,
+        -1.5,
+        -1.5,
+        -1.5
+      ],
+      "rollout_preds": [
+        "",
+        "５",
+        "0",
+        ""
+      ],
+      "advantages": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "loss": 0.0,
+      "step_seconds": 2024.8,
+      "vram_mb": 18990.9
+    },
+    {
+      "step": 33,
+      "question_index": 33,
+      "train_row_id": 2186,
+      "subject": "Geometry",
+      "level": "Level 5",
+      "problem": "A cone is inverted and filled with water to 3/4 of its height.  What percent of the cone's volume is filled with water?  Express your answer as a decimal to the nearest ten-thousandth.  (You should enter 10.0000 for $10\\%$ instead of 0.1000.)",
+      "ground_truth": "42.1875",
+      "mean_reward": -1.5,
+      "solved_rollouts": 0,
+      "active_gradient": false,
+      "avg_tokens": 1536.0,
+      "rollout_tokens": [
+        1536,
+        1536,
+        1536,
+        1536
+      ],
+      "rollout_rewards": [
+        -1.5,
+        -1.5,
+        -1.5,
+        -1.5
+      ],
+      "rollout_preds": [
+        "0",
+        "",
+        "",
+        "0"
+      ],
+      "advantages": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "loss": 0.0,
+      "step_seconds": 1748.7,
+      "vram_mb": 18990.9
+    },
+    {
+      "step": 34,
+      "question_index": 34,
+      "train_row_id": 969,
+      "subject": "Number Theory",
+      "level": "Level 5",
+      "problem": "A set $\\mathcal{S}$ of distinct positive integers has the following property: for every integer $x$ in $\\mathcal{S},$ the arithmetic mean of the set of values obtained by deleting $x$ from $\\mathcal{S}$ is an integer. Given that 1 belongs to $\\mathcal{S}$ and that 2002 is the largest element of $\\mathcal{S},$ what is the greatest number of elements that $\\mathcal{S}$ can have?",
+      "ground_truth": "30",
+      "mean_reward": -1.5,
+      "solved_rollouts": 0,
+      "active_gradient": false,
+      "avg_tokens": 1536.0,
+      "rollout_tokens": [
+        1536,
+        1536,
+        1536,
+        1536
+      ],
+      "rollout_rewards": [
+        -1.5,
+        -1.5,
+        -1.5,
+        -1.5
+      ],
+      "rollout_preds": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "advantages": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "loss": 0.0,
+      "step_seconds": 1791.0,
+      "vram_mb": 18990.9
+    },
+    {
+      "step": 35,
+      "question_index": 35,
+      "train_row_id": 1493,
+      "subject": "Counting & Probability",
+      "level": "Level 5",
+      "problem": "The probability of getting rain on any given day in June in Capital City is $\\frac{1}{10}$.  What is the probability that it rains on at most 2 days in June?  Express your answer as a decimal to the nearest thousandth.",
+      "ground_truth": "0.411",
+      "mean_reward": -1.5,
+      "solved_rollouts": 0,
+      "active_gradient": false,
+      "avg_tokens": 1536.0,
+      "rollout_tokens": [
+        1536,
+        1536,
+        1536,
+        1536
+      ],
+      "rollout_rewards": [
+        -1.5,
+        -1.5,
+        -1.5,
+        -1.5
+      ],
+      "rollout_preds": [
+        "",
+        "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "",
+        "0"
+      ],
+      "advantages": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "loss": 0.0,
+      "step_seconds": 1827.6,
+      "vram_mb": 18990.9
+    },
+    {
+      "step": 36,
+      "question_index": 36,
+      "train_row_id": 2143,
+      "subject": "Geometry",
+      "level": "Level 5",
+      "problem": "Circle $C$ with radius 2 has diameter $\\overline{AB}$. Circle D is internally tangent to circle $C$ at $A$. Circle $E$ is internally tangent to circle $C$, externally tangent to circle $D$, and tangent to $\\overline{AB}$. The radius of circle $D$ is three times the radius of circle $E$, and can be written in the form $\\sqrt{m}-n$, where $m$ and $n$ are positive integers. Find $m+n$.",
+      "ground_truth": "254",
+      "mean_reward": -1.5,
+      "solved_rollouts": 0,
+      "active_gradient": false,
+      "avg_tokens": 1536.0,
+      "rollout_tokens": [
+        1536,
+        1536,
+        1536,
+        1536
+      ],
+      "rollout_rewards": [
+        -1.5,
+        -1.5,
+        -1.5,
+        -1.5
+      ],
+      "rollout_preds": [
+        "",
+        "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "",
+        "0"
+      ],
+      "advantages": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "loss": 0.0,
+      "step_seconds": 1925.0,
+      "vram_mb": 18990.9
+    },
+    {
+      "step": 37,
+      "question_index": 37,
+      "train_row_id": 1479,
+      "subject": "Counting & Probability",
+      "level": "Level 5",
+      "problem": "How many ways are there to choose 3 cards from a standard deck of 52 cards, if all three cards must be of different suits?  (Assume that the order of the cards does not matter.)",
+      "ground_truth": "8788",
+      "mean_reward": -1.5,
+      "solved_rollouts": 0,
+      "active_gradient": false,
+      "avg_tokens": 1536.0,
+      "rollout_tokens": [
+        1536,
+        1536,
+        1536,
+        1536
+      ],
+      "rollout_rewards": [
+        -1.5,
+        -1.5,
+        -1.5,
+        -1.5
+      ],
+      "rollout_preds": [
+        "0",
+        "",
+        "",
+        ""
+      ],
+      "advantages": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "loss": 0.0,
+      "step_seconds": 1800.8,
+      "vram_mb": 18990.9
+    },
+    {
+      "step": 38,
+      "question_index": 38,
+      "train_row_id": 540,
+      "subject": "Intermediate Algebra",
+      "level": "Level 5",
+      "problem": "If\n\\begin{align*}\na + b + c &= 1, \\\\\na^2 + b^2 + c^2 &= 2, \\\\\na^3 + b^3 + c^3 &= 3,\n\\end{align*}find $a^4 + b^4 + c^4.$",
+      "ground_truth": "\\frac{25}{6}",
+      "mean_reward": -1.5,
+      "solved_rollouts": 0,
+      "active_gradient": false,
+      "avg_tokens": 1536.0,
+      "rollout_tokens": [
+        1536,
+        1536,
+        1536,
+        1536
+      ],
+      "rollout_rewards": [
+        -1.5,
+        -1.5,
+        -1.5,
+        -1.5
+      ],
+      "rollout_preds": [
+        "",
+        "0",
+        "0",
+        ""
+      ],
+      "advantages": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "loss": 0.0,
+      "step_seconds": 2204.0,
+      "vram_mb": 18990.9
+    }
+  ]
+}

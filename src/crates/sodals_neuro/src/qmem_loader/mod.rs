@@ -121,36 +121,106 @@ impl QmemLoader {
         queue.push_back(layer_idx);
     }
 
-    fn allocate_bytes(&self, bytes: usize) -> Result<()> {
+    fn decode_layer_slice(slice: &[u8], dtype: QmemDType, device: &Device, layer_idx: usize) -> Result<Tensor> {
+        if slice.len() % 4 == 0 && !slice.is_empty() {
+            let floats: Vec<f32> = slice
+                .chunks_exact(4)
+                .map(|c| f32::from_le_bytes([c[0], c[1], c[2], c[3]]))
+                .collect();
+            let n = floats.len();
+            let tensor_f32 = Tensor::from_vec(floats, (n,), device)
+                .with_context(|| format!("Failed to create f32 QMEM tensor for layer {}", layer_idx))?;
+            let target_dtype = dtype.to_candle_dtype();
+            if target_dtype != DType::F32 {
+                tensor_f32
+                    .to_dtype(target_dtype)
+                    .with_context(|| format!("Failed to cast QMEM layer {} to {:?}", layer_idx, target_dtype))
+            } else {
+                Ok(tensor_f32)
+            }
+        } else {
+            Tensor::from_slice(slice, (slice.len(),), device)
+                .with_context(|| format!("Failed to create byte QMEM tensor for layer {}", layer_idx))
+        }
+    }
+
+    fn evict_until_locked(
+        &self,
+        layers: &mut HashMap<usize, QmemLayer>,
+        target_free_bytes: usize,
+        protected_layer: Option<usize>,
+    ) -> Result<usize> {
+        let mut queue = self.lru_queue.lock().unwrap();
+        let mut resident = self.resident_bytes.lock().unwrap();
+        let mut freed = 0usize;
+        let mut skipped = Vec::new();
+
+        while *resident > target_free_bytes {
+            if let Some(layer_idx) = queue.pop_front() {
+                if protected_layer == Some(layer_idx) {
+                    skipped.push(layer_idx);
+                    continue;
+                }
+                if let Some(layer) = layers.get_mut(&layer_idx) {
+                    if layer.tensor.is_some() {
+                        let layer_bytes = layer.resident_bytes;
+                        layer.tensor = None;
+                        layer.resident_bytes = 0;
+                        *resident = resident.saturating_sub(layer_bytes);
+                        freed += layer_bytes;
+                    }
+                }
+            } else {
+                break;
+            }
+        }
+        for idx in skipped {
+            queue.push_back(idx);
+        }
+
+        Ok(freed)
+    }
+
+    fn allocate_bytes_locked(
+        &self,
+        layers: &mut HashMap<usize, QmemLayer>,
+        bytes: usize,
+        protected_layer: Option<usize>,
+    ) -> Result<()> {
         if bytes == 0 {
             return Ok(());
         }
-        let mut resident = self.resident_bytes.lock().unwrap();
-        if *resident + bytes <= self.config.max_ram_bytes {
+        let need_evict = {
+            let mut resident = self.resident_bytes.lock().unwrap();
+            if *resident + bytes <= self.config.max_ram_bytes {
+                *resident += bytes;
+                false
+            } else {
+                true
+            }
+        };
+        if need_evict {
+            let target = self.config.max_ram_bytes.saturating_sub(bytes);
+            let _ = self.evict_until_locked(layers, target, protected_layer)?;
+            let mut resident = self.resident_bytes.lock().unwrap();
             *resident += bytes;
-            return Ok(());
         }
-
-        let target = self.config.max_ram_bytes.saturating_sub(bytes);
-        drop(resident);
-        let freed = self.evict_until(target)?;
-        let mut resident = self.resident_bytes.lock().unwrap();
-        *resident += bytes.saturating_sub(freed);
         Ok(())
     }
 
     pub fn ensure_layer_in_ram(&self, layer_idx: usize) -> Result<()> {
         let mut layers = self.layers.lock().unwrap();
-        let layer = layers.get_mut(&layer_idx)
-            .with_context(|| format!("QMEM layer {} not found", layer_idx))?;
+        if !layers.contains_key(&layer_idx) {
+            return Err(anyhow::anyhow!("QMEM layer {} not found", layer_idx));
+        }
 
-        if layer.tensor.is_some() {
+        if layers.get(&layer_idx).and_then(|l| l.tensor.as_ref()).is_some() {
             self.mark_accessed(layer_idx);
             return Ok(());
         }
 
         if self.config.ram_first {
-            match self.load_layer_into_ram(layer) {
+            match self.load_layer_into_ram_locked(&mut layers, layer_idx) {
                 Ok(()) => {
                     self.mark_accessed(layer_idx);
                     return Ok(());
@@ -161,7 +231,9 @@ impl QmemLoader {
             }
         }
 
-        self.load_layer_via_mmap(layer)?;
+        if let Some(layer) = layers.get_mut(&layer_idx) {
+            self.load_layer_via_mmap(layer)?;
+        }
         self.mark_accessed(layer_idx);
         Ok(())
     }
@@ -179,26 +251,38 @@ impl QmemLoader {
         Ok(())
     }
 
-    fn load_layer_into_ram(&self, layer: &mut QmemLayer) -> Result<()> {
-        self.ensure_layer_mapped(layer)?;
-        let raw = layer.mmap.as_ref().unwrap().clone();
-        let start = layer.offset as usize;
-        let end = start.checked_add(layer.length)
-            .with_context(|| format!("QMEM layer {} size invalid", layer.layer_index))?;
-        let slice = &raw[start..end];
-
-        let tensor_f32 = Tensor::from_slice(slice, (layer.length,), &self.config.device)?;
-        let target_dtype = layer.dtype.to_candle_dtype();
-        let tensor = if target_dtype != DType::F32 {
-            tensor_f32.to_dtype(target_dtype)?
-        } else {
-            tensor_f32
+    fn load_layer_into_ram_locked(&self, layers: &mut HashMap<usize, QmemLayer>, layer_idx: usize) -> Result<()> {
+        let (raw, start, end, dtype) = {
+            let layer = layers
+                .get_mut(&layer_idx)
+                .with_context(|| format!("QMEM layer {} not found", layer_idx))?;
+            self.ensure_layer_mapped(layer)?;
+            let raw = layer.mmap.as_ref().unwrap().clone();
+            let start = layer.offset as usize;
+            let end = start
+                .checked_add(layer.length)
+                .with_context(|| format!("QMEM layer {} size invalid", layer.layer_index))?;
+            if end > raw.len() {
+                return Err(anyhow::anyhow!(
+                    "QMEM layer {} out of bounds ({}..{} > file len {})",
+                    layer.layer_index,
+                    start,
+                    end,
+                    raw.len()
+                ));
+            }
+            (raw, start, end, layer.dtype)
         };
-        
+
+        let slice = &raw[start..end];
         let resident_bytes = slice.len();
-        self.allocate_bytes(resident_bytes)?;
-        layer.tensor = Some(tensor);
-        layer.resident_bytes = resident_bytes;
+        self.allocate_bytes_locked(layers, resident_bytes, Some(layer_idx))?;
+        let tensor = Self::decode_layer_slice(slice, dtype, &self.config.device, layer_idx)?;
+
+        if let Some(layer) = layers.get_mut(&layer_idx) {
+            layer.tensor = Some(tensor);
+            layer.resident_bytes = resident_bytes;
+        }
         Ok(())
     }
 
@@ -211,26 +295,60 @@ impl QmemLoader {
 
     pub fn read_layer_bytes(&self, layer_idx: usize) -> Result<Vec<u8>> {
         let mut layers = self.layers.lock().unwrap();
-        let layer = layers.get_mut(&layer_idx)
-            .with_context(|| format!("QMEM layer {} not found", layer_idx))?;
+        if !layers.contains_key(&layer_idx) {
+            return Err(anyhow::anyhow!("QMEM layer {} not found", layer_idx));
+        }
 
-        if layer.tensor.is_none() && layer.mmap.is_none() {
+        let needs_load = layers
+            .get(&layer_idx)
+            .map(|l| l.tensor.is_none() && l.mmap.is_none())
+            .unwrap_or(false);
+        if needs_load {
             if self.config.ram_first {
-                self.load_layer_into_ram(layer).or_else(|_| self.load_layer_via_mmap(layer))?;
-            } else {
+                if self.load_layer_into_ram_locked(&mut layers, layer_idx).is_err() {
+                    if let Some(layer) = layers.get_mut(&layer_idx) {
+                        self.load_layer_via_mmap(layer)?;
+                    }
+                }
+            } else if let Some(layer) = layers.get_mut(&layer_idx) {
                 self.load_layer_via_mmap(layer)?;
             }
         }
 
-        if let Some(ref tensor) = layer.tensor {
-            return tensor.to_vec1::<u8>().with_context(|| format!("Failed to copy QMEM tensor bytes from layer {}", layer_idx));
-        }
-
+        let layer = layers.get(&layer_idx).unwrap();
         if let Some(ref mmap) = layer.mmap {
             let start = layer.offset as usize;
-            let end = start.checked_add(layer.length)
+            let end = start
+                .checked_add(layer.length)
                 .with_context(|| format!("QMEM layer {} size invalid", layer_idx))?;
+            if end > mmap.len() {
+                return Err(anyhow::anyhow!(
+                    "QMEM layer {} out of bounds ({}..{} > {})",
+                    layer_idx,
+                    start,
+                    end,
+                    mmap.len()
+                ));
+            }
             return Ok(mmap[start..end].to_vec());
+        }
+
+        if let Some(ref tensor) = layer.tensor {
+            if tensor.dtype() == DType::U8 {
+                return tensor
+                    .to_vec1::<u8>()
+                    .with_context(|| format!("Failed to copy QMEM u8 tensor bytes from layer {}", layer_idx));
+            }
+            let f32s = tensor
+                .to_dtype(DType::F32)?
+                .flatten_all()?
+                .to_vec1::<f32>()
+                .with_context(|| format!("Failed to copy QMEM f32 tensor from layer {}", layer_idx))?;
+            let mut out = Vec::with_capacity(f32s.len() * 4);
+            for v in f32s {
+                out.extend_from_slice(&v.to_le_bytes());
+            }
+            return Ok(out);
         }
 
         Err(anyhow::anyhow!("QMEM layer {} is unavailable", layer_idx))
@@ -248,28 +366,8 @@ impl QmemLoader {
     }
 
     pub fn evict_until(&self, target_free_bytes: usize) -> Result<usize> {
-        let mut queue = self.lru_queue.lock().unwrap();
         let mut layers = self.layers.lock().unwrap();
-        let mut resident = self.resident_bytes.lock().unwrap();
-        let mut freed = 0;
-
-        while *resident > target_free_bytes {
-            if let Some(layer_idx) = queue.pop_front() {
-                if let Some(layer) = layers.get_mut(&layer_idx) {
-                    if layer.tensor.is_some() {
-                        let layer_bytes = layer.resident_bytes;
-                        layer.tensor = None;
-                        layer.resident_bytes = 0;
-                        *resident = resident.saturating_sub(layer_bytes);
-                        freed += layer_bytes;
-                    }
-                }
-            } else {
-                break;
-            }
-        }
-
-        Ok(freed)
+        self.evict_until_locked(&mut layers, target_free_bytes, None)
     }
 }
 
@@ -397,8 +495,7 @@ impl QmemParameter {
 
         // Parameter update: delta_new = delta_old - lr * m_hat / (sqrt(v_hat) + eps)
         let v_sqrt = v_hat.sqrt()?;
-        let eps_tensor = Tensor::new(&[eps as f64], &v_sqrt.device())?;
-        let denom = (&v_sqrt + &eps_tensor)?;
+        let denom = v_sqrt.affine(1.0, eps as f64)?;
         let update_step = (&m_hat / &denom)?;
         let scaled_update = (&update_step * (learning_rate as f64))?;
 
@@ -448,27 +545,45 @@ impl QmemLoader {
     /// Returns QmemParameter with cartridge_base loaded and learned_delta initialized to zero
     pub fn get_layer_tensor(&self, layer_idx: usize) -> Result<QmemParameter> {
         let mut layers = self.layers.lock().unwrap();
-        let layer = layers.get_mut(&layer_idx)
-            .with_context(|| format!("QMEM layer {} not found", layer_idx))?;
+        if !layers.contains_key(&layer_idx) {
+            return Err(anyhow::anyhow!("QMEM layer {} not found", layer_idx));
+        }
 
-        // Ensure layer is mapped into memory
-        if layer.tensor.is_none() && layer.mmap.is_none() {
+        let needs_load = layers
+            .get(&layer_idx)
+            .map(|l| l.tensor.is_none() && l.mmap.is_none())
+            .unwrap_or(false);
+        if needs_load {
             if self.config.ram_first {
-                let _ = self.load_layer_into_ram(layer).or_else(|_| self.load_layer_via_mmap(layer));
-            } else {
+                if self.load_layer_into_ram_locked(&mut layers, layer_idx).is_err() {
+                    if let Some(layer) = layers.get_mut(&layer_idx) {
+                        let _ = self.load_layer_via_mmap(layer);
+                    }
+                }
+            } else if let Some(layer) = layers.get_mut(&layer_idx) {
                 let _ = self.load_layer_via_mmap(layer);
             }
         }
 
-        // Get raw tensor (from RAM or mmap)
+        let layer = layers.get(&layer_idx).unwrap();
+        // Get raw tensor (from RAM or mmap) decoded cleanly as f32
         let raw_tensor = if let Some(ref t) = layer.tensor {
             t.clone()
         } else if let Some(ref mmap) = layer.mmap {
             let start = layer.offset as usize;
-            let end = start.checked_add(layer.length)
+            let end = start
+                .checked_add(layer.length)
                 .with_context(|| format!("QMEM layer {} size invalid", layer_idx))?;
-            Tensor::from_slice(&mmap[start..end], (layer.length,), &self.config.device)
-                .with_context(|| format!("Failed to create tensor from layer {}", layer_idx))?
+            if end > mmap.len() {
+                return Err(anyhow::anyhow!(
+                    "QMEM layer {} out of bounds ({}..{} > {})",
+                    layer_idx,
+                    start,
+                    end,
+                    mmap.len()
+                ));
+            }
+            Self::decode_layer_slice(&mmap[start..end], layer.dtype, &self.config.device, layer_idx)?
         } else {
             return Err(anyhow::anyhow!("QMEM layer {} unavailable (no tensor or mmap)", layer_idx));
         };
