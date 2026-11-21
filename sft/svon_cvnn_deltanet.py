@@ -187,6 +187,107 @@ class HolomorphicCVNNDeltaNetWrapper(nn.Module):
         self._cached_param_versions: Optional[Tuple[int, int]] = None
         self._omega_nonzero: bool = False
         self._alpha_nonzero: bool = False
+        # QMEM v3 Bank 3: Asymmetric multi-slot Delta-Rule fast-weight initial state (K, V, beta)
+        self._cartridge_k: Optional[torch.Tensor] = None
+        self._cartridge_v: Optional[torch.Tensor] = None
+        self._cartridge_beta: Optional[torch.Tensor] = None
+        self._cartridge_phase_bands: Optional[torch.Tensor] = None
+
+    def set_initial_cartridge_state(
+        self,
+        k_slots: Optional[torch.Tensor],
+        v_slots: Optional[torch.Tensor],
+        beta_slots: Optional[torch.Tensor],
+        phase_bands: Optional[torch.Tensor] = None,
+    ) -> None:
+        """
+        Binds Bank 3 `.qmem v3` asymmetric fast-weight slots:
+          k_slots:     [R, num_v_heads, head_k_dim]
+          v_slots:     [R, num_v_heads, head_v_dim]
+          beta_slots:  [R, num_v_heads] (effective write gate; 0.0 == exact identity submanifold)
+          phase_bands: Optional [R] phase angles φ_r (Phase-Multiplexed Bank 3 for Top-K isolation)
+        Supports autograd tensors for both offline Bank-3 training and online TTT-QMEM.
+        """
+        self._cartridge_k = k_slots
+        self._cartridge_v = v_slots
+        self._cartridge_beta = beta_slots
+        self._cartridge_phase_bands = phase_bands
+
+    @staticmethod
+    def _rotate_pairs_by_scalar_phase(x: torch.Tensor, phi: torch.Tensor) -> torch.Tensor:
+        """Rotates consecutive (even, odd) channel pairs of `x [..., D]` by angle `phi`."""
+        x_even = x[..., 0::2]
+        x_odd = x[..., 1::2]
+        c = torch.cos(phi)
+        s = torch.sin(phi)
+        out = torch.empty_like(x)
+        out[..., 0::2] = x_even * c - x_odd * s
+        out[..., 1::2] = x_even * s + x_odd * c
+        return out
+
+    @staticmethod
+    def erase_branch_from_state(
+        state: torch.Tensor,
+        key_vec: torch.Tensor,
+        val_vec: torch.Tensor,
+        beta: float = 1.0,
+    ) -> torch.Tensor:
+        """
+        Destructive Phase Erasure (Δφ = π -> e^{iπ} = -1):
+        Selectively cancels a falsified reasoning branch's key-value outer product from
+        a live DeltaNet state matrix `state [B, H_v, D_k, D_v]` without wiping valid context.
+        """
+        s_f = state.float()
+        k_n = F.normalize(key_vec.to(device=s_f.device, dtype=torch.float32), p=2, dim=-1)
+        v_f = val_vec.to(device=s_f.device, dtype=torch.float32)
+        if k_n.ndim == 2:
+            k_n = k_n.unsqueeze(0)
+        if v_f.ndim == 2:
+            v_f = v_f.unsqueeze(0)
+        # Measure current projection along k_n and subtract with phase π (sign = -1)
+        cur_proj = (s_f * k_n.unsqueeze(-1)).sum(dim=-2)  # [B, H_v, D_v]
+        # Blend cancellation towards removing the erroneous v_f component cleanly
+        erase_delta = -float(beta) * v_f
+        # Clamp removal so we never overshoot beyond existing energy along k_n when cur_proj aligns
+        state_erased = s_f + k_n.unsqueeze(-1) * erase_delta.unsqueeze(-2)
+        return state_erased.to(dtype=state.dtype)
+
+    def _build_cartridge_initial_state(
+        self, batch_size: int, device: torch.device, dtype: torch.dtype
+    ) -> Optional[torch.Tensor]:
+        if self._cartridge_k is None or self._cartridge_v is None or self._cartridge_beta is None:
+            return None
+        beta_s = self._cartridge_beta.to(device=device, dtype=torch.float32)
+        if not beta_s.requires_grad and float(beta_s.detach().abs().max().item()) == 0.0:
+            return None
+
+        k_s = F.normalize(self._cartridge_k.to(device=device, dtype=torch.float32), p=2, dim=-1)
+        v_s = self._cartridge_v.to(device=device, dtype=torch.float32)
+        phi_s = (
+            self._cartridge_phase_bands.to(device=device, dtype=torch.float32)
+            if self._cartridge_phase_bands is not None
+            else None
+        )
+        # Sequential multi-slot Delta-Rule associative write with optional phase-multiplexing:
+        # S <- S + k_r(φ_r) ⊗ ((v_r - k_r(φ_r)^T S) * beta_r)
+        state = torch.zeros(
+            (1, self.num_v_heads, self.head_k_dim, self.head_v_dim),
+            device=device,
+            dtype=torch.float32,
+        )
+        n_slots = k_s.shape[0]
+        for r in range(n_slots):
+            kr = k_s[r].unsqueeze(0)  # [1, H_v, D_k]
+            vr = v_s[r].unsqueeze(0)  # [1, H_v, D_v]
+            if phi_s is not None and r < phi_s.shape[0]:
+                kr = self._rotate_pairs_by_scalar_phase(kr, phi_s[r])
+            br = beta_s[r].unsqueeze(0).unsqueeze(-1)  # [1, H_v, 1]
+            kv_mem = (state * kr.unsqueeze(-1)).sum(dim=-2)  # [1, H_v, D_v]
+            delta = (vr - kv_mem) * br
+            state = state + kr.unsqueeze(-1) * delta.unsqueeze(-2)
+        if batch_size > 1:
+            state = state.expand(batch_size, -1, -1, -1).contiguous()
+        return state.to(dtype=dtype)
 
     def _refresh_active_flags(self) -> Tuple[bool, bool]:
         """Checks whether phase_proj_up / alpha_im are non-zero, caching by Tensor._version (0 GPU syncs/token!)."""
@@ -336,6 +437,12 @@ class HolomorphicCVNNDeltaNetWrapper(nn.Module):
         recurrent_fn = getattr(self.base, "recurrent_gated_delta_rule", None) or torch_recurrent_gated_delta_rule
         chunk_fn = getattr(self.base, "chunk_gated_delta_rule", None) or torch_chunk_gated_delta_rule
 
+        effective_init_state = recurrent_state
+        if effective_init_state is None:
+            effective_init_state = self._build_cartridge_initial_state(
+                batch_size=batch_size, device=query.device, dtype=torch.float32
+            )
+
         if recurrent_state is not None and seq_len == 1:
             core_attn_out, last_recurrent_state = recurrent_fn(
                 query,
@@ -349,6 +456,20 @@ class HolomorphicCVNNDeltaNetWrapper(nn.Module):
                 cu_seqlens=kwargs.pop("cu_seq_lens_q", None),
                 **kwargs,
             )
+        elif effective_init_state is not None and effective_init_state.requires_grad:
+            # Differentiable recurrent path when Bank-3 cartridge slots are being optimized via TTT / training
+            core_attn_out, last_recurrent_state = recurrent_fn(
+                query,
+                key,
+                value,
+                g=g,
+                beta=beta,
+                initial_state=effective_init_state,
+                output_final_state=cache_params is not None,
+                use_qk_l2norm_in_kernel=True,
+                cu_seqlens=kwargs.pop("cu_seq_lens_q", None),
+                **kwargs,
+            )
         else:
             core_attn_out, last_recurrent_state = chunk_fn(
                 query,
@@ -356,7 +477,7 @@ class HolomorphicCVNNDeltaNetWrapper(nn.Module):
                 value,
                 g=g,
                 beta=beta,
-                initial_state=recurrent_state,
+                initial_state=effective_init_state,
                 output_final_state=cache_params is not None,
                 use_qk_l2norm_in_kernel=True,
                 cu_seqlens=kwargs.pop("cu_seq_lens_q", None),

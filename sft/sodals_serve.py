@@ -271,6 +271,9 @@ class SodalsNeurosymbolicEngine:
         enable_svon_cgw: bool = False,
         svon_cgw_weights: Optional[str] = None,
         model_path: Optional[str] = None,
+        qmem_v3_dir: Optional[str] = None,
+        enable_ttt_qmem: bool = False,
+        enable_apex_bandit: bool = False,
     ):
         self.device = device
         self.requested_model_path = model_path
@@ -278,8 +281,15 @@ class SodalsNeurosymbolicEngine:
         self.no_system_prompt = no_system_prompt
         self.enable_svon_cgw = enable_svon_cgw
         self.svon_cgw_weights = svon_cgw_weights
+        self.qmem_v3_dir = qmem_v3_dir
+        self.enable_ttt_qmem = bool(enable_ttt_qmem)
+        self.enable_apex_bandit = bool(enable_apex_bandit)
         self.svon_adapter_loaded = False
         self.svon_cgw_active = False
+        self.qmem_v3_manager = None
+        self.hgpr_router = None
+        self.apex_bandit = None
+        self.apex_cdcl = None
         self.model = None
         self.tokenizer = None
         self.router = None
@@ -305,6 +315,9 @@ class SodalsNeurosymbolicEngine:
         enable_svon_cgw: bool = False,
         svon_cgw_weights: Optional[str] = None,
         model_path: Optional[str] = None,
+        qmem_v3_dir: Optional[str] = None,
+        enable_ttt_qmem: bool = False,
+        enable_apex_bandit: bool = False,
     ) -> "SodalsNeurosymbolicEngine":
         if cls._instance is None:
             with cls._instance_lock:
@@ -315,8 +328,36 @@ class SodalsNeurosymbolicEngine:
                         enable_svon_cgw=enable_svon_cgw,
                         svon_cgw_weights=svon_cgw_weights,
                         model_path=model_path,
+                        qmem_v3_dir=qmem_v3_dir,
+                        enable_ttt_qmem=enable_ttt_qmem,
+                        enable_apex_bandit=enable_apex_bandit,
                     )
         return cls._instance
+
+    def init_qmem_v3_subsystem(self) -> int:
+        """Opt-in `.qmem v3.5` (SODALS-Apex) cartridge manager + H-GPR + MAB/CDCL initialization."""
+        if not (self.qmem_v3_dir or self.enable_ttt_qmem or self.enable_apex_bandit):
+            return 0
+        from hierarchical_gpr_router import HierarchicalGaussianPhaseRouter
+        from qmem_apex_bandit_search import CdclConflictMemory, ContextualCartridgeBandit
+        from qmem_v3_cartridge import QmemV3Manager
+
+        h_dim = int(getattr(getattr(self.model, "config", None), "hidden_size", 4096))
+        self.qmem_v3_manager = QmemV3Manager(max_ram_mb=1024.0, max_active_slots=3)
+        self.hgpr_router = HierarchicalGaussianPhaseRouter(hidden_dim=h_dim, top_k=2)
+        self.apex_bandit = ContextualCartridgeBandit(strategy="ucb1", enabled=bool(self.enable_apex_bandit))
+        self.apex_cdcl = CdclConflictMemory(enabled=True)
+
+        count = 0
+        if self.qmem_v3_dir and os.path.isdir(self.qmem_v3_dir):
+            count = self.qmem_v3_manager.register_directory(self.qmem_v3_dir)
+            for fp in sorted(os.listdir(self.qmem_v3_dir)):
+                if fp.endswith(".qmem"):
+                    try:
+                        self.hgpr_router.register_from_qmem_v3(os.path.join(self.qmem_v3_dir, fp))
+                    except Exception:
+                        pass
+        return count
 
     def init_engine(self):
         resolved_model_dir, gguf_file = resolve_runtime_model_path(getattr(self, "requested_model_path", None))
@@ -437,6 +478,15 @@ class SodalsNeurosymbolicEngine:
             blender=self.blender,
             matcher_fn=NormalizedMathMatcher.check_match,
         )
+
+        # 7. Optional .qmem v3.5 (SODALS-Apex) Virtual Parameter Cartridge Subsystem
+        qmem_v3_count = self.init_qmem_v3_subsystem()
+        if qmem_v3_count > 0 or self.enable_ttt_qmem or self.enable_apex_bandit:
+            print(
+                f"[SODALS-APEX] Initialized .qmem v3.5 subsystem "
+                f"(cartridges={qmem_v3_count}, ttt={self.enable_ttt_qmem}, bandit={self.enable_apex_bandit})",
+                flush=True,
+            )
 
         self.model.eval()
         vram_mb = torch.cuda.memory_allocated() / 1024 / 1024 if torch.cuda.is_available() else 0.0
@@ -2270,6 +2320,9 @@ def run_interactive_cli(
     svon_cgw_weights: Optional[str] = None,
     clarify_enabled: bool = True,
     model_path: Optional[str] = None,
+    qmem_v3_dir: Optional[str] = None,
+    enable_ttt_qmem: bool = False,
+    enable_apex_bandit: bool = False,
 ):
     """
     Direct console chat interface with real-time streaming, Arkhe diagnostics,
@@ -2283,6 +2336,9 @@ def run_interactive_cli(
         enable_svon_cgw=enable_svon_cgw,
         svon_cgw_weights=svon_cgw_weights,
         model_path=model_path,
+        qmem_v3_dir=qmem_v3_dir,
+        enable_ttt_qmem=enable_ttt_qmem,
+        enable_apex_bandit=enable_apex_bandit,
     )
     engine.interactive_clarify = bool(clarify_enabled)
     toolbox = LocalWorkspaceToolbox(workspace_root=workspace_dir or os.getcwd())
@@ -2632,6 +2688,9 @@ def main():
     parser.add_argument("--no_system_prompt", action="store_true", help="Disable system prompt injection to test raw weight identity persistence")
     parser.add_argument("--enable_svon_cgw", action="store_true", help="Upgrade 24 GatedDeltaNet -> Holomorphic CVNN & 8 Attention -> 2-Hop Sheaf-GNN")
     parser.add_argument("--svon_cgw_weights", type=str, default=None, help="Path to trained Svon-CGW .safetensors weights")
+    parser.add_argument("--qmem_v3_dir", type=str, default=None, help="Optional directory of `.qmem v3` virtual parameter cartridges (SODALS-Apex)")
+    parser.add_argument("--enable_ttt_qmem", action="store_true", help="Enable ephemeral TTT-QMEM test-time gradient cartridge synthesis")
+    parser.add_argument("--enable_apex_bandit", action="store_true", help="Enable Contextual MAB (UCB1/Thompson) + CDCL conflict memory on top of H-GPR")
     parser.add_argument("--host", type=str, default="127.0.0.1", help="Host interface to bind HTTP daemon")
     parser.add_argument("--port", type=int, default=11435, help="Port for Ollama/OpenAI compatible server")
     args = parser.parse_args()
@@ -2653,6 +2712,9 @@ def main():
             svon_cgw_weights=args.svon_cgw_weights,
             clarify_enabled=(not args.no_clarify),
             model_path=args.model,
+            qmem_v3_dir=args.qmem_v3_dir,
+            enable_ttt_qmem=args.enable_ttt_qmem,
+            enable_apex_bandit=args.enable_apex_bandit,
         )
     else:
         eng = SodalsNeurosymbolicEngine.get_instance(
@@ -2661,6 +2723,9 @@ def main():
             enable_svon_cgw=args.enable_svon_cgw,
             svon_cgw_weights=args.svon_cgw_weights,
             model_path=args.model,
+            qmem_v3_dir=args.qmem_v3_dir,
+            enable_ttt_qmem=args.enable_ttt_qmem,
+            enable_apex_bandit=args.enable_apex_bandit,
         )
         eng.interactive_clarify = (not args.no_clarify)
         import uvicorn

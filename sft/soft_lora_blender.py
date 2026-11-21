@@ -162,3 +162,62 @@ class SoftLoraBlender:
 
         return scale_map
 
+    def set_multi_cartridge_blend(
+        self,
+        model,
+        slot_weights: Dict[str, Union[float, torch.Tensor]],
+        managed_slots: Optional[List[str]] = None,
+    ) -> Dict[str, Any]:
+        """
+        N-Cartridge generalization of SoftLoraBlender for `.qmem v3` Top-K virtual parameter slots.
+        Applies exact per-slot scaling weights while strictly preserving auxiliary adapters
+        such as `svon_identity` (fixed scale 1.00) and zeroing inactive managed cartridge slots.
+        """
+        slots_to_manage = list(managed_slots) if managed_slots is not None else [
+            ad for ad in self.adapter_names if ad.startswith("qmem_slot_")
+        ]
+        all_requested = list(self.adapter_names)
+        for s_name in list(slot_weights.keys()) + slots_to_manage:
+            if s_name not in all_requested:
+                all_requested.append(s_name)
+
+        scale_map: Dict[str, Any] = {}
+        # 1. Preserve non-slot auxiliary adapters (e.g., svon_identity) at their fixed base_scales
+        for ad_name, base_sc in self.base_scales.items():
+            if ad_name not in slots_to_manage and ad_name not in slot_weights:
+                scale_map[ad_name] = float(base_sc)
+
+        # 2. Zero inactive managed slots, then apply active Top-K weights * base_scale
+        for s_name in slots_to_manage:
+            scale_map[s_name] = 0.0
+        for s_name, w in slot_weights.items():
+            base_s = float(self.base_scales.get(s_name, 1.0))
+            if isinstance(w, torch.Tensor):
+                w_clamped = torch.clamp(w, 0.0, 1.0) * base_s
+                if w_clamped.ndim == 1:
+                    w_clamped = w_clamped.view(-1, 1, 1)
+                scale_map[s_name] = w_clamped
+            else:
+                scale_map[s_name] = max(0.0, min(1.0, float(w))) * base_s
+
+        for mod in self._get_lora_modules(model):
+            supported = self._supported_adapters_for_module(mod, all_requested)
+            if not supported:
+                continue
+            if hasattr(mod, "set_adapter"):
+                try:
+                    mod.set_adapter(supported)
+                except Exception:
+                    pass
+            elif hasattr(mod, "_active_adapter"):
+                mod._active_adapter = list(supported)
+
+            if hasattr(mod, "scaling") and hasattr(mod, "lora_alpha") and hasattr(mod, "r"):
+                for ad_name, eff_scale in scale_map.items():
+                    if ad_name in mod.scaling and ad_name in mod.lora_alpha and ad_name in mod.r:
+                        alpha_val = mod.lora_alpha[ad_name]
+                        r_val = mod.r[ad_name]
+                        mod.scaling[ad_name] = (alpha_val / r_val) * eff_scale
+
+        return scale_map
+
