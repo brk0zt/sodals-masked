@@ -99,6 +99,15 @@ trusted_experts.json
 /sodals_os/secrets/
 /sodals_os/vm/
 /sodals_os/work/
+/sodals_os/run/
+/claude_icin/18_Burak_Ozturk_CV.md
+/src/crates/sodals_neuro/src/models/HNXu7q4akAABQAM.jpeg
+*.pid
+*.pem
+*.key
+id_rsa*
+kaggle.json
+access_token
 **/__pycache__/
 *.pyc
 *.whl
