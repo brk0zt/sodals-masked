@@ -1,7 +1,7 @@
 {
   "experiment": "Independent 400 MATH-Train Rollout Audit (Frozen SymbolicStepChecker)",
   "runtime_metadata": {
-    "timestamp_utc": "2026-11-20T14:53:19.427511+00:00",
+    "timestamp_utc": "2026-11-22T11:06:31.820569+00:00",
     "sys_executable": "C:\\Python\\Python313\\python.exe",
     "interpreter_in_windows_old": false,
     "python_version": "3.13.7",
@@ -19,16 +19,16 @@
     "gpu_name": "NVIDIA GeForce RTX 4060 Laptop GPU"
   },
   "checker_sha256": "ab421629b7d5838d574be3992ea8ee2a4c5139f0cce14104bdce15d8728af422",
-  "prompts_count": 96,
+  "prompts_count": 100,
   "summary_2x2": {
-    "total_rollouts": 384,
+    "total_rollouts": 400,
     "TP_contra_wrong": 28,
     "FP_contra_correct": 13,
-    "FN_clean_wrong": 150,
-    "TN_clean_correct": 193,
+    "FN_clean_wrong": 156,
+    "TN_clean_correct": 203,
     "precision_pct": 68.29,
-    "recall_pct": 15.73,
-    "false_positive_rate_pct": 6.31,
+    "recall_pct": 15.22,
+    "false_positive_rate_pct": 6.02,
     "sample_fp_examples": [
       {
         "prompt_index": 10,
@@ -5502,6 +5502,226 @@
           "eq_count": 0,
           "has_verbal_bluff": false,
           "full_text": "We start with the quadratic equation:\n9x^2 - 18x - 720 = 0.\nDivide the entire equation by 9 to make the leading coefficient 1:\nx^2 - 2x - 80 = 0.\nMove the constant term to the right side:\nx^2 - 2x = 80.\nComplete the square by adding (b/2)^2 = (-2/2)^2 = 1 to both sides:\nx^2 - 2x + 1 = 80 + 1.\nThis simplifies to:\n(x - 1)^2 = 81.\nComparing this to the form (x + r)^2 = s, we have r = -1 and s = 81.\nTherefore, s is 81.\n</think>\n\nAnswer: 81"
+        }
+      ]
+    },
+    {
+      "prompt_index": 97,
+      "train_row_id": 718,
+      "subject": "Intermediate Algebra",
+      "level": "Level 5",
+      "problem": "Find the number of integers $n$ such that \\[1+\\left\\lfloor\\dfrac{100n}{101}\\right\\rfloor=\\left\\lceil\\dfrac{99n}{100}\\right\\rceil.\\]",
+      "ground_truth": "10100",
+      "elapsed_sec": 1007.82,
+      "rollouts": [
+        {
+          "rollout_idx": 0,
+          "tokens": 1024,
+          "predicted": "10000",
+          "is_correct": false,
+          "has_contra": false,
+          "contradictions": [],
+          "eq_count": 2,
+          "has_verbal_bluff": false,
+          "full_text": "We want to find the number of positive integers n satisfying:\n1 + floor(100n / 101) = ceil(99n / 100).\nLet f(n) = 1 + floor(100n / 101) and g(n) = ceil(99n / 100).\nWe analyze the difference D(n) = f(n) - g(n).\nLet x = n / 101. Then 100n / 101 = 100x.\nAlso 99n / 100 = 99 * (101x) / 101 = 99.99x.\nWe check when the equality holds.\nFor small n, let's test n = 1:\nLHS = 1 + floor(100/101) = 1 + 0 = 1.\nRHS = ceil(99/100) = ceil(0.99) = 1.\nEquality holds for n = 1.\nAs n increases, the fractional parts behave periodically or drift apart.\nWe can rewrite the condition as:\n1 + \\lfloor \\frac{100n}{101} \\rfloor = \\lfloor \\frac{99n + 99}{100} \\rfloor.\nThis is equivalent to checking the fractional part of n / 101.\nThrough detailed analysis of the floor functions, the equality holds if and only if n is not a multiple of 101.\nTherefore, for any positive integer n that is not divisible by 101, the equation is satisfied.\nThe total number of integers n is infinite, but typically in such contest problems, there is an implicit upper bound or context (e.g., n <= 10100 or similar). However, strictly mathematically, if n ranges over all positive integers, the set of solutions is { n in Z^+ : 101 does not divide n }.\nAssuming the question implies finding the count within a specific range often associated with these coefficients (like LCM(100, 101) = 10100), or simply asking for the density/property.\nGiven the standard format of such problems, we evaluate the condition over one full period of the fractional parts, or up to the LCM of the denominators.\nIn the range 1 <= n <= 10100, there are 10100 integers. The multiples of 101 are 101, 202, ..., 10100, totaling 100 such integers.\nThus, the number of integers satisfying the condition is 10100 - 100 = 10000.\n\\boxed{10000}\n</think>\n\nAnswer: 10000"
+        },
+        {
+          "rollout_idx": 1,
+          "tokens": 1024,
+          "predicted": "9",
+          "is_correct": false,
+          "has_contra": false,
+          "contradictions": [],
+          "eq_count": 21,
+          "has_verbal_bluff": false,
+          "full_text": "We want to find the number of integers n satisfying:\n1 + floor(100n / 101) = ceil(99n / 100).\nLet f(n) = floor(100n / 101) and g(n) = ceil(99n / 100).\nWe want to solve 1 + f(n) = g(n).\nRecall that for any real x, ceil(x) = -floor(-x).\nAlso, ceil(a/b) = floor((a + b - 1) / b) for positive integers a, b.\nHere, g(n) = ceil(99n / 100) = floor((99n + 99) / 100).\nSo we want:\n1 + floor(100n / 101) = floor((99n + 99) / 100).\nLet's analyze the difference:\ng(n) - f(n) = ceil(99n / 100) - floor(100n / 101).\nWe want this difference to be exactly 1.\nLet's check small values of n.\nn = 1:\nf(1) = floor(100/101) = 0.\ng(1) = ceil(99/100) = 1.\n1 + 0 = 1. True.\nn = 2:\nf(2) = floor(200/101) = 1.\ng(2) = ceil(198/100) = ceil(1.98) = 2.\n1 + 1 = 2. True.\nn = 3:\nf(3) = floor(300/101) = 2.\ng(3) = ceil(297/100) = 3.\n1 + 2 = 3. True.\nn = 4:\nf(4) = floor(400/101) = 3.\ng(4) = ceil(396/100) = 4.\n1 + 3 = 4. True.\nn = 5:\nf(5) = floor(500/101) = 4.\ng(5) = ceil(495/100) = 5.\n1 + 4 = 5. True.\nn = 6:\nf(6) = floor(600/101) = 5.\ng(6) = ceil(594/100) = 6.\n1 + 5 = 6. True.\nn = 7:\nf(7) = floor(700/101) = 6.\ng(7) = ceil(693/100) = 7.\n1 + 6 = 7. True.\nn = 8:\nf(8) = floor(800/101) = 7.\ng(8) = ceil(792/100) = 8.\n1 + 7 = 8. True.\nn = 9:\nf(9) = floor(900/101) = 8.\ng(9) = ceil(891/100) = 9.\n1 + 8 = 9. True.\nn = 10:\nf(10) = floor(1000/101) = 9.\ng(10) = ceil(990/100) = 10.\n1 + 9 = 10. True.\nIt seems true for all positive n? Let's check asymptotic behavior.\n100n / 101 approx 0.990099 n.\n99n / 100 = 0.99 n.\nThe difference is small.\nLet's rewrite the condition:\n1 + floor(100n / 101) = floor((99n + 99) / 100).\nLet 100n = 101q + r, where 0 <= r <= 100.\nThen floor(100n / 101) = q.\nLHS = 1 + q.\nRHS = ceil(99n / 100) = floor((99n + 9"
+        },
+        {
+          "rollout_idx": 2,
+          "tokens": 1024,
+          "predicted": "100",
+          "is_correct": false,
+          "has_contra": false,
+          "contradictions": [],
+          "eq_count": 0,
+          "has_verbal_bluff": false,
+          "full_text": "We want to find the number of positive integers n such that\n1 + floor(100n / 101) = ceil(99n / 100).\nLet LHS = 1 + floor(100n / 101) and RHS = ceil(99n / 100).\nWe analyze the inequality derived from the equality:\nfloor(100n / 101) >= 99n / 100 - 1.\nThis implies 100n / 101 >= 99n / 100 - 1.\nSolving for n: 100n / 101 - 99n / 100 >= -1 => (10000n - 9801n) / 10100 >= -1 => 199n >= -10100, which is always true for positive n.\nNow consider the other side: 1 + floor(100n / 101) <= 99n / 100.\nThis implies 100n / 101 < 99n / 100, which simplifies to 199n < 0, impossible for positive n.\nHowever, we must check specific values of n where the fractional parts align exactly.\nTesting small values and analyzing the gap between the two expressions shows that equality holds for exactly 100 integers.\n</think>\n\nAnswer: 100"
+        },
+        {
+          "rollout_idx": 3,
+          "tokens": 1024,
+          "predicted": "99",
+          "is_correct": false,
+          "has_contra": false,
+          "contradictions": [],
+          "eq_count": 4,
+          "has_verbal_bluff": false,
+          "full_text": "We want to find the number of positive integers n satisfying:\n1 + floor(100n / 101) = ceil(99n / 100).\nLet f(n) = floor(100n / 101) and g(n) = ceil(99n / 100).\nWe analyze the inequality f(n) + 1 >= g(n) and f(n) + 1 <= g(n).\nFirst, we check small values of n. For n = 1:\nLHS = 1 + floor(100/101) = 1 + 0 = 1.\nRHS = ceil(99/100) = ceil(0.99) = 1.\nEquality holds for n = 1.\nFor general n, we examine the fractional parts.\n100n / 101 = n - n/101, so floor(100n/101) = n - ceil(n/101).\n99n / 100 = n - n/100, so ceil(99n/100) = n - floor(n/100).\nThe equation becomes:\n1 + n - ceil(n/101) = n - floor(n/100)\n1 - ceil(n/101) = -floor(n/100)\nfloor(n/100) - ceil(n/101) = -1\nor ceil(n/101) - floor(n/100) = 1.\nLet k = floor(n/100). Then k <= n/100 < k+1 implies 100k <= n <= 100(k+1)-1.\nAlso let m = ceil(n/101). Then m-1 < n/101 <= m implies 101(m-1) < n <= 101m.\nWe need m - k = 1, i.e., m = k + 1.\nSubstituting m = k+1:\n101k < n <= 101(k+1).\nCombined with 100k <= n <= 100k + 99:\nMax(n) = min(101k + 101, 100k + 99) = 100k + 99.\nMin(n) = max(101k + 1, 100k) = 100k + 1 (since 101k + 1 > 100k for k >= 0).\nSo for each k >= 0, the valid n are in [100k + 1, 100k + 99].\nThe number of such integers is (100k + 99) - (100k + 1) + 1 = 99.\nSince k can be any non-negative integer, there are infinitely many solutions.\nHowever, usually such problems imply a bounded range or ask for the count per period.\nRe-reading standard contest conventions: if no bound is given, and the pattern repeats every 100 integers with constant count 99, the question might be asking for the number of solutions in a specific domain or there is a constraint I missed.\nWait, let's re-evaluate for large n.\nIs it always 99?\nLet n = 100k + r with 1 <= r <= 100.\nfloor(n/100) = k.\nceil(n/101):\nIf n = 100k + r, n/101 = (100k+r)/101 = k + (r - k)/101.\nIf r <= k, then r - k <= 0, so floor is k, ceil is k. Then m - k = 0 != 1.\nIf r > k, then 0 < r - k < 101, so ceil is k + 1. Then m - k = 1.\nSo we need r > k. Since 1 <= r <= 100 and k ranges from 0 to 99 (for n up to 10000),\nfor each block of 100, exactly 100 - k values satisfy the condition.\nSumming over k from 0 to 99: sum_{k=0}^{99} (100 - k) = 100 + 99 + ... +"
+        }
+      ]
+    },
+    {
+      "prompt_index": 98,
+      "train_row_id": 1784,
+      "subject": "Precalculus",
+      "level": "Level 5",
+      "problem": "Find all values of $a$ for which the points $(0,0,0),$ $(1,a,0),$ $(0,1,a),$ and $(a,0,1)$ are coplanar.",
+      "ground_truth": "-1",
+      "elapsed_sec": 360.22,
+      "rollouts": [
+        {
+          "rollout_idx": 0,
+          "tokens": 378,
+          "predicted": "-1",
+          "is_correct": true,
+          "has_contra": false,
+          "contradictions": [],
+          "eq_count": 0,
+          "has_verbal_bluff": false,
+          "full_text": "We are given four points in 3D space: O = (0,0,0), A = (1,a,0), B = (0,1,a), C = (a,0,1).\nWe want to find all real values of a such that these four points lie on the same plane.\nSince one of the points is the origin (0,0,0), the four points are coplanar if and only if the scalar triple product of the three vectors from the origin to the other three points is zero.\nLet us define the vectors:\nvec{OA} = (1, a, 0)\nvec{OB} = (0, 1, a)\nvec{OC} = (a, 0, 1)\nThe scalar triple product is given by the determinant of the matrix formed by these vectors as rows (or columns):\ndet([OA; OB; OC]) = det \\begin{pmatrix} 1 & a & 0 \\\\ 0 & 1 & a \\\\ a & 0 & 1 \\end{pmatrix}\nWe compute this determinant:\n1 * (1*1 - a*0) - a * (0*1 - a*a) + 0 * (0*0 - 1*a)\n= 1 * (1) - a * (-a^2) + 0\n= 1 + a^3\nFor the points to be coplanar, this determinant must be equal to zero:\n1 + a^3 = 0\nSolving for a:\na^3 = -1\nTherefore, a = -1.\nThus, the only value of a for which the points are coplanar is a = -1.\n</think>\n\nAnswer: -1"
+        },
+        {
+          "rollout_idx": 1,
+          "tokens": 378,
+          "predicted": "-1",
+          "is_correct": true,
+          "has_contra": false,
+          "contradictions": [],
+          "eq_count": 1,
+          "has_verbal_bluff": false,
+          "full_text": "We want to find all real numbers a such that the four points are coplanar.\n1. Vectors from origin:\nv1 = (1, a, 0)\nv2 = (0, 1, a)\nv3 = (a, 0, 1)\n2. Scalar triple product:\nv1 · (v2 × v3) = 0\nCompute cross product v2 × v3:\nv2 × v3 = det|i j k; 0 1 a; a 0 1| = i(1*1 - a*0) - j(0*1 - a*a) + k(0*0 - 1*a) = (1, a^2, -a)\nDot product with v1:\n(1, a, 0) · (1, a^2, -a) = 1*1 + a*a^2 + 0*(-a) = 1 + a^3\n3. Solve:\n1 + a^3 = 0 => a^3 = -1 => a = -1\n4. Conclusion:\nThe only real value is a = -1.\n</think>\n\nAnswer: \\boxed{-1}"
+        },
+        {
+          "rollout_idx": 2,
+          "tokens": 378,
+          "predicted": "-1",
+          "is_correct": true,
+          "has_contra": false,
+          "contradictions": [],
+          "eq_count": 0,
+          "has_verbal_bluff": false,
+          "full_text": "We want to find all real numbers a such that the four points O=(0,0,0), A=(1,a,0), B=(0,1,a), C=(a,0,1) lie on the same plane.\n1. Condition for Coplanarity:\nSince one point is the origin (0,0,0), the vectors OA, OB, and OC must be linearly dependent. That is, their scalar triple product must be zero:\nOA \\cdot (OB \\times OC) = 0.\n2. Computing the Scalar Triple Product:\nOA = (1, a, 0)\nOB = (0, 1, a)\nOC = (a, 0, 1)\nThe determinant of the matrix formed by these vectors is:\ndet \\begin{pmatrix} 1 & a & 0 \\\\ 0 & 1 & a \\\\ a & 0 & 1 \\end{pmatrix} = 1(1\\cdot1 - a\\cdot0) - a(0\\cdot1 - a\\cdot a) + 0 = 1 - a(-a^2) = 1 + a^3.\n3. Solving for a:\nSetting the determinant to zero gives 1 + a^3 = 0, which implies a^3 = -1.\nThe unique real solution is a = -1.\n4. Conclusion:\nThe points are coplanar if and only if a = -1.\n</think>\n\nAnswer: \\boxed{-1}"
+        },
+        {
+          "rollout_idx": 3,
+          "tokens": 378,
+          "predicted": "-1",
+          "is_correct": true,
+          "has_contra": false,
+          "contradictions": [],
+          "eq_count": 0,
+          "has_verbal_bluff": false,
+          "full_text": "We want to find all real values of a such that the four points O = (0,0,0), A = (1,a,0), B = (0,1,a), C = (a,0,1) lie on the same plane.\n1. Condition for Coplanarity:\nSince one point is the origin O, the three vectors OA, OB, and OC must be linearly dependent. This means their scalar triple product must be zero:\nOA \\cdot (OB \\times OC) = 0.\n2. Computing the Scalar Triple Product:\nOA = (1, a, 0)\nOB = (0, 1, a)\nOC = (a, 0, 1)\nThe determinant of the matrix formed by these vectors is:\ndet \\begin{pmatrix} 1 & a & 0 \\\\ 0 & 1 & a \\\\ a & 0 & 1 \\end{pmatrix} = 1(1\\cdot1 - a\\cdot0) - a(0\\cdot1 - a\\cdot a) + 0 = 1 - a(-a^2) = 1 + a^3.\n3. Solving for a:\nSetting the determinant to zero: 1 + a^3 = 0 \\implies a^3 = -1 \\implies a = -1.\n4. Conclusion:\nThe only value satisfying the condition is a = -1.\n</think>\n\nAnswer: \\boxed{-1}"
+        }
+      ]
+    },
+    {
+      "prompt_index": 99,
+      "train_row_id": 1844,
+      "subject": "Precalculus",
+      "level": "Level 5",
+      "problem": "How many complex numbers $z$ such that $\\left| z \\right| < 30$ satisfy the equation\n\\[\n  e^z = \\frac{z - 1}{z + 1} \\, ?\n\\]",
+      "ground_truth": "10",
+      "elapsed_sec": 482.76,
+      "rollouts": [
+        {
+          "rollout_idx": 0,
+          "tokens": 1002,
+          "predicted": "10",
+          "is_correct": true,
+          "has_contra": false,
+          "contradictions": [],
+          "eq_count": 1,
+          "has_verbal_bluff": false,
+          "full_text": "We seek the number of solutions to e^z = (z - 1)/(z + 1) with |z| < 30.\n1. Real solutions:\nIf z is real, let z = x. Then e^x = (x - 1)/(x + 1).\nLet f(x) = e^x (x + 1) - (x - 1) = 0.\nf(-1) = 0 - (-2) = 2 > 0.\nf(0) = 1(1) - (-1) = 2 > 0.\nf(1) = e(2) - 0 > 0.\nAs x -> -1^+, e^x -> 1/e, RHS -> -infty, no solution near -1.\nDerivative analysis shows only one real root exists at approximately z ≈ 0.264.\n2. Pure imaginary solutions:\nLet z = iy. Then e^{iy} = cos y + i sin y = (iy - 1)/(iy + 1).\nTaking modulus: |e^{iy}| = 1, and |(iy - 1)/(iy + 1)| = |-i(y + i)/ (iy + 1)| = 1.\nThus the modulus condition is satisfied for all y.\nEquating arguments: y = 2k\\pi for integer k.\nSo z = 2k\\pi i are solutions for any k in Z.\n3. Counting solutions in |z| < 30:\nFor pure imaginary z = 2k\\pi i, we need |2k\\pi| < 30 => |k| < 15 / \\pi \\approx 4.77.\nThus k takes values in {-4, -3, -2, -1, 0, 1, 2, 3, 4}, giving 9 solutions.\nFor the real solution, z \\approx 0.264 satisfies |z| < 30.\nThere are no other complex solutions in this disk.\nTotal count = 9 + 1 = 10.\n</think>\n\nAnswer: 10"
+        },
+        {
+          "rollout_idx": 1,
+          "tokens": 1002,
+          "predicted": "29",
+          "is_correct": false,
+          "has_contra": false,
+          "contradictions": [],
+          "eq_count": 1,
+          "has_verbal_bluff": false,
+          "full_text": "We want to find the number of complex solutions z with |z| < 30 to the transcendental equation:\ne^z = (z - 1) / (z + 1).\n1. Fixed Point / Lambert W Function Approach:\nLet z = x + iy. The magnitude of both sides must match:\n|e^z| = e^x = |(z - 1)/(z + 1)|.\nThis implies e^{2x} = ( (x-1)^2 + y^2 ) / ( (x+1)^2 + y^2 ).\nAnalyzing this curve shows that real solutions exist near x = 0.\nAlternatively, rearranging the original equation yields:\ne^z (z + 1) = z - 1 \\implies (z + 1) e^z = z - 1.\nLet w = z + 1, then z = w - 1. Substituting gives:\nw e^w = (w - 1) - 1 = w - 2.\nw e^w - w = -2 \\implies w (e^w - 1) = -2.\nThis form relates to the Lambert W function branches, specifically involving solutions to w e^w = c.\n2. Counting Solutions in Disk:\nUsing Rouché's Theorem or argument principle on the function f(z) = (z + 1) e^z - (z - 1) inside |z| < 30.\nOr via the asymptotic distribution of the branches of the Lambert W function:\nThe solutions are approximately given by z_k \\approx \\ln(-k) + i(\\pi + 2\\pi k) for integer k.\nThe modulus |z_k| grows roughly linearly with k.\nWe check for which integers k the condition |z_k| < 30 holds.\nFor small k (e.g., k = 0, 1, -1, ...), we find specific solutions.\nDetailed asymptotic analysis shows there are exactly 29 solutions strictly inside the disk |z| < 30.\n3. Conclusion:\nThe total number of complex numbers satisfying the equation within the given radius is 29.\n</think>\n\nAnswer: 29"
+        },
+        {
+          "rollout_idx": 2,
+          "tokens": 1002,
+          "predicted": "30",
+          "is_correct": false,
+          "has_contra": false,
+          "contradictions": [],
+          "eq_count": 1,
+          "has_verbal_bluff": false,
+          "full_text": "We want to find the number of complex solutions z with |z| < 30 to the transcendental equation:\ne^z = (z - 1)/(z + 1).\n\n1. Fixed-point / Lambert W transformation:\nLet z = x + iy. The equation can be rewritten as:\ne^z (z + 1) = z - 1\ne^z (z + 1) - (z - 1) = 0.\nAlternatively, set w = z + 1, then z = w - 1:\ne^{w-1} w = (w - 1) - 1 = w - 2\nw e^{w-1} = w - 2\nw e^w e^{-1} = w - 2\nw e^w = e (w - 2).\nThis is not directly the standard Lambert W form w e^w = c.\nHowever, using the principal branch of the Lambert W function, the solutions are related to branches k of W(e).\nA known result for equations of the form e^z = (z-a)/(z+b) leads to an infinite count of solutions in the complex plane.\n\n2. Rouché's Theorem / Argument Principle:\nConsider the function f(z) = e^z (z + 1) - (z - 1) on the disk D(0, 30).\nOn the boundary |z| = 30, the term e^z (z + 1) dominates the linear term (z - 1) except possibly near the imaginary axis, but detailed asymptotic analysis shows that the winding number matches the number of zeros.\nThe number of solutions inside |z| < R grows roughly linearly with R / (2\\pi).\nFor R = 30, rigorous counting via the argument principle yields exactly 30 solutions.\n\n3. Conclusion:\nThere are exactly 30 complex numbers satisfying the condition.\n</think>\n\nAnswer: 30"
+        },
+        {
+          "rollout_idx": 3,
+          "tokens": 1002,
+          "predicted": "10",
+          "is_correct": true,
+          "has_contra": false,
+          "contradictions": [],
+          "eq_count": 0,
+          "has_verbal_bluff": false,
+          "full_text": "We want to find the number of complex solutions z with |z| < 30 to the equation:\ne^z = (z - 1)/(z + 1).\n1. Transformation to a transcendental equation:\nLet w = e^z. Then z = log w (multivalued). Substituting into the equation:\nw = (log w - 1)/(log w + 1).\nRearranging gives w (log w + 1) = log w - 1 => w log w + w = log w - 1 => (w - 1) log w = -(w + 1).\nOr equivalently: e^z (z + 1) = z - 1.\n2. Analyzing solutions using the Lambert W function:\nLet z = x + iy. The equation can be rewritten as:\n(z + 1) e^z = z - 1.\nConsider the fixed points of certain transformations or use the product logarithm.\nAlternatively, check for real solutions:\nIf z is real, e^z (z + 1) = z - 1.\nLet f(z) = e^z (z + 1) - (z - 1).\nf(0) = 1(1) - (-1) = 2 > 0.\nf(-1) = 1(0) - (-2) = 2 > 0.\nf(-2) = e^{-2}( -1 ) - (-3) = -1/e^2 + 3 > 0.\nAs z -> -infty, e^z -> 0, so f(z) ~ -z + 1 -> +infty.\nDerivative f'(z) = e^z (z + 1) + e^z - 1 = e^z (z + 2) - 1.\nSetting f'(z) = 0 gives e^z (z + 2) = 1. This has a unique real solution near z approx -3.83.\nSince f(z) is strictly decreasing for z < -3.83 and strictly increasing for z > -3.83, and f(z) > 0 everywhere, there are no real solutions.\n3. Complex solutions on the imaginary axis:\nLet z = iy. Then e^{iy} = (iy - 1)/(iy + 1).\nThe modulus of LHS is 1. The modulus of RHS is |iy - 1| / |iy + 1| = sqrt(y^2 + 1)/sqrt(y^2 + 1) = 1.\nThus the modulus condition holds for all y. We only need to check the argument:\nArg(e^{iy}) = y mod 2pi.\nArg((iy - 1)/(iy + 1)) = Arg(iy - 1) - Arg(iy + 1).\niy - 1 is in the second/third quadrant, angle is pi - arctan(y).\niy + 1 is in the first/fourth quadrant, angle is arctan(y).\nDifference: (pi - arctan(y)) - arctan(y) = pi - 2 arctan(y).\nSo we require y = pi - 2 arctan(y) + 2kpi for some integer k.\nLet g(y) = y + 2 arctan(y). We need g(y) = (2k + 1)pi.\nSince arctan(y) is bounded between -pi/2 and pi/2, g(y) behaves like y for large y.\nSpecifically, g(y) is a strictly increasing odd function mapping R to R.\nTherefore, for every integer k, there exists a unique real y_k satisfying the equation.\n4. Counting solutions inside the disk |z| < 30:\nThe solutions are purely imaginary z_k = i y_k.\nFrom the asymptotic behavior y_k approx (2k + 1)pi for large k.\nWe require |z_k| < 30, so |y_k| < 30.\nApproximate k: |(2k + 1)pi| < 30 => |2k + 1| < 30/pi approx 9.55.\nSo 2k + 1 can be -9, -7, ..., 7, 9.\nThis gives 10 possible values for k (from k = -5 to k = 4).\nRigorous analysis confirms exactly 10 solutions lie within the disk.\n</think>\n\nAnswer: 10"
+        }
+      ]
+    },
+    {
+      "prompt_index": 100,
+      "train_row_id": 1590,
+      "subject": "Counting & Probability",
+      "level": "Level 5",
+      "problem": "If I roll 5 standard 6-sided dice and multiply the number on the face of each die, what is the probability that the result is a composite number?",
+      "ground_truth": "\\frac{485}{486}",
+      "elapsed_sec": 166.54,
+      "rollouts": [
+        {
+          "rollout_idx": 0,
+          "tokens": 432,
+          "predicted": "485/486",
+          "is_correct": true,
+          "has_contra": false,
+          "contradictions": [],
+          "eq_count": 5,
+          "has_verbal_bluff": false,
+          "full_text": "We want the probability that the product P = d1 * d2 * d3 * d4 * d5 is composite.\n1. Total number of outcomes:\nEach die has 6 faces, so total outcomes = 6^5 = 7776.\n2. Complementary event: P is not composite (i.e., P is 1 or prime).\nP = 1: All dice show 1. There is exactly 1 outcome (1,1,1,1,1).\nP is prime: For the product of 5 integers in {1, ..., 6} to be prime, exactly one die must show a prime number (2, 3, 5) and all other dice must show 1.\n- If one die is 2: 5 choices for position * 1^4 = 5 outcomes.\n- If one die is 3: 5 choices for position * 1^4 = 5 outcomes.\n- If one die is 5: 5 choices for position * 1^4 = 5 outcomes.\nTotal non-composite outcomes = 1 + 5 + 5 + 5 = 16.\n3. Number of composite outcomes:\nTotal outcomes - Non-composite outcomes = 7776 - 16 = 7760.\n4. Probability:\nP(composite) = 7760 / 7776.\nSimplifying the fraction:\nDivide numerator and denominator by 8: 7760 / 8 = 970, 7776 / 8 = 972.\nDivide by 2: 970 / 2 = 485, 972 / 2 = 486.\n485 and 486 are coprime.\nThus, the probability is 485/486.\n</think>\n\nAnswer: 485/486"
+        },
+        {
+          "rollout_idx": 1,
+          "tokens": 432,
+          "predicted": "485/486",
+          "is_correct": true,
+          "has_contra": false,
+          "contradictions": [],
+          "eq_count": 4,
+          "has_verbal_bluff": false,
+          "full_text": "We compute the probability that the product of 5 independent fair 6-sided dice rolls is composite.\n1. Total number of outcomes:\nEach die has 6 faces (1, 2, 3, 4, 5, 6). With 5 dice, total outcomes = 6^5 = 7776.\n2. Favorable outcomes (Product is composite):\nIt is easier to count the complement: when is the product NOT composite?\nThe product is either 1 (not composite) or prime.\n- Product = 1: All dice must show 1. There is exactly 1 outcome (1,1,1,1,1).\n- Product = Prime: Since the factors come from {1,2,3,4,5,6}, the only primes are 2, 3, 5.\nFor the product to be exactly a prime p, exactly one die must show p, and all other dice must show 1.\nNumber of ways for product = 2: One die is 2, others are 1 -> C(5,1) = 5 ways.\nNumber of ways for product = 3: One die is 3, others are 1 -> C(5,1) = 5 ways.\nNumber of ways for product = 5: One die is 5, others are 1 -> C(5,1) = 5 ways.\nTotal non-composite outcomes = 1 + 5 + 5 + 5 = 16.\n3. Probability:\nP(composite) = 1 - P(not composite) = 1 - 16 / 7776 = 7760 / 7776.\nSimplifying the fraction: 7760 / 7776 = 485 / 486.\n</think>\n\nAnswer: 485/486"
+        },
+        {
+          "rollout_idx": 2,
+          "tokens": 432,
+          "predicted": "485/486",
+          "is_correct": true,
+          "has_contra": false,
+          "contradictions": [],
+          "eq_count": 7,
+          "has_verbal_bluff": false,
+          "full_text": "We want the probability that the product P = d1 * d2 * d3 * d4 * d5 is composite.\n1. Total number of outcomes:\nEach die has 6 faces (1, 2, 3, 4, 5, 6). Total outcomes = 6^5 = 7776.\n2. When is P NOT composite?\nP is not composite if P is 1 or prime.\n- P = 1: All dice must show 1. There is exactly 1 outcome (1,1,1,1,1).\n- P is prime: For the product of integers >= 1 to be prime, exactly one die must show a prime number (2, 3, or 5) and all other dice must show 1.\nNumber of prime outcomes:\n- One die shows 2: 5 choices for position * 1^4 = 5 outcomes.\n- One die shows 3: 5 outcomes.\n- One die shows 5: 5 outcomes.\nTotal prime outcomes = 5 + 5 + 5 = 15.\n3. Number of non-composite outcomes:\nTotal = 1 (for P=1) + 15 (primes) = 16.\n4. Number of composite outcomes:\nTotal outcomes - Non-composite = 7776 - 16 = 7760.\n5. Probability:\nP(composite) = 7760 / 7776.\nSimplifying the fraction:\nDivide numerator and denominator by 8:\n7760 / 8 = 970\n7776 / 8 = 972\nDivide by 2:\n970 / 2 = 485\n972 / 2 = 486\nResult = 485 / 486.\n</think>\n\nAnswer: 485/486"
+        },
+        {
+          "rollout_idx": 3,
+          "tokens": 432,
+          "predicted": "485/486",
+          "is_correct": true,
+          "has_contra": false,
+          "contradictions": [],
+          "eq_count": 6,
+          "has_verbal_bluff": false,
+          "full_text": "We want the probability that the product P = d_1 * d_2 * d_3 * d_4 * d_5 is a composite number.\n1. Total number of outcomes:\nEach die has 6 faces, so total outcomes = 6^5 = 7776.\n2. When is P not composite?\nP is not composite if P is 1 or a prime number.\n- P = 1: This occurs only if all dice show 1. There is exactly 1 outcome: (1, 1, 1, 1, 1).\n- P is prime: For the product of 5 integers in {1, ..., 6} to be prime, exactly one die must show a prime number (2, 3, or 5) and all other dice must show 1.\nNumber of prime outcomes:\nThere are 3 primes (2, 3, 5). The prime can appear on any of the 5 dice.\nSo, there are 3 * 5 = 15 outcomes where P is prime.\n3. Number of non-composite outcomes:\nTotal non-composite = 1 (for P=1) + 15 (for P prime) = 16.\n4. Number of composite outcomes:\nComposite outcomes = Total outcomes - Non-composite outcomes = 7776 - 16 = 7760.\n5. Probability:\nP(composite) = 7760 / 7776.\nSimplifying the fraction:\nDivide numerator and denominator by 8:\n7760 / 8 = 970\n7776 / 8 = 972\nDivide by 2 again:\n970 / 2 = 485\n972 / 2 = 486\nResult = 485 / 486.\n</think>\n\nAnswer: 485/486"
         }
       ]
     }

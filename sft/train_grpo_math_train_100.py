@@ -19,10 +19,14 @@ Implements Claude's Item 3 Pre-Registered Experiment:
 """
 
 import os
-os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:128"
-os.environ["HF_HUB_OFFLINE"] = "1"
-os.environ["TRANSFORMERS_OFFLINE"] = "1"
 import sys
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:128"
+if "--online" not in sys.argv:
+    os.environ.setdefault("HF_HUB_OFFLINE", "1")
+    os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
+else:
+    os.environ["HF_HUB_OFFLINE"] = "0"
+    os.environ["TRANSFORMERS_OFFLINE"] = "0"
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 if sys.platform == "win32":
     import smart_app_control_compat  # noqa: F401
@@ -64,9 +68,10 @@ def prevent_windows_sleep():
 
 prevent_windows_sleep()
 
-ROOT = r"c:\Users\Burak\Desktop\sodals_core"
-SFT_DIR = os.path.join(ROOT, "sft")
-sys.path.insert(0, SFT_DIR)
+SFT_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(SFT_DIR)
+if SFT_DIR not in sys.path:
+    sys.path.insert(0, SFT_DIR)
 from cst_symbolic_verifier import CstSymbolicVerifier, NormalizedMathMatcher, LeanTacticStepVerifier
 from arkhe_neurosymbolic_pipeline import CandidateTrace, ConditionsArche, MethodArche
 from env_reproducibility import collect_runtime_metadata
@@ -230,12 +235,13 @@ def train_grpo_math_train(args):
         prompts_payload = json.load(f)
     raw_prompts = prompts_payload["prompts"][: args.num_prompts]
     prompts_data = []
+    think_open = "<think>\n</think>\n" if getattr(args, "no_thinking", False) else "<think>\n"
     for p in raw_prompts:
         prob = p["problem"]
         prompt_str = (
             f"<|im_start|>user\n{prob}\n"
             f"Please reason step by step, and put your final answer within \\boxed{{}}.<|im_end|>\n"
-            f"<|im_start|>assistant\n<think>\n"
+            f"<|im_start|>assistant\n{think_open}"
         )
         prompts_data.append({
             "index": p["prompt_index"],
@@ -251,48 +257,77 @@ def train_grpo_math_train(args):
         print(f"All {len(prompts_data)} training steps are already completed! Exiting.", flush=True)
         return
 
-    # 1. Load Tokenizer
-    print("1. Loading Tokenizer...", flush=True)
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH, trust_remote_code=True)
+    model_path = getattr(args, "model_path", MODEL_PATH) or MODEL_PATH
+    use_cloud_loader = bool(getattr(args, "fp16", False) or getattr(args, "online", False) or model_path != MODEL_PATH)
+    embed_cpu = None
+
+    if use_cloud_loader:
+        from cloud_runtime_utils import get_primary_device, load_qwen_model_and_tokenizer
+        base_model, tokenizer, _rt = load_qwen_model_and_tokenizer(
+            model_path=model_path,
+            quantize_4bit=not getattr(args, "fp16", False),
+            online=True if getattr(args, "online", False) else None,
+        )
+        base_model.config.use_cache = False
+        base_model.gradient_checkpointing_enable()
+        entry_dev = get_primary_device(base_model)
+    else:
+        # 1. Load Tokenizer
+        print("1. Loading Tokenizer...", flush=True)
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        if tokenizer.pad_token is None:
+            tokenizer.pad_token = tokenizer.eos_token
+
+        # 2. Load Base Model in 4-bit NF4 with SDPA FlashAttention
+        bnb_config = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_compute_dtype=torch.float16,
+            bnb_4bit_use_double_quant=True,
+        )
+        print("2. Loading Qwen 3.5 9B with SDPA FlashAttention in 4-bit NF4...", flush=True)
+        base_model = AutoModelForCausalLM.from_pretrained(
+            model_path,
+            quantization_config=bnb_config,
+            device_map={"": 0},
+            trust_remote_code=True,
+            torch_dtype=torch.float16,
+            attn_implementation="sdpa",
+        )
+        base_model.config.use_cache = False
+        base_model.gradient_checkpointing_enable()
+
+        # 3. Cast non-4bit SSM and norm parameters to FP32
+        print("3. Casting SSM and LayerNorm parameters to FP32...", flush=True)
+        for name, param in base_model.named_parameters():
+            if param.__class__.__name__ != "Params4bit" and "embed_tokens" not in name and "lm_head" not in name:
+                param.data = param.data.to(torch.float32)
+
+        # 4. Offload embed_tokens to CPU RAM (-1,645 MB VRAM)
+        print("4. Offloading embed_tokens to CPU RAM via CPUEmbeddingWrapper (-1,645 MB VRAM)...", flush=True)
+        embed_cpu = base_model.model.embed_tokens.to("cpu")
+        base_model.model.embed_tokens = CPUEmbeddingWrapper(embed_cpu)
+        type(base_model).device = property(lambda self: torch.device("cuda:0"))
+        torch.cuda.empty_cache()
+
+        # 5. Retain lm_head in native FP16 for zero-overhead TensorCore execution
+        print("5. Retaining lm_head in native FP16 for zero-overhead TensorCore execution...", flush=True)
+        base_model.lm_head = base_model.lm_head.to(torch.float16)
+        torch.cuda.empty_cache()
+        entry_dev = torch.device("cuda:0")
+
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
-
-    # 2. Load Base Model in 4-bit NF4 with SDPA FlashAttention
-    bnb_config = BitsAndBytesConfig(
-        load_in_4bit=True,
-        bnb_4bit_quant_type="nf4",
-        bnb_4bit_compute_dtype=torch.float16,
-        bnb_4bit_use_double_quant=True,
-    )
-    print("2. Loading Qwen 3.5 9B with SDPA FlashAttention in 4-bit NF4...", flush=True)
-    base_model = AutoModelForCausalLM.from_pretrained(
-        MODEL_PATH,
-        quantization_config=bnb_config,
-        device_map={"": 0},
-        trust_remote_code=True,
-        torch_dtype=torch.float16,
-        attn_implementation="sdpa",
-    )
-    base_model.config.use_cache = False
-    base_model.gradient_checkpointing_enable()
-
-    # 3. Cast non-4bit SSM and norm parameters to FP32
-    print("3. Casting SSM and LayerNorm parameters to FP32...", flush=True)
-    for name, param in base_model.named_parameters():
-        if param.__class__.__name__ != "Params4bit" and "embed_tokens" not in name and "lm_head" not in name:
-            param.data = param.data.to(torch.float32)
-
-    # 4. Offload embed_tokens to CPU RAM (-1,645 MB VRAM)
-    print("4. Offloading embed_tokens to CPU RAM via CPUEmbeddingWrapper (-1,645 MB VRAM)...", flush=True)
-    embed_cpu = base_model.model.embed_tokens.to("cpu")
-    base_model.model.embed_tokens = CPUEmbeddingWrapper(embed_cpu)
-    type(base_model).device = property(lambda self: torch.device("cuda:0"))
-    torch.cuda.empty_cache()
-
-    # 5. Retain lm_head in native FP16 for zero-overhead TensorCore execution
-    print("5. Retaining lm_head in native FP16 for zero-overhead TensorCore execution...", flush=True)
-    base_model.lm_head = base_model.lm_head.to(torch.float16)
-    torch.cuda.empty_cache()
+    eos_ids: List[int] = []
+    if tokenizer.eos_token_id is not None:
+        if isinstance(tokenizer.eos_token_id, (list, tuple)):
+            eos_ids.extend(int(x) for x in tokenizer.eos_token_id)
+        else:
+            eos_ids.append(int(tokenizer.eos_token_id))
+    for sp in ("<|im_end|>", "<|endoftext|>"):
+        tid = tokenizer.convert_tokens_to_ids(sp)
+        if isinstance(tid, int) and tid >= 0 and tid not in eos_ids:
+            eos_ids.append(tid)
 
     # 6. Attach LoRA Adapter (from checkpoint if resuming, else from SFT balanced_r4)
     adapter_load_path = args.adapter_in
@@ -314,7 +349,8 @@ def train_grpo_math_train(args):
         print(f"6. Attaching initial SFT LoRA Adapter from: {adapter_load_path}...", flush=True)
 
     model = PeftModel.from_pretrained(base_model, adapter_load_path, is_trainable=True)
-    type(model).device = property(lambda self: torch.device("cuda:0"))
+    if not use_cloud_loader:
+        type(model).device = property(lambda self: entry_dev)
     for name, param in model.named_parameters():
         if "lora_" in name:
             param.requires_grad = True
@@ -333,6 +369,7 @@ def train_grpo_math_train(args):
 
     backbone = model.base_model.model.model
     lm_head = model.base_model.model.lm_head
+    lm_dev = lm_head.weight.device
     trainable_params = [p for n, p in model.named_parameters() if p.requires_grad]
     init_param_snap = {n: p.detach().float().cpu().clone() for n, p in model.named_parameters() if p.requires_grad}
     init_norm_sq = sum(float(t.norm().item() ** 2) for t in init_param_snap.values())
@@ -386,7 +423,7 @@ def train_grpo_math_train(args):
         prompt_str = p_item["prompt_str"]
         t_step_start = time.time()
 
-        p_enc = tokenizer(prompt_str, return_tensors="pt").to("cuda")
+        p_enc = tokenizer(prompt_str, return_tensors="pt").to(entry_dev)
         p_len = p_enc.input_ids.shape[1]
 
         # -------------------------------------------------------------
@@ -411,7 +448,7 @@ def train_grpo_math_train(args):
                     temperature=0.7,
                     top_p=0.9,
                     pad_token_id=tokenizer.pad_token_id,
-                    eos_token_id=tokenizer.eos_token_id,
+                    eos_token_id=eos_ids if eos_ids else tokenizer.eos_token_id,
                 )
             gen_ids = out[0][p_len:]
             gen_text = tokenizer.decode(gen_ids, skip_special_tokens=True).strip()
@@ -453,7 +490,7 @@ def train_grpo_math_train(args):
                 is_correct_flags=rollout_is_correct,
                 lambda_penalty=dyn_lambda,
             )
-        rewards_tensor = torch.tensor(rollout_rewards, dtype=torch.float32, device="cuda")
+        rewards_tensor = torch.tensor(rollout_rewards, dtype=torch.float32, device=entry_dev)
         mean_r = rewards_tensor.mean().item()
         raw_std = rewards_tensor.std().item()
         has_active_grad = raw_std > 1e-4
@@ -482,11 +519,15 @@ def train_grpo_math_train(args):
                     continue
 
                 adv = advantages[g]
-                seq_ids = torch.cat([p_enc.input_ids, gen_ids.unsqueeze(0)], dim=1)
-                target_ids = gen_ids.unsqueeze(0).to("cuda")
+                seq_ids = torch.cat([p_enc.input_ids, gen_ids.unsqueeze(0).to(entry_dev)], dim=1)
+                target_ids = gen_ids.unsqueeze(0).to(lm_dev)
                 r_len = gen_ids.size(0)
 
-                seq_embeds = embed_cpu(seq_ids.cpu()).to("cuda", dtype=torch.float16)
+                if embed_cpu is not None:
+                    seq_embeds = embed_cpu(seq_ids.cpu()).to(entry_dev, dtype=torch.float16)
+                else:
+                    emb_mod = model.get_input_embeddings()
+                    seq_embeds = emb_mod(seq_ids.to(emb_mod.weight.device)).to(entry_dev, dtype=torch.float16)
 
                 # A. Zero-VRAM Reference Log-Probs
                 with torch.no_grad():
@@ -496,7 +537,7 @@ def train_grpo_math_train(args):
                         ref_logps_list = []
                         for start in range(0, r_len, 32):
                             end = min(start + 32, r_len)
-                            c_h = ref_h[:, start:end, :].contiguous()
+                            c_h = ref_h[:, start:end, :].contiguous().to(lm_dev)
                             c_t = target_ids[:, start:end].contiguous()
                             c_logits = lm_head(c_h)
                             c_logits = torch.clamp(c_logits.float(), min=-50.0, max=50.0)
@@ -515,11 +556,11 @@ def train_grpo_math_train(args):
                 h_resp = backbone_out.last_hidden_state[:, p_len - 1 : -1, :]
 
                 # C. Chunked GRPO Loss Accumulation
-                loss_g = torch.tensor(0.0, device="cuda", dtype=torch.float32)
+                loss_g = torch.tensor(0.0, device=lm_dev, dtype=torch.float32)
                 kl_sum_g = 0.0
                 for start in range(0, r_len, 32):
                     end = min(start + 32, r_len)
-                    c_h = h_resp[:, start:end, :].contiguous()
+                    c_h = h_resp[:, start:end, :].contiguous().to(lm_dev)
                     c_t = target_ids[:, start:end].contiguous()
                     c_ref_logps = ref_logps[:, start:end]
 
@@ -662,6 +703,10 @@ def train_grpo_math_train(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument("--model_path", type=str, default=MODEL_PATH)
+    parser.add_argument("--fp16", action="store_true", help="Load full FP16 multi-GPU model (e.g. Kaggle T4 x2)")
+    parser.add_argument("--online", action="store_true", help="Allow HuggingFace Hub downloads")
+    parser.add_argument("--no_thinking", action="store_true", help="Close <think></think> immediately (prevents stock Qwen3.5-9B verbose truncation)")
     parser.add_argument("--prompts_json", type=str, default=DEFAULT_PROMPTS_JSON)
     parser.add_argument("--adapter_in", type=str, default=DEFAULT_ADAPTER_IN)
     parser.add_argument("--adapter_out", type=str, default=DEFAULT_ADAPTER_OUT)

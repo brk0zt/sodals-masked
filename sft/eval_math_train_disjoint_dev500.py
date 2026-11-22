@@ -99,6 +99,8 @@ def main():
     parser.add_argument("--scale", type=float, default=0.25)
     parser.add_argument("--max_new_tokens", type=int, default=1024)
     parser.add_argument("--limit", type=int, default=500)
+    parser.add_argument("--no_thinking", action="store_true", help="Close <think></think> immediately (prevents stock Qwen3.5-9B 3000-token verbose truncation while keeping batch_size=1)")
+    parser.add_argument("--base_merge_lora", type=str, default=None, help="Optional base SFT LoRA adapter merged into base_model before mounting evaluation adapter(s)")
     parser.add_argument("--d2_adapter_path", type=str, default=None, help="Optional D2 Algebra LoRA adapter")
     parser.add_argument("--svon_identity_lora", type=str, default=None, help="Optional Svon identity LoRA adapter")
     parser.add_argument("--enable_svon_cgw", action="store_true", help="Upgrade model with Svon-CGW hybrid layers")
@@ -170,6 +172,20 @@ def main():
 
         if tokenizer.pad_token is None:
             tokenizer.pad_token = tokenizer.eos_token
+        eos_ids: List[int] = []
+        if tokenizer.eos_token_id is not None:
+            if isinstance(tokenizer.eos_token_id, (list, tuple)):
+                eos_ids.extend(int(x) for x in tokenizer.eos_token_id)
+            else:
+                eos_ids.append(int(tokenizer.eos_token_id))
+        for sp in ("<|im_end|>", "<|endoftext|>"):
+            tid = tokenizer.convert_tokens_to_ids(sp)
+            if isinstance(tid, int) and tid >= 0 and tid not in eos_ids:
+                eos_ids.append(tid)
+
+        if args.base_merge_lora and os.path.exists(args.base_merge_lora):
+            print(f"[BASE MERGE] Merging base SFT LoRA into base_model: {args.base_merge_lora}", flush=True)
+            base_model = PeftModel.from_pretrained(base_model, args.base_merge_lora).merge_and_unload()
 
         if args.d2_adapter_path or args.svon_identity_lora:
             from cloud_runtime_utils import mount_production_adapters
@@ -197,10 +213,11 @@ def main():
             idx = int(p["prompt_index"])
             if idx in done_idx:
                 continue
+            think_open = "<think>\n</think>\n" if args.no_thinking else "<think>\n"
             prompt = (
                 f"<|im_start|>user\n{p['problem']}\n"
                 f"Please reason step by step, and put your final answer within \\boxed{{}}.<|im_end|>\n"
-                f"<|im_start|>assistant\n<think>\n"
+                f"<|im_start|>assistant\n{think_open}"
             )
             inputs = tokenizer(prompt, return_tensors="pt").to(entry_dev)
             set_seed(42)
@@ -212,7 +229,7 @@ def main():
                     do_sample=False,
                     repetition_penalty=1.05,
                     pad_token_id=tokenizer.pad_token_id,
-                    eos_token_id=tokenizer.eos_token_id,
+                    eos_token_id=eos_ids if eos_ids else tokenizer.eos_token_id,
                 )
             dt = time.time() - t0
             gen_ids = out[0][inputs.input_ids.shape[1]:]
