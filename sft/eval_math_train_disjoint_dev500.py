@@ -97,9 +97,12 @@ def main():
     parser.add_argument("--output_json", type=str, required=True)
     parser.add_argument("--baseline_json", type=str, default=None)
     parser.add_argument("--scale", type=float, default=0.25)
-    parser.add_argument("--max_new_tokens", type=int, default=1024)
+    parser.add_argument("--max_new_tokens", type=int, default=8192)
     parser.add_argument("--limit", type=int, default=500)
-    parser.add_argument("--no_thinking", action="store_true", help="Close <think></think> immediately (prevents stock Qwen3.5-9B 3000-token verbose truncation while keeping batch_size=1)")
+    parser.add_argument("--start_idx", type=int, default=0, help="0-based slice start index into prompts list (for two-session split)")
+    parser.add_argument("--end_idx", type=int, default=500, help="0-based slice end index into prompts list (for two-session split)")
+    parser.add_argument("--resume_json", type=str, default=None, help="Optional prior partial JSON to merge completed prompt_index entries from")
+    parser.add_argument("--no_thinking", action="store_true", help="Close <think></think> immediately (opt-in only; default keeps <think> open)")
     parser.add_argument("--base_merge_lora", type=str, default=None, help="Optional base SFT LoRA adapter merged into base_model before mounting evaluation adapter(s)")
     parser.add_argument("--d2_adapter_path", type=str, default=None, help="Optional D2 Algebra LoRA adapter")
     parser.add_argument("--svon_identity_lora", type=str, default=None, help="Optional Svon identity LoRA adapter")
@@ -111,11 +114,15 @@ def main():
         from cloud_runtime_utils import configure_hf_env
         configure_hf_env(online=True)
 
-    prompts = json.load(open(args.dev_json, "r", encoding="utf-8"))["prompts"][: args.limit]
+    prompts_all = json.load(open(args.dev_json, "r", encoding="utf-8"))["prompts"][: args.limit]
+    prompts = prompts_all[max(0, args.start_idx) : min(len(prompts_all), args.end_idx)]
     fallback_out = os.path.join(tempfile.gettempdir(), os.path.basename(args.output_json))
     merged: Dict[int, Dict[str, Any]] = {}
-    for cand in (args.output_json, fallback_out):
-        if os.path.exists(cand):
+    cands = [args.output_json, fallback_out]
+    if args.resume_json:
+        cands.insert(0, args.resume_json)
+    for cand in cands:
+        if cand and os.path.exists(cand):
             try:
                 prev = json.load(open(cand, "r", encoding="utf-8"))
                 for row in prev.get("details", []):
