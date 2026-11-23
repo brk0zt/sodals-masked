@@ -1,0 +1,477 @@
+{
+  "experiment": "SODALS v2.1 Out-of-MATH-500 1536-Token GRPO Training (Hendrycks MATH Train Split)",
+  "runtime_metadata": {
+    "timestamp_utc": "2026-11-23T14:18:14.655678+00:00",
+    "sys_executable": "C:\\Python\\Python313\\python.exe",
+    "interpreter_in_windows_old": false,
+    "python_version": "3.13.7",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "packages": {
+      "torch": "2.8.0+cu126",
+      "transformers": "5.23.0",
+      "peft": "0.21.3",
+      "bitsandbytes": "0.50.2",
+      "sympy": "1.13.3",
+      "numpy": "2.1.2"
+    },
+    "cuda_available": true,
+    "cuda_version": "12.6",
+    "gpu_name": "NVIDIA GeForce RTX 4060 Laptop GPU"
+  },
+  "source_dataset": "C:\\Users\\Burak\\Desktop\\sodals_core\\sft\\math_train_hard_mined_zpd_prompts.json",
+  "math500_overlap": 0,
+  "target_adapter_in": "C:\\Users\\Burak\\Desktop\\sodals_core\\sft\\qwen_lora_adapter_balanced_r4",
+  "target_adapter_out": "C:\\Users\\Burak\\AppData\\Local\\Temp\\grpo1_sweep_adp_5e-4",
+  "max_new_tokens": 1536,
+  "prompts_count": 40,
+  "completed_steps": 10,
+  "active_gradient_steps": 10,
+  "group_size": 4,
+  "beta_kl": 0.03,
+  "learning_rate": 0.0005,
+  "total_solved_prompts": 7,
+  "pass_rate": 70.0,
+  "total_time_minutes": 53.13,
+  "step_details": [
+    {
+      "step": 1,
+      "question_index": 1,
+      "train_row_id": 1402,
+      "subject": "Prealgebra",
+      "level": "Level 5",
+      "problem": "How many times does the digit 9 appear in the list of all integers from 1 to 500? (The number $ 99 $, for example, is counted twice, because $9$ appears two times in it.)",
+      "ground_truth": "100",
+      "mean_reward": 1.8025,
+      "lambda_penalty": null,
+      "mean_kl_div": 0.007296,
+      "rel_frob_drift_pct": 0.0,
+      "rollout_coverage": 1.0,
+      "solved_rollouts": 3,
+      "active_gradient": true,
+      "avg_tokens": 442.2,
+      "rollout_tokens": [
+        486,
+        512,
+        352,
+        419
+      ],
+      "rollout_rewards": [
+        2.57,
+        2.53,
+        2.57,
+        -0.46
+      ],
+      "rollout_preds": [
+        "100",
+        "100",
+        "100",
+        "90"
+      ],
+      "advantages": [
+        0.5088,
+        0.4823,
+        0.5088,
+        -1.4998
+      ],
+      "loss": 0.0131,
+      "step_seconds": 253.3,
+      "vram_mb": 8004.6
+    },
+    {
+      "step": 2,
+      "question_index": 2,
+      "train_row_id": 625,
+      "subject": "Intermediate Algebra",
+      "level": "Level 5",
+      "problem": "Suppose that $x_1+1=x_2+2=x_3+3=\\cdots=x_{2008}+2008=x_1+x_2+x_3+\\cdots+x_{2008}+2009$. Find the value of $\\left\\lfloor|S|\\right\\rfloor$, where $S=\\sum_{n=1}^{2008}x_n$.",
+      "ground_truth": "1005",
+      "mean_reward": -0.5675,
+      "lambda_penalty": null,
+      "mean_kl_div": 0.00572,
+      "rel_frob_drift_pct": 0.7267,
+      "rollout_coverage": 1.0,
+      "solved_rollouts": 1,
+      "active_gradient": true,
+      "avg_tokens": 466.5,
+      "rollout_tokens": [
+        447,
+        413,
+        404,
+        602
+      ],
+      "rollout_rewards": [
+        -1.18,
+        -1.51,
+        1.56,
+        -1.14
+      ],
+      "rollout_preds": [
+        "1004",
+        "1009",
+        "1005",
+        "1004"
+      ],
+      "advantages": [
+        -0.4289,
+        -0.66,
+        1.4898,
+        -0.4009
+      ],
+      "loss": 0.0003,
+      "step_seconds": 238.4,
+      "vram_mb": 8004.6
+    },
+    {
+      "step": 3,
+      "question_index": 3,
+      "train_row_id": 1193,
+      "subject": "Prealgebra",
+      "level": "Level 5",
+      "problem": "On a \"prime date,\" both the month and the day are prime numbers. For example, Feb. 7 or 2/7 is a prime date. How many prime dates occurred in 2007?",
+      "ground_truth": "52",
+      "mean_reward": -0.5934,
+      "lambda_penalty": null,
+      "mean_kl_div": 0.00642,
+      "rel_frob_drift_pct": 1.7742,
+      "rollout_coverage": 1.0,
+      "solved_rollouts": 0,
+      "active_gradient": true,
+      "avg_tokens": 421.0,
+      "rollout_tokens": [
+        511,
+        495,
+        352,
+        326
+      ],
+      "rollout_rewards": [
+        -0.5,
+        -0.46,
+        -0.6933,
+        -0.7204
+      ],
+      "rollout_preds": [
+        "49",
+        "48",
+        "59",
+        "59"
+      ],
+      "advantages": [
+        0.7048,
+        1.0066,
+        -0.7535,
+        -0.9579
+      ],
+      "loss": 0.0098,
+      "step_seconds": 219.3,
+      "vram_mb": 8004.6
+    },
+    {
+      "step": 4,
+      "question_index": 4,
+      "train_row_id": 1435,
+      "subject": "Counting & Probability",
+      "level": "Level 5",
+      "problem": "Robert has 4 indistinguishable gold coins and 4 indistinguishable silver coins. Each coin has an engraving of one face on one side, but not on the other. He wants to stack the eight coins on a table into a single stack so that no two adjacent coins are face to face. Find the number of possible distinguishable arrangements of the 8 coins.",
+      "ground_truth": "630",
+      "mean_reward": -1.0098,
+      "lambda_penalty": null,
+      "mean_kl_div": 0.008372,
+      "rel_frob_drift_pct": 3.0761,
+      "rollout_coverage": 1.0,
+      "solved_rollouts": 0,
+      "active_gradient": true,
+      "avg_tokens": 503.0,
+      "rollout_tokens": [
+        288,
+        651,
+        784,
+        289
+      ],
+      "rollout_rewards": [
+        -1.56,
+        -1.26,
+        -0.5,
+        -0.719
+      ],
+      "rollout_preds": [
+        "140",
+        "140",
+        "2002",
+        "14"
+      ],
+      "advantages": [
+        -1.131,
+        -0.5144,
+        1.0478,
+        0.5976
+      ],
+      "loss": -0.026,
+      "step_seconds": 254.3,
+      "vram_mb": 8004.6
+    },
+    {
+      "step": 5,
+      "question_index": 5,
+      "train_row_id": 1148,
+      "subject": "Number Theory",
+      "level": "Level 5",
+      "problem": "What is the largest value of $n$ less than 100,000 for which the expression $8(n-2)^5-n^2+14n-24$ is a multiple of 5?",
+      "ground_truth": "99997",
+      "mean_reward": 1.1525,
+      "lambda_penalty": null,
+      "mean_kl_div": 0.005639,
+      "rel_frob_drift_pct": 4.6981,
+      "rollout_coverage": 1.0,
+      "solved_rollouts": 3,
+      "active_gradient": true,
+      "avg_tokens": 526.0,
+      "rollout_tokens": [
+        478,
+        569,
+        525,
+        532
+      ],
+      "rollout_rewards": [
+        1.65,
+        -0.34,
+        1.65,
+        1.65
+      ],
+      "rollout_preds": [
+        "99997",
+        "99995",
+        "99997",
+        "99997"
+      ],
+      "advantages": [
+        0.4999,
+        -1.4998,
+        0.4999,
+        0.4999
+      ],
+      "loss": 0.0023,
+      "step_seconds": 264.2,
+      "vram_mb": 8004.6
+    },
+    {
+      "step": 6,
+      "question_index": 6,
+      "train_row_id": 1326,
+      "subject": "Prealgebra",
+      "level": "Level 5",
+      "problem": "What is the largest five-digit integer whose digits have a product equal to the product $(7)(6)(5)(4)(3)(2)(1)$?",
+      "ground_truth": "98752",
+      "mean_reward": 0.8325,
+      "lambda_penalty": null,
+      "mean_kl_div": 0.007083,
+      "rel_frob_drift_pct": 6.1408,
+      "rollout_coverage": 1.0,
+      "solved_rollouts": 2,
+      "active_gradient": true,
+      "avg_tokens": 480.0,
+      "rollout_tokens": [
+        412,
+        432,
+        424,
+        652
+      ],
+      "rollout_rewards": [
+        -0.47,
+        1.89,
+        -0.94,
+        2.85
+      ],
+      "rollout_preds": [
+        "98521",
+        "98752",
+        "75982",
+        "98752"
+      ],
+      "advantages": [
+        -0.7124,
+        0.5784,
+        -0.9695,
+        1.1035
+      ],
+      "loss": -0.0023,
+      "step_seconds": 247.3,
+      "vram_mb": 8004.6
+    },
+    {
+      "step": 7,
+      "question_index": 7,
+      "train_row_id": 908,
+      "subject": "Number Theory",
+      "level": "Level 5",
+      "problem": "Each of two boxes contains both black and white marbles, and the total number of marbles in the two boxes is $25.$ One marble is taken out of each box randomly. The probability that both marbles are black is $27/50,$ and the probability that both marbles are white is $m/n,$ where $m$ and $n$ are relatively prime positive integers. What is $m + n$?",
+      "ground_truth": "26",
+      "mean_reward": 0.395,
+      "lambda_penalty": null,
+      "mean_kl_div": 0.004804,
+      "rel_frob_drift_pct": 7.4482,
+      "rollout_coverage": 1.0,
+      "solved_rollouts": 2,
+      "active_gradient": true,
+      "avg_tokens": 661.0,
+      "rollout_tokens": [
+        805,
+        460,
+        450,
+        929
+      ],
+      "rollout_rewards": [
+        1.85,
+        -1.14,
+        -1.1,
+        1.97
+      ],
+      "rollout_preds": [
+        "26",
+        "61",
+        "3",
+        "26"
+      ],
+      "advantages": [
+        0.8313,
+        -0.877,
+        -0.8542,
+        0.8999
+      ],
+      "loss": -0.0154,
+      "step_seconds": 339.7,
+      "vram_mb": 8004.6
+    },
+    {
+      "step": 8,
+      "question_index": 8,
+      "train_row_id": 2216,
+      "subject": "Geometry",
+      "level": "Level 5",
+      "problem": "Point $P$ lies on the diagonal $AC$ of square $ABCD$ with $AP > CP$. Let $O_{1}$ and $O_{2}$ be the circumcenters of triangles $ABP$ and $CDP$ respectively. Given that $AB = 12$ and $\\angle O_{1}PO_{2} = 120^{\\circ}$, then $AP = \\sqrt{a} + \\sqrt{b}$, where $a$ and $b$ are positive integers. Find $a + b$.",
+      "ground_truth": "96",
+      "mean_reward": -1.2025,
+      "lambda_penalty": null,
+      "mean_kl_div": 0.005043,
+      "rel_frob_drift_pct": 8.6358,
+      "rollout_coverage": 1.0,
+      "solved_rollouts": 0,
+      "active_gradient": true,
+      "avg_tokens": 819.8,
+      "rollout_tokens": [
+        510,
+        759,
+        474,
+        1536
+      ],
+      "rollout_rewards": [
+        -1.14,
+        -1.1,
+        -1.22,
+        -1.35
+      ],
+      "rollout_preds": [
+        "144",
+        "72",
+        "144",
+        "2"
+      ],
+      "advantages": [
+        0.5663,
+        0.9287,
+        -0.1586,
+        -1.3365
+      ],
+      "loss": 0.0113,
+      "step_seconds": 441.0,
+      "vram_mb": 8856.9
+    },
+    {
+      "step": 9,
+      "question_index": 9,
+      "train_row_id": 604,
+      "subject": "Intermediate Algebra",
+      "level": "Level 5",
+      "problem": "Let $a$ and $b$ be positive real numbers.  Find the maximum value of\n\\[2(a - x)(x + \\sqrt{x^2 + b^2})\\]in terms of $a$ and $b.$",
+      "ground_truth": "a^2 + b^2",
+      "mean_reward": 0.9725,
+      "lambda_penalty": null,
+      "mean_kl_div": 0.00505,
+      "rel_frob_drift_pct": 9.6838,
+      "rollout_coverage": 1.0,
+      "solved_rollouts": 3,
+      "active_gradient": true,
+      "avg_tokens": 738.2,
+      "rollout_tokens": [
+        328,
+        438,
+        651,
+        1536
+      ],
+      "rollout_rewards": [
+        1.69,
+        1.65,
+        1.77,
+        -1.22
+      ],
+      "rollout_preds": [
+        "a^2 + b^2",
+        "a^2 + b^2",
+        "a^2 + b^2",
+        "2"
+      ],
+      "advantages": [
+        0.4906,
+        0.4632,
+        0.5453,
+        -1.499
+      ],
+      "loss": -0.0138,
+      "step_seconds": 386.7,
+      "vram_mb": 8856.9
+    },
+    {
+      "step": 10,
+      "question_index": 10,
+      "train_row_id": 1521,
+      "subject": "Counting & Probability",
+      "level": "Level 5",
+      "problem": "What is the largest $2$-digit prime factor of the integer $n = {200\\choose 100}$?",
+      "ground_truth": "61",
+      "mean_reward": 0.305,
+      "lambda_penalty": null,
+      "mean_kl_div": 0.007551,
+      "rel_frob_drift_pct": 10.6101,
+      "rollout_coverage": 1.0,
+      "solved_rollouts": 2,
+      "active_gradient": true,
+      "avg_tokens": 899.2,
+      "rollout_tokens": [
+        685,
+        1536,
+        473,
+        903
+      ],
+      "rollout_rewards": [
+        1.65,
+        -1.3,
+        -1.1,
+        1.97
+      ],
+      "rollout_preds": [
+        "61",
+        "1",
+        "5",
+        "61"
+      ],
+      "advantages": [
+        0.7709,
+        -0.9199,
+        -0.8053,
+        0.9543
+      ],
+      "loss": -0.006,
+      "step_seconds": 541.9,
+      "vram_mb": 8856.9
+    }
+  ]
+}

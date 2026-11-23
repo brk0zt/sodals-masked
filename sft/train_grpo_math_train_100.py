@@ -236,7 +236,7 @@ def train_grpo_math_train(args):
     raw_prompts = prompts_payload["prompts"][: args.num_prompts]
     prompts_data = []
     think_open = "<think>\n</think>\n" if getattr(args, "no_thinking", False) else "<think>\n"
-    for p in raw_prompts:
+    for idx_i, p in enumerate(raw_prompts):
         prob = p["problem"]
         prompt_str = (
             f"<|im_start|>user\n{prob}\n"
@@ -244,10 +244,10 @@ def train_grpo_math_train(args):
             f"<|im_start|>assistant\n{think_open}"
         )
         prompts_data.append({
-            "index": p["prompt_index"],
-            "train_row_id": p["train_row_id"],
-            "subject": p["subject"],
-            "level": p["level"],
+            "index": int(p.get("prompt_index", p.get("question_index", p.get("index", idx_i + 1)))),
+            "train_row_id": p.get("train_row_id", idx_i),
+            "subject": p.get("subject", "Math"),
+            "level": p.get("level", 5),
             "problem": prob,
             "ground_truth": p["ground_truth"],
             "prompt_str": prompt_str,
