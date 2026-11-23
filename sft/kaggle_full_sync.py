@@ -43,6 +43,7 @@ from kaggle_cli_manager import (  # noqa: E402
 
 PROJECT_DATASET_SLUG = "sodals-core-full-project"
 MODELS_DATASET_SLUG = "sodals-models-gguf-and-weights"
+BASELINE_MODEL_DATASET_SLUG = "sodals-qwen35-9b-baseline-safetensors"
 RUNNER_KERNEL_SLUG = "sodals-full-test-suite-t4-x2"
 
 # Hard-blocked paths / patterns (never uploaded to Kaggle)
@@ -311,6 +312,45 @@ def stage_full_project(stage_root: Path, username: str) -> Dict[str, Any]:
     return summary
 
 
+def stage_baseline_safetensors_pack(stage_root: Path, username: str) -> Dict[str, Any]:
+    """Stages `models/Qwen3.5-9B-SODALS-Baseline-SafeTensors` (~16.7 GB) as a dedicated private dataset."""
+    if stage_root.exists():
+        shutil.rmtree(stage_root)
+    stage_root.mkdir(parents=True, exist_ok=True)
+    src_dir = REPO_ROOT / "models" / "Qwen3.5-9B-SODALS-Baseline-SafeTensors"
+    if not src_dir.is_dir():
+        raise FileNotFoundError(f"Missing baseline SafeTensors model directory: {src_dir}")
+
+    entries: List[Dict[str, Any]] = []
+    for p in sorted(src_dir.rglob("*")):
+        if p.is_file() and not _is_forbidden_file(p):
+            rel = str(p.relative_to(src_dir)).replace("\\", "/")
+            dst = stage_root / rel
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            try:
+                os.link(p, dst)
+            except OSError:
+                shutil.copy2(p, dst)
+            entries.append({"path": rel, "bytes": p.stat().st_size})
+
+    total_bytes = sum(x["bytes"] for x in entries)
+    summary = {
+        "dataset_id": f"{username}/{BASELINE_MODEL_DATASET_SLUG}",
+        "staged_at": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "file_count": len(entries),
+        "total_mb": round(total_bytes / (1024 * 1024), 2),
+        "files": entries,
+    }
+    (stage_root / "BASELINE_MODEL_MANIFEST.json").write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
+    meta = {
+        "title": "SODALS Qwen3.5 9B Baseline SafeTensors",
+        "id": f"{username}/{BASELINE_MODEL_DATASET_SLUG}",
+        "licenses": [{"name": "other"}],
+    }
+    (stage_root / "dataset-metadata.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
+    return summary
+
+
 def stage_models_pack(stage_root: Path, username: str) -> Dict[str, Any]:
     """Stages heavy model binaries (GGUF + jlens + ssm_weights + tokenizer) as a separate static private dataset."""
     if stage_root.exists():
@@ -354,6 +394,45 @@ def stage_models_pack(stage_root: Path, username: str) -> Dict[str, Any]:
     meta = {
         "title": "SODALS Models GGUF and Weights",
         "id": f"{username}/{MODELS_DATASET_SLUG}",
+        "licenses": [{"name": "other"}],
+    }
+    (stage_root / "dataset-metadata.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
+    return summary
+
+
+def stage_baseline_safetensors_pack(stage_root: Path, username: str) -> Dict[str, Any]:
+    """Stages `models/Qwen3.5-9B-SODALS-Baseline-SafeTensors` (~16.7 GB) as a dedicated private dataset."""
+    if stage_root.exists():
+        shutil.rmtree(stage_root)
+    stage_root.mkdir(parents=True, exist_ok=True)
+    src_dir = REPO_ROOT / "models" / "Qwen3.5-9B-SODALS-Baseline-SafeTensors"
+    if not src_dir.is_dir():
+        raise FileNotFoundError(f"Missing baseline SafeTensors model directory: {src_dir}")
+
+    entries: List[Dict[str, Any]] = []
+    for p in sorted(src_dir.rglob("*")):
+        if p.is_file() and not _is_forbidden_file(p):
+            rel = str(p.relative_to(src_dir)).replace("\\", "/")
+            dst = stage_root / rel
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            try:
+                os.link(p, dst)
+            except OSError:
+                shutil.copy2(p, dst)
+            entries.append({"path": rel, "bytes": p.stat().st_size})
+
+    total_bytes = sum(x["bytes"] for x in entries)
+    summary = {
+        "dataset_id": f"{username}/{BASELINE_MODEL_DATASET_SLUG}",
+        "staged_at": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "file_count": len(entries),
+        "total_mb": round(total_bytes / (1024 * 1024), 2),
+        "files": entries,
+    }
+    (stage_root / "BASELINE_MODEL_MANIFEST.json").write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
+    meta = {
+        "title": "SODALS Qwen3.5 9B Baseline SafeTensors",
+        "id": f"{username}/{BASELINE_MODEL_DATASET_SLUG}",
         "licenses": [{"name": "other"}],
     }
     (stage_root / "dataset-metadata.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
@@ -639,6 +718,9 @@ def main() -> int:
     p_mod = sub.add_parser("push-models", help="Upload heavy GGUF + jlens + ssm_weights dataset (private)")
     p_mod.add_argument("--notes", type=str, default=None)
 
+    p_base = sub.add_parser("push-baseline-model", help="Upload Qwen3.5-9B-SODALS-Baseline-SafeTensors (~16.7 GB) private dataset")
+    p_base.add_argument("--notes", type=str, default=None)
+
     p_run = sub.add_parser("push-runner", help="Push unified Kaggle T4 x2 test suite notebook")
     p_run.add_argument("--no-run", action="store_true", help="Upload notebook without auto-executing immediately")
     p_run.add_argument("--without-models", action="store_true", help="Mount only project dataset (before models upload finishes)")
@@ -680,6 +762,16 @@ def main() -> int:
             api, m_dir, f"{username}/{MODELS_DATASET_SLUG}", args.notes or f"SODALS GGUF + JLens + SSM weights ({ts_note})", wait_sec=600
         )
         print(json.dumps({"staged": m_sum, "upload": res}, indent=2, ensure_ascii=False))
+        return 0
+
+    if args.cmd == "push-baseline-model":
+        b_dir = stage_base / "baseline_safetensors"
+        b_sum = stage_baseline_safetensors_pack(b_dir, username)
+        print(f"[STAGE] Baseline SafeTensors staged: {b_sum['file_count']} files, {b_sum['total_mb']} MB", flush=True)
+        res = _push_private_dataset(
+            api, b_dir, f"{username}/{BASELINE_MODEL_DATASET_SLUG}", args.notes or f"SODALS Qwen3.5-9B Baseline SafeTensors ({ts_note})", wait_sec=1200
+        )
+        print(json.dumps({"staged": b_sum, "upload": res}, indent=2, ensure_ascii=False))
         return 0
 
     if args.cmd == "push-runner":
