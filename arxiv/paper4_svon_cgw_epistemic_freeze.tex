@@ -115,7 +115,7 @@ Table~\ref{tab:paper4_status} summarizes verified guarantees versus active GPU/c
 \toprule
 \textbf{Subsystem / Experiment} & \textbf{Status} & \textbf{Verified Observation / Exact Scope} \\
 \midrule
-Production Serving \& Clarification Suite (Full \texttt{prod\_suite}, CPU + Tiny Qwen3.5) & \textbf{PASS (90/90)} & Full \texttt{prod\_suite} passing on Python 3.13.7; \texttt{sodals\_chat.bat --help} exit code 0. Includes real \texttt{Qwen3\_5ForCausalLM} + Svon-CGW \texttt{DynamicCache} CPU offload/restore \& bit-exact delta continuation. \\
+Production Serving \& Clarification Suite + \texttt{.qmem v3.5} Apex (Full \texttt{prod\_suite}, CPU + Tiny Qwen3.5) & \textbf{PASS (109/109)} & Full \texttt{prod\_suite} passing on Python 3.13.7; \texttt{sodals\_chat.bat --help} exit code 0. Includes \texttt{Qwen3\_5ForCausalLM} + Svon-CGW \texttt{DynamicCache} CPU offload/restore, \texttt{.qmem v3} virtual parameter cartridges, Max-Margin H-GPR, \texttt{TTT-QMEM}, phase-multiplexed Bank~3 + $\Delta\phi=\pi$ erasure, UCB1/CDCL, and zero-init looped depth. \\
 Epoch III Exact Submanifold \& Wave Cancellation Proofs & \textbf{PASS} & Bit-exact match at $\omega_t=0, \alpha_{\text{im}}=0$; destructive cancellation at $\Delta\Theta=\pi$; 2-hop RoPE channel isolation $[0:64]$ verified; \texttt{QMEM} export verified. \\
 Kaggle v2 Bare Epoch III Phase Separation (\texttt{task-6511}) & \textbf{DONE} & Trained all 4 parameter groups (\texttt{phase\_proj\_up} 0.0306, \texttt{alpha\_im} 0.0214, \texttt{alpha\_hop} 0.0256, \texttt{gamma\_phase} 0.0214); phase cancellation loss $2.0000 \to 1.5031$. \\
 \midrule

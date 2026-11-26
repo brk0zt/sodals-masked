@@ -113,14 +113,14 @@ graph TD
 
 ---
 
-## 5. Uygulama ve Güncel Durum Takvimi (19 Kasım 2026)
+## 5. Uygulama ve Güncel Durum Takvimi (26 Kasım 2026)
 
-| Makale | Durum & Kilitli Kanıtlar (19 Kasım 2026) | Bekleyen (`[PENDING]`) İşler |
+| Makale | Durum & Kilitli Kanıtlar (26 Kasım 2026) | Bekleyen (`[PENDING]`) İşler |
 |:---|:---|:---|
-| **Makale 1 (`paper1_master_reasoning.tex`)** | ✅ Simetrik `398/500`, Py 3.13 Aynı-Yığın Baseline `Q026..Q200` (`139/175 = %79.43`), `Clean-125` `107/125` (`%89.17` seçmeli), `Pristine-50 Always-On` (`41/50 = %82.0`, Zero-Steer `%90.91`), `min_step_logprob=0.951`, `SymbolicStepChecker` `%72.7`, `neg_mean_entropy` (`0.7583`/`0.8791`) | `Independent-400`, `Dev-500 GRPO`, Mühürlü `Q201..Q500` |
-| **Makale 2 (`paper2_soft_moa.tex`)** | ✅ `170Q` kilitli + yardımcı `svon_identity` izolasyon ölçeği uzantısı | — |
-| **Makale 3 (`paper3_edgessm_ieee_tii.tex`)** | ✅ `223` senaryo kilitli + `.qmem` CVNN/GNN Rust yol haritası | Python `Dev-500` sonrası `qwen_ssm.rs` / `qwen_custom.rs` geçişi |
-| **Makale 4 (`paper4_svon_cgw_epistemic_freeze.tex`)** | ✅ Exact Submanifold `0.0`, 2-Hop KV-cache `one_hop_history` düzeltmesi, `90/90` `prod_suite`, **Canlı 9B GPU `<sodals_ask>` + CPU `DynamicCache` duman testi**, **Kaggle `task-7126` D1+D2 Epoch III (`ce 1.96->1.14`, `cancel 2.0->1.63`, 15-adım CGW-GRPO, `7.87 MB .qmem`)** | Epoch II `rel_frob=0.0025` trust-region ayarı + scorer düzeltmesi, Yerel 4-bit `Dev-500` uyumluluk testi |
+| **Makale 1 (`paper1_master_reasoning.tex`)** | ✅ Simetrik `398/500`, Py 3.13 Aynı-Yığın Baseline `Q026..Q200` (`139/175 = %79.43`), `Clean-125` `107/125` (`%89.17` seçmeli), `Pristine-50 Always-On` (`41/50 = %82.0`, Zero-Steer `%90.91`), `min_step_logprob=0.951`, `SymbolicStepChecker` `%72.7`, **`Independent-400` (`400/400`: Prec `%68.29`, Rec `%15.22`, FPR `%6.02`)**, **`GRPO-1` (`40/40`, `39/40` aktif gradyan)**, **`Dev-500 N=100` (`GRPO-1 78%` vs `Baseline 76%`, `+5/-3`, `%84` politika hareketi)**, **`GRPO-2` (`40/40`, `%100` kapsam)** | Tam `Dev-500` (`500/500`) kıyaslaması, Mühürlü `Q201..Q500` tek-atış onayı |
+| **Makale 2 (`paper2_soft_moa.tex`)** | ✅ `170Q` kilitli + yardımcı `svon_identity` & `.qmem v3` Top-2 kartuş izolasyonu | — |
+| **Makale 3 (`paper3_edgessm_ieee_tii.tex`)** | ✅ `223` senaryo kilitli + `.qmem` CVNN/GNN Rust yol haritası + Cargo `cuda`/`python` feature izolasyonu | Python `Dev-500` sonrası `qwen_ssm.rs` / `qwen_custom.rs` geçişi |
+| **Makale 4 (`paper4_svon_cgw_epistemic_freeze.tex`)** | ✅ Exact Submanifold `0.0`, 2-Hop KV-cache `one_hop_history` düzeltmesi, **`109/109` `prod_suite` (`.qmem v3.5` Apex: Faz-Çoğullamalı Bank 3, $\Delta\phi=\pi$ silme, Max-Margin H-GPR, `TTT-QMEM`, UCB1/CDCL, `ZeroInitLoopedDepthWrapper`)**, **Canlı 9B GPU `<sodals_ask>` + CPU `DynamicCache` duman testi**, **Kaggle Epoch III (`ce 1.96->1.14`, `cancel 2.0->1.63`, `7.87 MB .qmem`)** | Epoch II v14 (`>=27/30` kimlik kapısı), `Dev-500` full-stack & `.qmem v3.5` 4-kollu GPU ablasyonları |
 
 ---
 

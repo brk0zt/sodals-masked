@@ -34,11 +34,11 @@ Deploying hybrid 9B State-Space / Transformer foundation models (`Qwen 3.5 9B`: 
 
 ---
 
-## 4. Verification Summary (November 19, 2026)
+## 4. Verification Summary (November 26, 2026)
 
 | Component / Suite | Status | Verified Result |
 |---|---|---|
-| Full Production Serving & Clarification Suite (`prod_suite`) | **PASS** | **`90 / 90 OK`** on Python 3.13.7; includes real mini-`Qwen3_5ForCausalLM` + `Svon-CGW` CPU `DynamicCache` offload/restore & bit-exact delta resume |
+| Full Production Serving, Clarification & `.qmem v3.5` Apex Suite (`prod_suite`) | **PASS** | **`109 / 109 OK`** on Python 3.13.7; includes tiny `Qwen3_5ForCausalLM` + `Svon-CGW` CPU `DynamicCache` offload/restore, `.qmem v3` virtual parameter cartridges, Max-Margin H-GPR, `TTT-QMEM`, phase-multiplexed Bank 3 + $\Delta\phi=\pi$ erasure, UCB1/CDCL, and zero-init looped depth |
 | CLI & Offline Launcher Verification (`sodals_chat.bat --help`) | **PASS** | Exit code `0` (`--cli`, `--agent`, `--no-clarify`, `--model`, `--svon_identity_lora`, `--enable_svon_cgw`, `--svon_cgw_weights`) |
 | Bare FP16 Kaggle v2 Epoch III Gradient Flow (`task-6511`) | **DONE** | All 4 CVNN/GNN parameter groups non-zero; `cancel: 2.0000 -> 1.5031` |
 | Adapter-Conditioned (`D1+D2`) Kaggle Epoch II+III (`v11 -> v13`) | **PARTIAL (Gates Open)** | **Epoch II Null-Space PGD LoRA:** v11 (`21/30, KL=0.024625`), v12 (`23/30, KL=0.00957`), v13 subspace-scaled trust-region (`19/30, World=20/20, PGD KL=0.000248, eval KL=0.00292, repetition_collapsed=0`); all three remain `passes_gates=False` vs `>=27/30` target. **Epoch III DONE:** `7.87 MB` `.safetensors`/`.qmem` (`1,967,360` floats) exported. |
